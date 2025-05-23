@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace BusinessObjects.Models
 {
-    public class Transactions
+    public class PaymentTransaction
     {
         public long Id { get; set; }
-        public long ReferenceId { get; set; }
+        public long PaymentId { get; set; }
         public decimal Amount { get; set; }
         public string TransactionType { get; set; }
         public string Status { get; set; }
@@ -19,5 +19,7 @@ namespace BusinessObjects.Models
 
         public long UserId { get; set; }
         public User User { get; set; }
+        public Payment Payment { get; set; }
+
     }
 }

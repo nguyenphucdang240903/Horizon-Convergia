@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,10 +24,12 @@ namespace BusinessObjects.Models
 
         public long SellerId { get; set; }
         public User Seller { get; set; }
-
-        public ICollection<OrderDetail> OrderDetails { get; set; }
         public Shipping Shipping { get; set; }
         public Payment Payment { get; set; }
+
+        public ICollection<OrderDetail> OrderDetails { get; set; }
+        public ICollection<Shipping> Shippings { get; set; }
+        public ICollection<Payment> Payments { get; set; }
     }
 
 }

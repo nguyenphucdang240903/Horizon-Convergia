@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
-using System.Transactions;
 
 namespace BusinessObjects.Models
 {
@@ -31,12 +30,13 @@ namespace BusinessObjects.Models
         public ICollection<Product> Products { get; set; }
         public ICollection<Review> Reviews { get; set; }
         public ICollection<Cart> Carts { get; set; }
-        public ICollection<Order> OrdersAsBuyer { get; set; }
-        public ICollection<Order> OrdersAsSeller { get; set; }
         public ICollection<Message> SentMessages { get; set; }
         public ICollection<Message> ReceivedMessages { get; set; }
         public ICollection<Payment> Payments { get; set; }
-        public ICollection<Transactions> Transactions { get; set; }
         public ICollection<Blog> Blogs { get; set; }
+        public ICollection<Shipping> Shippings { get; set; }
+        public ICollection<Order> OrdersAsBuyer { get; set; }
+        public ICollection<Order> OrdersAsSeller { get; set; }
+
     }
 }

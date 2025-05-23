@@ -19,6 +19,9 @@ namespace BusinessObjects.Models
 
         public long OrderId { get; set; }
         public Order Order { get; set; }
+        public long UserId { get; set; }
+        public User User { get; set; }
+
     }
 
 }

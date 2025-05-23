@@ -25,9 +25,11 @@ namespace BusinessObjects.Models
 
         public long SellerId { get; set; }
         public User Seller { get; set; }
+        public long CategoryId { get; set; }
+        public Category Category { get; set; }
+
         public ICollection<Images> Images { get; set; }
         public ICollection<Review> Reviews { get; set; }
         public ICollection<Cart> Carts { get; set; }
-        public ICollection<OrderDetail> OrderDetails { get; set; }
     }
 }

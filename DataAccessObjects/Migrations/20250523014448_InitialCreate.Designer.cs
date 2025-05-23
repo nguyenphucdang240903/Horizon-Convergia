@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessObjects.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250521164421_InitialCreate")]
+    [Migration("20250523014448_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -288,6 +288,9 @@ namespace DataAccessObjects.Migrations
                     b.Property<long>("OrderId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("OrderId1")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -314,9 +317,55 @@ namespace DataAccessObjects.Migrations
                     b.HasIndex("OrderId")
                         .IsUnique();
 
+                    b.HasIndex("OrderId1");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("BusinessObjects.Models.PaymentTransaction", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("PaymentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TransactionType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaymentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PaymentTransactions");
                 });
 
             modelBuilder.Entity("BusinessObjects.Models.Product", b =>
@@ -330,6 +379,9 @@ namespace DataAccessObjects.Migrations
                     b.Property<string>("Brand")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("CategoryId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Condition")
                         .IsRequired()
@@ -373,6 +425,8 @@ namespace DataAccessObjects.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("SellerId");
 
@@ -438,6 +492,9 @@ namespace DataAccessObjects.Migrations
                     b.Property<long>("OrderId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("OrderId1")
+                        .HasColumnType("bigint");
+
                     b.Property<decimal>("ShippingFee")
                         .HasColumnType("decimal(18,2)");
 
@@ -452,54 +509,19 @@ namespace DataAccessObjects.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId")
-                        .IsUnique();
-
-                    b.ToTable("Shippings");
-                });
-
-            modelBuilder.Entity("BusinessObjects.Models.Transactions", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Reference")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("ReferenceId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TransactionType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("OrderId1");
+
                     b.HasIndex("UserId");
 
-                    b.ToTable("Transactions");
+                    b.ToTable("Shippings");
                 });
 
             modelBuilder.Entity("BusinessObjects.Models.User", b =>
@@ -578,7 +600,7 @@ namespace DataAccessObjects.Migrations
                     b.HasOne("BusinessObjects.Models.User", "Author")
                         .WithMany("Blogs")
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Author");
@@ -589,13 +611,13 @@ namespace DataAccessObjects.Migrations
                     b.HasOne("BusinessObjects.Models.User", "Buyer")
                         .WithMany("Carts")
                         .HasForeignKey("BuyerId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("BusinessObjects.Models.Product", "Product")
                         .WithMany("Carts")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Buyer");
@@ -638,7 +660,7 @@ namespace DataAccessObjects.Migrations
                     b.HasOne("BusinessObjects.Models.User", "Buyer")
                         .WithMany("OrdersAsBuyer")
                         .HasForeignKey("BuyerId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("BusinessObjects.Models.User", "Seller")
@@ -661,9 +683,9 @@ namespace DataAccessObjects.Migrations
                         .IsRequired();
 
                     b.HasOne("BusinessObjects.Models.Product", "Product")
-                        .WithMany("OrderDetails")
+                        .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Order");
@@ -676,8 +698,12 @@ namespace DataAccessObjects.Migrations
                     b.HasOne("BusinessObjects.Models.Order", "Order")
                         .WithOne("Payment")
                         .HasForeignKey("BusinessObjects.Models.Payment", "OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("BusinessObjects.Models.Order", null)
+                        .WithMany("Payments")
+                        .HasForeignKey("OrderId1");
 
                     b.HasOne("BusinessObjects.Models.User", "User")
                         .WithMany("Payments")
@@ -690,13 +716,40 @@ namespace DataAccessObjects.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BusinessObjects.Models.PaymentTransaction", b =>
+                {
+                    b.HasOne("BusinessObjects.Models.Payment", "Payment")
+                        .WithMany("PaymentTransactions")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObjects.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Payment");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BusinessObjects.Models.Product", b =>
                 {
+                    b.HasOne("BusinessObjects.Models.Category", "Category")
+                        .WithMany("Products")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BusinessObjects.Models.User", "Seller")
                         .WithMany("Products")
                         .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Category");
 
                     b.Navigation("Seller");
                 });
@@ -712,7 +765,7 @@ namespace DataAccessObjects.Migrations
                     b.HasOne("BusinessObjects.Models.User", "User")
                         .WithMany("Reviews")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Product");
@@ -725,21 +778,27 @@ namespace DataAccessObjects.Migrations
                     b.HasOne("BusinessObjects.Models.Order", "Order")
                         .WithOne("Shipping")
                         .HasForeignKey("BusinessObjects.Models.Shipping", "OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Order");
-                });
+                    b.HasOne("BusinessObjects.Models.Order", null)
+                        .WithMany("Shippings")
+                        .HasForeignKey("OrderId1");
 
-            modelBuilder.Entity("BusinessObjects.Models.Transactions", b =>
-                {
                     b.HasOne("BusinessObjects.Models.User", "User")
-                        .WithMany("Transactions")
+                        .WithMany("Shippings")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Order");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BusinessObjects.Models.Category", b =>
+                {
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("BusinessObjects.Models.Order", b =>
@@ -749,8 +808,17 @@ namespace DataAccessObjects.Migrations
                     b.Navigation("Payment")
                         .IsRequired();
 
+                    b.Navigation("Payments");
+
                     b.Navigation("Shipping")
                         .IsRequired();
+
+                    b.Navigation("Shippings");
+                });
+
+            modelBuilder.Entity("BusinessObjects.Models.Payment", b =>
+                {
+                    b.Navigation("PaymentTransactions");
                 });
 
             modelBuilder.Entity("BusinessObjects.Models.Product", b =>
@@ -758,8 +826,6 @@ namespace DataAccessObjects.Migrations
                     b.Navigation("Carts");
 
                     b.Navigation("Images");
-
-                    b.Navigation("OrderDetails");
 
                     b.Navigation("Reviews");
                 });
@@ -784,7 +850,7 @@ namespace DataAccessObjects.Migrations
 
                     b.Navigation("SentMessages");
 
-                    b.Navigation("Transactions");
+                    b.Navigation("Shippings");
                 });
 #pragma warning restore 612, 618
         }
