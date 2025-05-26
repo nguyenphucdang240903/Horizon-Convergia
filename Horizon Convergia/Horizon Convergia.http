@@ -1,6 +1,0 @@
-@Horizon_Convergia_HostAddress = http://localhost:5133
-
-GET {{Horizon_Convergia_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
