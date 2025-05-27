@@ -189,7 +189,7 @@ namespace DataAccessObjects.Migrations
                     b.Property<long>("BuyerId")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime>("CreateAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("Discount")
@@ -337,7 +337,7 @@ namespace DataAccessObjects.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("TransactionStatus")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -570,7 +570,7 @@ namespace DataAccessObjects.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("VerificatiToken")
+                    b.Property<string>("VerificationToken")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BusinessObjects.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,7 @@ namespace BusinessObjects.Models
         public string TrackingNumber { get; set; }
         public decimal ShippingFee { get; set; }
         public DateTime? ActualDeliveryDate { get; set; }
-        public string Status { get; set; }
+        public ShippingStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 

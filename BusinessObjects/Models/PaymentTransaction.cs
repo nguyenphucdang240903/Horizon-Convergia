@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BusinessObjects.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,7 @@ namespace BusinessObjects.Models
         public long PaymentId { get; set; }
         public decimal Amount { get; set; }
         public string TransactionType { get; set; }
-        public string Status { get; set; }
+        public TransactionStatus TransactionStatus { get; set; }
         public string Reference { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

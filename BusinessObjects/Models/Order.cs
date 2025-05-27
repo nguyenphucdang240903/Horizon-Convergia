@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿using BusinessObjects.Enums;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +15,8 @@ namespace BusinessObjects.Models
         public decimal TotalPrice { get; set; }
         public string ShippingAddress { get; set; }
         public decimal Discount { get; set; }
-        public string Status { get; set; }
-        public DateTime CreateAt { get; set; }
+        public OrderStatus Status { get; set; }
+        public DateTime CreatedAt { get; set; }
         public DateTime UpdateAt { get; set; }
         public bool IsDeleted { get; set; }
 
