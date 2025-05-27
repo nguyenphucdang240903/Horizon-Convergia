@@ -285,9 +285,6 @@ namespace DataAccessObjects.Migrations
                     b.Property<long>("OrderId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("OrderId1")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -313,8 +310,6 @@ namespace DataAccessObjects.Migrations
 
                     b.HasIndex("OrderId")
                         .IsUnique();
-
-                    b.HasIndex("OrderId1");
 
                     b.HasIndex("UserId");
 
@@ -489,9 +484,6 @@ namespace DataAccessObjects.Migrations
                     b.Property<long>("OrderId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("OrderId1")
-                        .HasColumnType("bigint");
-
                     b.Property<decimal>("ShippingFee")
                         .HasColumnType("decimal(18,2)");
 
@@ -513,8 +505,6 @@ namespace DataAccessObjects.Migrations
 
                     b.HasIndex("OrderId")
                         .IsUnique();
-
-                    b.HasIndex("OrderId1");
 
                     b.HasIndex("UserId");
 
@@ -698,10 +688,6 @@ namespace DataAccessObjects.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("BusinessObjects.Models.Order", null)
-                        .WithMany("Payments")
-                        .HasForeignKey("OrderId1");
-
                     b.HasOne("BusinessObjects.Models.User", "User")
                         .WithMany("Payments")
                         .HasForeignKey("UserId")
@@ -778,10 +764,6 @@ namespace DataAccessObjects.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("BusinessObjects.Models.Order", null)
-                        .WithMany("Shippings")
-                        .HasForeignKey("OrderId1");
-
                     b.HasOne("BusinessObjects.Models.User", "User")
                         .WithMany("Shippings")
                         .HasForeignKey("UserId")
@@ -805,12 +787,8 @@ namespace DataAccessObjects.Migrations
                     b.Navigation("Payment")
                         .IsRequired();
 
-                    b.Navigation("Payments");
-
                     b.Navigation("Shipping")
                         .IsRequired();
-
-                    b.Navigation("Shippings");
                 });
 
             modelBuilder.Entity("BusinessObjects.Models.Payment", b =>

@@ -20,7 +20,7 @@ namespace BusinessObjects.Models
         public string Status { get; set; }
         public string Role { get; set; }
         public DateTime? Dob { get; set; }
-        public string VerificatiToken { get; set; }
+        public string VerificationToken { get; set; }
         public DateTime? VerificationTokenExpires { get; set; }
         public bool IsVerified { get; set; }
         public bool IsDeleted { get; set; }

@@ -191,8 +191,7 @@ namespace DataAccessObjects.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     OrderId = table.Column<long>(type: "bigint", nullable: false),
-                    UserId = table.Column<long>(type: "bigint", nullable: false),
-                    OrderId1 = table.Column<long>(type: "bigint", nullable: true)
+                    UserId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -203,11 +202,6 @@ namespace DataAccessObjects.Migrations
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Payments_Orders_OrderId1",
-                        column: x => x.OrderId1,
-                        principalTable: "Orders",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Payments_Users_UserId",
                         column: x => x.UserId,
@@ -230,8 +224,7 @@ namespace DataAccessObjects.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     OrderId = table.Column<long>(type: "bigint", nullable: false),
-                    UserId = table.Column<long>(type: "bigint", nullable: false),
-                    OrderId1 = table.Column<long>(type: "bigint", nullable: true)
+                    UserId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -242,11 +235,6 @@ namespace DataAccessObjects.Migrations
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Shippings_Orders_OrderId1",
-                        column: x => x.OrderId1,
-                        principalTable: "Orders",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Shippings_Users_UserId",
                         column: x => x.UserId,
@@ -460,11 +448,6 @@ namespace DataAccessObjects.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Payments_OrderId1",
-                table: "Payments",
-                column: "OrderId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Payments_UserId",
                 table: "Payments",
                 column: "UserId");
@@ -504,11 +487,6 @@ namespace DataAccessObjects.Migrations
                 table: "Shippings",
                 column: "OrderId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Shippings_OrderId1",
-                table: "Shippings",
-                column: "OrderId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Shippings_UserId",

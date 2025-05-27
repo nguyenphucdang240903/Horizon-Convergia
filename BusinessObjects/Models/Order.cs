@@ -28,8 +28,7 @@ namespace BusinessObjects.Models
         public Payment Payment { get; set; }
 
         public ICollection<OrderDetail> OrderDetails { get; set; }
-        public ICollection<Shipping> Shippings { get; set; }
-        public ICollection<Payment> Payments { get; set; }
+        
     }
 
 }

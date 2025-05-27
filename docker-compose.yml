@@ -7,10 +7,11 @@ services:
       - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080 
     depends_on:
       - db
     volumes:
-      - ./HorizonConvergia/appsettings.json:/app/appsettings.json
+      - ./HorizonConvergia/appsettings.Docker.json:/app/appsettings.json
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -22,6 +23,15 @@ services:
       ACCEPT_EULA: "Y"
     volumes:
       - sqlserverdata:/var/opt/mssql
+
+  migrator:
+    image: mcr.microsoft.com/dotnet/sdk:7.0  
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: ["dotnet", "ef", "database", "update"]
+    depends_on:
+      - db
 
 volumes:
   sqlserverdata:
