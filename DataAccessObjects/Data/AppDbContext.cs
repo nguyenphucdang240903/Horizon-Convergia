@@ -29,6 +29,7 @@ namespace DataAccessObjects.Data
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Blog> Blogs { get; set; }
+        public DbSet<Token> Token { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

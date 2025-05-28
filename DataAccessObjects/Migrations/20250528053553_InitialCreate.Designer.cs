@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessObjects.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250527082715_InitialCreate")]
+    [Migration("20250528053553_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -512,6 +512,30 @@ namespace DataAccessObjects.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Shippings");
+                });
+
+            modelBuilder.Entity("BusinessObjects.Models.Token", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AccessToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ExpiredTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("Token");
                 });
 
             modelBuilder.Entity("BusinessObjects.Models.User", b =>

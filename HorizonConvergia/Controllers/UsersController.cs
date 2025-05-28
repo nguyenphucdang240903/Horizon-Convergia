@@ -1,0 +1,40 @@
+﻿using BusinessObjects.DTO.UserDTO;
+using BusinessObjects.Models;
+using Microsoft.AspNetCore.Mvc;
+using Services.Interfaces;
+
+namespace HorizonConvergia.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class UsersController : ControllerBase
+    {
+        private readonly IUserService _userService;
+
+        public UsersController(IUserService userService) => _userService = userService;
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(User user)
+        {
+            await _userService.RegisterAsync(user);
+            return Ok();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(long id)
+        {
+            var user = await _userService.GetUserByIdAsync(id);
+            return user is not null ? Ok(user) : NotFound();
+        }
+
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> Update(long id, UpdateUserDTO user)
+        {
+            user.Id = id;
+            await _userService.UpdateUserAsync(user);
+            return NoContent();
+        }
+
+    }
+
+}
