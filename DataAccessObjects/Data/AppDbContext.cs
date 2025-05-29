@@ -1,13 +1,5 @@
 ﻿using BusinessObjects.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-using static System.Net.Mime.MediaTypeNames;
 using PaymentTransaction = BusinessObjects.Models.PaymentTransaction;
 
 namespace DataAccessObjects.Data
@@ -40,7 +32,7 @@ namespace DataAccessObjects.Data
                 .HasOne(p => p.Seller)
                 .WithMany(u => u.Products)
                 .HasForeignKey(p => p.SellerId)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Restrict);
 
             // User - Review (1-n)
             modelBuilder.Entity<Review>()
@@ -80,15 +72,15 @@ namespace DataAccessObjects.Data
             // User - Order (1-n) 
             modelBuilder.Entity<Order>()
                 .HasOne(o => o.Buyer)
-                .WithMany(u => u.OrdersAsBuyer) 
+                .WithMany(u => u.OrdersAsBuyer)
                 .HasForeignKey(o => o.BuyerId)
-                .OnDelete(DeleteBehavior.Cascade);  
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Order>()
                 .HasOne(o => o.Seller)
-                .WithMany(u => u.OrdersAsSeller) 
+                .WithMany(u => u.OrdersAsSeller)
                 .HasForeignKey(o => o.SellerId)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Category - Product (1 - n)
             modelBuilder.Entity<Product>()
@@ -172,14 +164,14 @@ namespace DataAccessObjects.Data
             modelBuilder.Entity<Product>()
                 .Property(p => p.Status)
                 .HasConversion<string>();
-            
+
             modelBuilder.Entity<Payment>()
                 .Property(p => p.PaymentStatus)
                 .HasConversion<string>();
             modelBuilder.Entity<Order>()
                 .Property(o => o.Status)
                 .HasConversion<string>();
-            
+
             modelBuilder.Entity<Shipping>()
                 .Property(s => s.Status)
                 .HasConversion<string>();
