@@ -35,6 +35,16 @@ namespace HorizonConvergia.Controllers
             return NoContent();
         }
 
-    }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(long id)
+        {
+            var result = await _userService.DeleteUserAsync(id);
+            if (!result)
+            {
+                return NotFound($"User with ID {id} not found.");
+            }
 
+            return Ok(new { message = $"User with ID {id} deleted successfully." });
+        }
+    }
 }

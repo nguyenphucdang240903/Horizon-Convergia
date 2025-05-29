@@ -37,7 +37,7 @@ namespace Services
             await _unitOfWork.SaveAsync();
         }
 
-        public async Task DeleteUserAsync(long id)
+        public async Task<bool> DeleteUserAsync(long id)
         {
             var user = await _unitOfWork.Users.GetByIdAsync(id);
             if (user is not null)
@@ -46,7 +46,9 @@ namespace Services
                 _unitOfWork.Users.Update(user);
                 await _unitOfWork.SaveAsync();
             }
+            return false;
         }
+
 
         public async Task ChangeStatusAsync(long id, UserStatus status)
         {

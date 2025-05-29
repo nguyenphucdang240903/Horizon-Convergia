@@ -10,7 +10,7 @@ namespace Services.Interfaces
         Task<User?> GetUserByIdAsync(long id);
         Task<IEnumerable<User>> SearchUsersAsync(string keyword);
         Task UpdateUserAsync(UpdateUserDTO user);
-        Task DeleteUserAsync(long id);
+        Task<bool> DeleteUserAsync(long id);
         Task ChangeStatusAsync(long id, UserStatus status);
         Task ChangeRoleAsync(long id, UserRole role);
         Task ChangePasswordAsync(long id, string newPassword);
