@@ -20,6 +20,15 @@ namespace Services
 
         public async Task<User?> GetUserByIdAsync(long id) =>
             await _unitOfWork.Users.GetByIdAsync(id);
+        public User GetUserByUserName(string userName)
+        {
+            var user = _unitOfWork.Users.Get(u => u.Name == userName);
+            if (user == null)
+            {
+                return null;
+            }
+            return user;
+        }
 
         public async Task<IEnumerable<User>> SearchUsersAsync(string keyword) =>
             await _unitOfWork.Users.SearchAsync(keyword);
