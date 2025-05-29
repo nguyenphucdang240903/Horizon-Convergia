@@ -10,7 +10,7 @@ namespace BusinessObjects.Models
     public partial class Token
     {
         [Key]
-        public string UserId { get; set; }
+        public long Id { get; set; }
 
         public string AccessToken { get; set; }
 

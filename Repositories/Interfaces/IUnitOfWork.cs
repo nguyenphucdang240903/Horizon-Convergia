@@ -12,7 +12,9 @@ namespace DataAccessObjects
     {
         IGenericRepository<T> Repository<T>() where T : class;
         IUserRepository Users { get; }
+        ITokenRepository Tokens { get; }
         Task<int> SaveAsync();
+        int Save();
     }
 
 }
