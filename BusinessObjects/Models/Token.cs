@@ -1,18 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessObjects.Models
+public partial class Token
 {
-    public partial class Token
-    {
-        [Key]
-        public long Id { get; set; }
+    [Key]
+    public long Id { get; set; }
 
-        public string AccessToken { get; set; }
+    public string AccessToken { get; set; }
 
-        public string RefreshToken { get; set; }
+    public string RefreshToken { get; set; }
 
-        public DateTime? ExpiredTime { get; set; }
+    public DateTime? ExpiredTime { get; set; }
 
-        public int Status { get; set; }
-    }
+    public int Status { get; set; }
+    public long UserId { get; set; }  
 }

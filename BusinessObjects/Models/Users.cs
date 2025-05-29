@@ -11,11 +11,11 @@ namespace BusinessObjects.Models
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
         public Gender Gender { get; set; }
-        public string AvatarUrl { get; set; }
+        public string? AvatarUrl { get; set; }
         public UserStatus Status { get; set; }
         public UserRole Role { get; set; }
         public DateTime? Dob { get; set; }
-        public string VerificationToken { get; set; }
+        public string? VerificationToken { get; set; }
         public DateTime? VerificationTokenExpires { get; set; }
         public bool IsVerified { get; set; }
         public bool IsDeleted { get; set; }

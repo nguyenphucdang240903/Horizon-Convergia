@@ -1,5 +1,7 @@
 ﻿using BusinessObjects.DTO.ResultDTO;
 using BusinessObjects.DTO.TokenDTO;
+using BusinessObjects.DTO.UserDTO;
+using BusinessObjects.Enums;
 using BusinessObjects.Models;
 using BusinessObjects.Security;
 using Microsoft.AspNetCore.Authentication;
@@ -28,6 +30,32 @@ namespace HorizonConvergia.Controllers
         {
             _tokenService = tokenService;
             _userService = userService;
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterUserDTO dto)
+        {
+            try
+            {
+                var user = await _userService.RegisterNewUserAsync(dto);
+                var token = GenerateToken(user, null);
+
+                return Ok(new ResultDTO
+                {
+                    IsSuccess = true,
+                    Message = "Đăng ký thành công",
+                    Data = token
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ResultDTO
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
         }
 
 
@@ -120,11 +148,12 @@ namespace HorizonConvergia.Controllers
             {
                 randomnumbergenerator.GetBytes(randomnumber);
                 string refreshtoken = Convert.ToBase64String(randomnumber);
+
                 var refreshTokenEntity = new Token
                 {
-                    Id = user.Id,
+                    UserId = user.Id,
                     AccessToken = new Random().Next().ToString(),
-                    RefreshToken = refreshtoken.ToString(),
+                    RefreshToken = refreshtoken,
                     ExpiredTime = DateTime.Now.AddDays(7),
                     Status = 1
                 };
@@ -133,14 +162,15 @@ namespace HorizonConvergia.Controllers
                 return refreshtoken;
             }
         }
+
         #endregion
 
         #region Login
         [HttpPost]
         [Route("Login")]
-        public IActionResult Login(string name, string password)
+        public IActionResult Login(string email, string password)
         {
-            var user = _userService.GetUserByUserName(name);
+            var user = _userService.GetUserByEmailAsync(email).Result;
             if (user != null && user.IsVerified == true)
             {
                 // Hash the input password with SHA256
@@ -152,7 +182,7 @@ namespace HorizonConvergia.Controllers
                     var claims = new List<Claim>
     {
         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new Claim(ClaimTypes.Name, user.Name)
+        new Claim(ClaimTypes.Name, user.Email)
     };
                     // Compare the hashed input password with the stored hashed password
                     _tokenService.ResetRefreshToken();

@@ -6,7 +6,10 @@ namespace Services.Interfaces
 {
     public interface IUserService
     {
-        Task RegisterAsync(User user);
+        Task<User> GetUserByEmailAsync(string email);
+        Task<User> RegisterNewUserAsync(RegisterUserDTO dto);
+
+
         Task<User?> GetUserByIdAsync(long id);
         User GetUserByUserName(string userName);
         Task<IEnumerable<User>> SearchUsersAsync(string keyword);

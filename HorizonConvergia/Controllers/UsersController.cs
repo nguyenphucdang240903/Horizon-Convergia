@@ -13,12 +13,7 @@ namespace HorizonConvergia.Controllers
 
         public UsersController(IUserService userService) => _userService = userService;
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(User user)
-        {
-            await _userService.RegisterAsync(user);
-            return Ok();
-        }
+       
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(long id)
