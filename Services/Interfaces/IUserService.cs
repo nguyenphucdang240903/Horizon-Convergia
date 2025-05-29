@@ -8,6 +8,7 @@ namespace Services.Interfaces
     {
         Task RegisterAsync(User user);
         Task<User?> GetUserByIdAsync(long id);
+        User GetUserByUserName(string userName);
         Task<IEnumerable<User>> SearchUsersAsync(string keyword);
         Task UpdateUserAsync(UpdateUserDTO user);
         Task DeleteUserAsync(long id);
