@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessObjects.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250529091840_InitialCreate")]
+    [Migration("20250529120009_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -514,33 +514,6 @@ namespace DataAccessObjects.Migrations
                     b.ToTable("Shippings");
                 });
 
-            modelBuilder.Entity("BusinessObjects.Models.Token", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("AccessToken")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ExpiredTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RefreshToken")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Token");
-                });
-
             modelBuilder.Entity("BusinessObjects.Models.User", b =>
                 {
                     b.Property<long>("Id")
@@ -554,7 +527,6 @@ namespace DataAccessObjects.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AvatarUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -601,7 +573,6 @@ namespace DataAccessObjects.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("VerificationToken")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("VerificationTokenExpires")
@@ -610,6 +581,36 @@ namespace DataAccessObjects.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Token", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AccessToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ExpiredTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Token");
                 });
 
             modelBuilder.Entity("BusinessObjects.Models.Blog", b =>

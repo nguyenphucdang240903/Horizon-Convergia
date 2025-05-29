@@ -36,7 +36,8 @@ namespace DataAccessObjects.Migrations
                     AccessToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -55,11 +56,11 @@ namespace DataAccessObjects.Migrations
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AvatarUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AvatarUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Dob = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    VerificationToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    VerificationToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     VerificationTokenExpires = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsVerified = table.Column<bool>(type: "bit", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
