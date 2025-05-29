@@ -10,11 +10,13 @@ namespace DataAccessObjects
         private readonly Dictionary<Type, object> _repositories = new();
 
         public IUserRepository Users { get; }
+        public ITokenRepository Tokens { get; }
 
-        public UnitOfWork(AppDbContext context, IUserRepository userRepository)
+        public UnitOfWork(AppDbContext context, IUserRepository userRepository, ITokenRepository tokens)
         {
             _context = context;
             Users = userRepository;
+            Tokens = tokens;
         }
 
         public IGenericRepository<T> Repository<T>() where T : class
@@ -28,6 +30,10 @@ namespace DataAccessObjects
         }
 
         public async Task<int> SaveAsync() => await _context.SaveChangesAsync();
+        public int Save()
+        {
+            return _context.SaveChanges();
+        }
 
         public void Dispose() => _context.Dispose();
     }
