@@ -13,12 +13,7 @@ namespace HorizonConvergia.Controllers
 
         public UsersController(IUserService userService) => _userService = userService;
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(User user)
-        {
-            await _userService.RegisterAsync(user);
-            return Ok();
-        }
+       
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(long id)
@@ -35,6 +30,16 @@ namespace HorizonConvergia.Controllers
             return NoContent();
         }
 
-    }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(long id)
+        {
+            var result = await _userService.DeleteUserAsync(id);
+            if (!result)
+            {
+                return NotFound($"User with ID {id} not found.");
+            }
 
+            return Ok(new { message = $"User with ID {id} deleted successfully." });
+        }
+    }
 }

@@ -49,18 +49,11 @@ namespace Services
                 throw new Exception(ex.Message);
             }
         }
-        public Token GetRefreshTokenByUserID(long id)
+        public Token GetRefreshTokenByUserID(long userId)
         {
-            try
-            {
-                var existingToken = _unitOfWork.Tokens.Get(x => x.Id == id);
-                return existingToken;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            return _unitOfWork.Tokens.Get(x => x.UserId == userId);
         }
+
         public void RemoveAllRefreshToken()
         {
             try

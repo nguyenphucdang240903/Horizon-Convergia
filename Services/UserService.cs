@@ -1,22 +1,93 @@
 ﻿using BusinessObjects.DTO.UserDTO;
 using BusinessObjects.Enums;
 using BusinessObjects.Models;
+using BusinessObjects.Security;
 using DataAccessObjects;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Services.Interfaces;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 namespace Services
 {
     public class UserService : IUserService
     {
         private readonly IUnitOfWork _unitOfWork;
-
-        public UserService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
-
-        public async Task RegisterAsync(User user)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public UserService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
+            _unitOfWork = unitOfWork;
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        public async Task<User> RegisterNewUserAsync(RegisterUserDTO dto)
+        {
+
+            if (string.IsNullOrWhiteSpace(dto.Name) || !char.IsUpper(dto.Name[0]))
+                throw new Exception("Tên phải bắt đầu bằng chữ in hoa.");
+            var emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+            if (!Regex.IsMatch(dto.Email, emailPattern))
+                throw new Exception("Email không đúng định dạng.");
+            var passwordPattern = @"^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$";
+            if (!Regex.IsMatch(dto.Password, passwordPattern))
+                throw new Exception("Mật khẩu phải có ít nhất 1 ký tự in hoa, 1 số, 1 ký tự đặc biệt và ít nhất 8 ký tự.");
+            var phonePattern = @"^0\d{9,10}$";
+            if (!Regex.IsMatch(dto.PhoneNumber, phonePattern))
+                throw new Exception("Số điện thoại phải từ 10 đến 11 số và bắt đầu bằng số 0.");
+            if (dto.Dob.HasValue && dto.Dob.Value.Date > DateTime.Today)
+                throw new Exception("Ngày sinh không được lớn hơn ngày hiện tại.");
+            var existingUser = await _unitOfWork.Users
+                .Query()
+                .FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+            if (existingUser != null)
+            {
+                throw new Exception("Email đã được sử dụng.");
+            }
+            var requestScheme = _httpContextAccessor.HttpContext?.Request.Scheme;
+            var requestHost = _httpContextAccessor.HttpContext?.Request.Host.Value;
+            var verificationToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+            var user = new User
+            {
+                Name = dto.Name,
+                Email = dto.Email,
+                Password = PasswordHasher.HashPassword(dto.Password),
+                PhoneNumber = dto.PhoneNumber,
+                Address = dto.Address,
+                Gender = dto.Gender,
+                Dob = dto.Dob,
+                Role = UserRole.Buyer,
+                Status = UserStatus.Active,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                IsVerified = false,
+                VerificationToken = verificationToken,
+                VerificationTokenExpires = DateTime.UtcNow.AddHours(24),
+                IsDeleted = false
+            };
+
             await _unitOfWork.Users.AddAsync(user);
             await _unitOfWork.SaveAsync();
+
+            // --- Gửi email xác minh ---
+            var encodedToken = WebUtility.UrlEncode(verificationToken);
+            var verifyLink = $"{requestScheme}://{requestHost}/api/auth/verify-email?token={encodedToken}";
+            var emailService = new EmailService();
+            await emailService.SendVerificationEmailAsync(user.Email, verifyLink);
+
+            return user;
         }
+
+
+        public async Task<User?> GetUserByEmailAsync(string email)
+        {
+            return await _unitOfWork.Users.GetByEmailAsync(email);
+        }
+
+
 
         public async Task<User?> GetUserByIdAsync(long id) =>
             await _unitOfWork.Users.GetByIdAsync(id);
@@ -49,7 +120,7 @@ namespace Services
             await _unitOfWork.SaveAsync();
         }
 
-        public async Task DeleteUserAsync(long id)
+        public async Task<bool> DeleteUserAsync(long id)
         {
             var user = await _unitOfWork.Users.GetByIdAsync(id);
             if (user is not null)
@@ -58,7 +129,9 @@ namespace Services
                 _unitOfWork.Users.Update(user);
                 await _unitOfWork.SaveAsync();
             }
+            return false;
         }
+
 
         public async Task ChangeStatusAsync(long id, UserStatus status)
         {
@@ -92,8 +165,18 @@ namespace Services
                 await _unitOfWork.SaveAsync();
             }
         }
+        public async Task<User> GetUserByVerificationTokenAsync(string token)
+        {
+            return await _unitOfWork.Users
+                .Query()
+                .FirstOrDefaultAsync(u => u.VerificationToken == token);
+        }
 
-
+        public async Task UpdateUserVerificationAsync(User user)
+        {
+            _unitOfWork.Users.Update(user);
+            await _unitOfWork.SaveAsync();
+        }
     }
 
 }

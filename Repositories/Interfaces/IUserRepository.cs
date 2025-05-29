@@ -6,6 +6,7 @@ namespace Repositories.Interfaces
     {
         Task<User?> GetByEmailAsync(string email);
         Task<IEnumerable<User>> SearchAsync(string keyword);
+
     }
 
 }
