@@ -3,8 +3,11 @@ using BusinessObjects.Enums;
 using BusinessObjects.Models;
 using BusinessObjects.Security;
 using DataAccessObjects;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Services.Interfaces;
+using System.Net;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
 namespace Services
@@ -12,11 +15,16 @@ namespace Services
     public class UserService : IUserService
     {
         private readonly IUnitOfWork _unitOfWork;
-
-        public UserService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public UserService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        {
+            _unitOfWork = unitOfWork;
+            _httpContextAccessor = httpContextAccessor;
+        }
 
         public async Task<User> RegisterNewUserAsync(RegisterUserDTO dto)
         {
+
             if (string.IsNullOrWhiteSpace(dto.Name) || !char.IsUpper(dto.Name[0]))
                 throw new Exception("Tên phải bắt đầu bằng chữ in hoa.");
             var emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
@@ -38,6 +46,9 @@ namespace Services
             {
                 throw new Exception("Email đã được sử dụng.");
             }
+            var requestScheme = _httpContextAccessor.HttpContext?.Request.Scheme;
+            var requestHost = _httpContextAccessor.HttpContext?.Request.Host.Value;
+            var verificationToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
             var user = new User
             {
@@ -52,11 +63,21 @@ namespace Services
                 Status = UserStatus.Active,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                IsVerified = true,
+                IsVerified = false,
+                VerificationToken = verificationToken,
+                VerificationTokenExpires = DateTime.UtcNow.AddHours(24),
                 IsDeleted = false
             };
+
             await _unitOfWork.Users.AddAsync(user);
             await _unitOfWork.SaveAsync();
+
+            // --- Gửi email xác minh ---
+            var encodedToken = WebUtility.UrlEncode(verificationToken);
+            var verifyLink = $"{requestScheme}://{requestHost}/api/auth/verify-email?token={encodedToken}";
+            var emailService = new EmailService();
+            await emailService.SendVerificationEmailAsync(user.Email, verifyLink);
+
             return user;
         }
 
@@ -141,6 +162,19 @@ namespace Services
                 await _unitOfWork.SaveAsync();
             }
         }
+        public async Task<User> GetUserByVerificationTokenAsync(string token)
+        {
+            return await _unitOfWork.Users
+                .Query()
+                .FirstOrDefaultAsync(u => u.VerificationToken == token);
+        }
+
+        public async Task UpdateUserVerificationAsync(User user)
+        {
+            _unitOfWork.Users.Update(user);
+            await _unitOfWork.SaveAsync();
+        }
+
     }
 
 }

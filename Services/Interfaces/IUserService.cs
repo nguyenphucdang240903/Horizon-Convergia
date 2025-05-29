@@ -18,6 +18,9 @@ namespace Services.Interfaces
         Task ChangeStatusAsync(long id, UserStatus status);
         Task ChangeRoleAsync(long id, UserRole role);
         Task ChangePasswordAsync(long id, string newPassword);
+        Task<User> GetUserByVerificationTokenAsync(string token);
+        Task UpdateUserVerificationAsync(User user);
+
     }
 
 }

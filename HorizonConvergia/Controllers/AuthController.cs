@@ -38,13 +38,12 @@ namespace HorizonConvergia.Controllers
             try
             {
                 var user = await _userService.RegisterNewUserAsync(dto);
-                var token = GenerateToken(user, null);
 
                 return Ok(new ResultDTO
                 {
                     IsSuccess = true,
-                    Message = "Đăng ký thành công",
-                    Data = token
+                    Message = "Đăng ký thành công. Vui lòng kiểm tra email để xác minh tài khoản.",
+                    Data = null
                 });
             }
             catch (Exception ex)
@@ -57,6 +56,35 @@ namespace HorizonConvergia.Controllers
                 });
             }
         }
+        [HttpGet("verify-email")]
+        public async Task<IActionResult> VerifyEmail(string token)
+        {
+            var user = await _userService.GetUserByVerificationTokenAsync(token);
+            if (user == null || user.VerificationTokenExpires < DateTime.UtcNow)
+            {
+                return BadRequest("Token không hợp lệ hoặc đã hết hạn.");
+            }
+
+            user.IsVerified = true;
+            user.VerificationToken = null;
+            user.VerificationTokenExpires = null;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userService.UpdateUserVerificationAsync(user);
+
+            return Ok("Tài khoản đã được xác minh thành công.");
+        }
+
+
+        [NonAction]
+        public string GenerateVerificationToken()
+        {
+            var tokenBytes = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(tokenBytes);
+            return Convert.ToBase64String(tokenBytes);
+        }
+
 
 
         [HttpGet("google-login")]
