@@ -101,6 +101,9 @@ namespace Services
             return user;
         }
 
+        public async Task<User> GetUserByEmail(string email) => await _unitOfWork.Users.GetByIdAsync(email);
+
+
         public async Task<IEnumerable<User>> SearchUsersAsync(string keyword) =>
             await _unitOfWork.Users.SearchAsync(keyword);
 
@@ -174,7 +177,6 @@ namespace Services
             _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveAsync();
         }
-
     }
 
 }
