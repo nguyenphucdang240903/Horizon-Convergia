@@ -1,5 +1,8 @@
+ï»¿using Azure.Core;
+using Azure.Identity;
 using DataAccessObjects;
 using DataAccessObjects.Data;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -13,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthorization(options =>
 {
-    // Chính sách cho vai trò admin
+    // ChÃ­nh sÃ¡ch cho vai trÃ² admin
     options.AddPolicy("Admin", policy =>
     {
         policy.RequireAssertion(context =>
@@ -28,7 +31,7 @@ builder.Services.AddAuthorization(options =>
         });
     });
 
-    // Chính sách cho vai trò seller
+    // ChÃ­nh sÃ¡ch cho vai trÃ² seller
     options.AddPolicy("Seller", policy =>
     {
         policy.RequireAssertion(context =>
@@ -43,7 +46,7 @@ builder.Services.AddAuthorization(options =>
         });
     });
 
-    // Chính sách cho vai trò shipper
+    // ChÃ­nh sÃ¡ch cho vai trÃ² shipper
     options.AddPolicy("Shipper", policy =>
     {
         policy.RequireAssertion(context =>
@@ -58,7 +61,7 @@ builder.Services.AddAuthorization(options =>
         });
     });
 
-    // Chính sách cho vai trò buyer
+    // ChÃ­nh sÃ¡ch cho vai trÃ² buyer
     options.AddPolicy("Buyer", policy =>
     {
         policy.RequireAssertion(context =>
@@ -73,7 +76,7 @@ builder.Services.AddAuthorization(options =>
         });
     });
 
-    // Chính sách cho các tài nguyên mà c? manager và seller có th? truy c?p
+    // ChÃ­nh sÃ¡ch cho cÃ¡c tÃ i nguyÃªn mÃ  c? manager vÃ  seller cÃ³ th? truy c?p
     options.AddPolicy("AdminOrSellerAccessPolicy", policy =>
     {
         policy.RequireAssertion(context =>
@@ -88,7 +91,7 @@ builder.Services.AddAuthorization(options =>
         });
     });
 
-    // Chính sách cho các tài nguyên mà c? manager, seller, và shipper ??u có th? truy c?p
+    // ChÃ­nh sÃ¡ch cho cÃ¡c tÃ i nguyÃªn mÃ  c? manager, seller, vÃ  shipper ??u cÃ³ th? truy c?p
     options.AddPolicy("AdminSellerOrShipperAccessPolicy", policy =>
     {
         policy.RequireAssertion(context =>
@@ -106,32 +109,32 @@ builder.Services.AddAuthorization(options =>
 
 
 // builder.Services.AddSwaggerGen();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Enter the JWT token obtained from the login endpoint",
-        Name = "Authorization"
-    });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        Array.Empty<string>()
-                    }
-                });
-});
+//builder.Services.AddSwaggerGen(options =>
+//{
+//    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+//    {
+//        Type = SecuritySchemeType.Http,
+//        Scheme = "bearer",
+//        BearerFormat = "JWT",
+//        In = ParameterLocation.Header,
+//        Description = "Enter the JWT token obtained from the login endpoint",
+//        Name = "Authorization"
+//    });
+//    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+//                {
+//                    {
+//                        new OpenApiSecurityScheme
+//                        {
+//                            Reference = new OpenApiReference
+//                            {
+//                                Type = ReferenceType.SecurityScheme,
+//                                Id = "Bearer"
+//                            }
+//                        },
+//                        Array.Empty<string>()
+//                    }
+//                });
+//});
 builder.Services.AddAuthentication(item =>
 {
     item.DefaultAuthenticateScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
@@ -150,13 +153,27 @@ builder.Services.AddAuthentication(item =>
     };
 });
 
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    var sqlConnection = new SqlConnection(connectionString);
+
+    // Láº¥y access token cho Azure SQL báº±ng Managed Identity
+    var credential = new DefaultAzureCredential();
+    var tokenRequestContext = new TokenRequestContext(new[] { "https://database.windows.net/.default" });
+    var accessToken = credential.GetToken(tokenRequestContext).Token;
+
+    sqlConnection.AccessToken = accessToken;
+
+    options.UseSqlServer(sqlConnection);
+});
+
+
 
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -188,14 +205,55 @@ builder.Services.AddCors(options =>
 });
 
 
-var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+
+
+builder.Services.AddSwaggerGen(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "HorizonConvergia",
+        Version = "1.0"
+    });
+
+    options.AddServer(new OpenApiServer
+    {
+        Url = "https://horizonconvergia20250530124748-b3h6hjdxe0dya2g3.canadacentral-01.azurewebsites.net"
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter the JWT token obtained from the login endpoint",
+        Name = "Authorization"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+var app = builder.Build();
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "HorizonConvergia API V1");
+    c.RoutePrefix = "swagger"; // CÃ³ thá»ƒ truy cáº­p táº¡i /swagger
+});
+
 
 app.UseHttpsRedirection();
 
