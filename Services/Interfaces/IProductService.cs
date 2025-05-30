@@ -1,13 +1,16 @@
-﻿using BusinessObjects.Models;
+﻿using BusinessObjects.DTO.ProductDTO;
+using BusinessObjects.Models;
 
 namespace Services.Interfaces
 {
     public interface IProductService
     {
-        Task<IEnumerable<Product>> GetAllAsync();
-        Task<Product?> GetByIdAsync(long id);
-        Task<Product> CreateAsync(Product product);
-        Task<bool> UpdateAsync(Product product);
+        Task<IEnumerable<ProductDTO>> GetAllAsync();
+        Task<ProductDTO?> GetByIdAsync(long id);
+        Task<ProductDTO> CreateAsync(CreateProductDTO productDto);
+        Task<bool> UpdateAsync(long id, UpdateProductDTO productDto);
         Task<bool> DeleteAsync(long id);
     }
+
+
 }

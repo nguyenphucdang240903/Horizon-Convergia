@@ -1,4 +1,5 @@
-﻿using BusinessObjects.Models;
+﻿using BusinessObjects.DTO.ProductDTO;
+using BusinessObjects.Models;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 
@@ -28,39 +29,32 @@ namespace HorizonConvergia.Controllers
         public async Task<IActionResult> GetById(long id)
         {
             var product = await _productService.GetByIdAsync(id);
-            if (product == null) return NotFound();
-            return Ok(product);
+            return product == null ? NotFound() : Ok(product);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Product product)
+        public async Task<IActionResult> Create([FromBody] CreateProductDTO productDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var created = await _productService.CreateAsync(product);
+            var created = await _productService.CreateAsync(productDto);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(long id, [FromBody] Product product)
+        public async Task<IActionResult> Update(long id, [FromBody] UpdateProductDTO productDto)
         {
-            if (id != product.Id) return BadRequest("ID mismatch");
             if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var success = await _productService.UpdateAsync(product);
-            if (!success) return NotFound();
-
-            return NoContent();
+            var success = await _productService.UpdateAsync(id, productDto);
+            return success ? NoContent() : NotFound();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
             var success = await _productService.DeleteAsync(id);
-            if (!success) return NotFound();
-
-            return NoContent();
+            return success ? NoContent() : NotFound();
         }
     }
+
 
 }
