@@ -123,11 +123,7 @@ namespace HorizonConvergia.Controllers
             var token = GenerateToken(user, null);
 
             // Always return JSON
-            return Ok(new
-            {
-                Message = "Google login successful.",
-                Token = token
-            });
+            return Ok(token); // Return the token as JSON response
         }
 
 
