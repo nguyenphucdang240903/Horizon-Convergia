@@ -234,5 +234,74 @@ namespace HorizonConvergia.Controllers
             });
         }
         #endregion
+
+        #region Logout
+        [HttpPost]
+        [Route("Logout")]
+        public IActionResult Logout()
+        {
+            try
+            {
+                string token = HttpContext.Request.Headers["Authorization"];
+                if (string.IsNullOrEmpty(token) || !token.StartsWith("Bearer "))
+                {
+                    return BadRequest(new ResultDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Invalid token format."
+                    });
+                }
+
+                token = token.Split(' ')[1];
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var tokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("c2VydmVwZXJmZWN0bHljaGVlc2VxdWlja2NvYWNoY29sbGVjdHNsb3Bld2lzZWNhbWU=")),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero,
+                    ValidateLifetime = false
+                };
+
+                SecurityToken validatedToken;
+                var claimsPrincipal = tokenHandler.ValidateToken(token, tokenValidationParameters, out validatedToken);
+                var userIdClaim = claimsPrincipal.FindFirst("UserId");
+
+                if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out long userId))
+                {
+                    // Handle the case where the UserId claim is missing or invalid
+                    return BadRequest(new ResultDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Invalid UserId."
+                    });
+                }
+
+                var refreshToken = _tokenService.GetRefreshTokenByUserID(userId);
+                _tokenService.UpdateRefreshToken(refreshToken);
+                _tokenService.ResetRefreshToken();
+
+                if (HttpContext.Request.Headers.ContainsKey("Authorization"))
+                {
+                    HttpContext.Request.Headers.Remove("Authorization");
+                }
+
+                return Ok(new ResultDTO
+                {
+                    IsSuccess = true,
+                    Message = "Logout successfully!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ResultDTO
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong: " + ex.Message
+                });
+            }
+        }
+        #endregion
     }
 }
