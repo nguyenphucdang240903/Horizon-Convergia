@@ -303,5 +303,63 @@ namespace HorizonConvergia.Controllers
             }
         }
         #endregion
+
+
+        #region Who Am I
+        /// <summary>
+        /// Check infor of user
+        /// </summary>
+        /// <returns>Infor of user</returns>
+        [HttpGet("whoami")]
+        public IActionResult WhoAmI()
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            // Lấy thông tin về người dùng từ claims
+            var userIdClaim = User.FindFirst("UserId");
+            var userNameClaim = User.FindFirst("UserName");
+            var userEmailClaim = User.FindFirst("Email");
+            var userRoleClaim = User.FindFirst("Role");
+
+            // Kiểm tra xem các claim có tồn tại không
+            if (userIdClaim == null || userNameClaim == null || userEmailClaim == null || userRoleClaim == null)
+            {
+                return Unauthorized(new { Message = "Missing user information in claims" });
+            }
+
+            try
+            {
+                // Chuyển đổi kiểu dữ liệu
+                long userId = long.Parse(userIdClaim.Value);
+                UserRole userRole = (UserRole)Enum.Parse(typeof(UserRole), userRoleClaim.Value);
+
+                // Tạo response object
+                var response = new
+                {
+                    UserId = userId,
+                    UserName = userNameClaim.Value,
+                    Email = userEmailClaim.Value,
+                    Role = userRole.ToString() // Hoặc có thể trả về (int)userRole nếu muốn giá trị số
+                };
+
+                return Ok(response);
+            }
+            catch (FormatException)
+            {
+                return BadRequest(new { Message = "Invalid UserId format" });
+            }
+            catch (ArgumentException)
+            {
+                return BadRequest(new { Message = "Invalid Role value" });
+            }
+            catch (OverflowException)
+            {
+                return BadRequest(new { Message = "UserId value is too large" });
+            }
+        }
+        #endregion
     }
 }
