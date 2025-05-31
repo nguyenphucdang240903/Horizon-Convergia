@@ -6,7 +6,7 @@ using BusinessObjects.Models;
 using BusinessObjects.Security;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Services.Interfaces;
@@ -90,9 +90,9 @@ namespace HorizonConvergia.Controllers
         [HttpGet("google-login")]
         public IActionResult GoogleLogin()
         {
-            var redirectUrl = Url.Action("GoogleResponse", "Auth");
+            var redirectUrl = Url.Action(nameof(GoogleResponse), "Auth", null, Request.Scheme);
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
-            return Challenge(properties, "Google");
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
         [HttpGet("google-response")]
@@ -101,24 +101,32 @@ namespace HorizonConvergia.Controllers
             var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             if (!result.Succeeded)
-                return Unauthorized();
+                return Unauthorized(new { Message = "Google authentication failed." });
 
             var claims = result.Principal.Identities.FirstOrDefault()?.Claims;
-
             var email = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             var name = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
-            // Optional: register user to DB or generate JWT
-            Console.WriteLine($"Google Login Successful. Email: {email}, Name: {name}");
+            if (string.IsNullOrEmpty(email))
+                return BadRequest(new { Message = "Email not found in Google claims." });
 
-            // Return data or redirect
-            return Ok(new
+            // Retrieve user from database
+            var user = await _userService.GetUserByEmail(email);
+
+            if (user == null)
             {
-                Message = "Login successful",
-                Email = email,
-                Name = name
-            });
+                // Optionally, register the user here if you want to auto-register Google users
+                return Unauthorized(new { Message = "User not registered." });
+            }
+
+            // Generate JWT token
+            var token = GenerateToken(user, null);
+
+            // Always return JSON
+            return Ok(token); // Return the token as JSON response
         }
+
+
 
         #region GenerateToken
         /// <summary>

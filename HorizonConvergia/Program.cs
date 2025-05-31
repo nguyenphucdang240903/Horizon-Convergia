@@ -1,8 +1,7 @@
-﻿using Azure.Core;
-using Azure.Identity;
-using DataAccessObjects;
+﻿using DataAccessObjects;
 using DataAccessObjects.Data;
-using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -10,228 +9,52 @@ using Repositories;
 using Repositories.Interfaces;
 using Services;
 using Services.Interfaces;
-
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 1. Authorization policies cho Role
 builder.Services.AddAuthorization(options =>
 {
-    // Chính sách cho vai trò admin
     options.AddPolicy("Admin", policy =>
-    {
-        policy.RequireAssertion(context =>
-        {
-            var user = context.User;
-            var roleClaim = user.FindFirst("Role");
-            if (roleClaim != null && roleClaim.Value == "Admin")
-            {
-                return true;
-            }
-            return false;
-        });
-    });
-
-    // Chính sách cho vai trò seller
+        policy.RequireClaim("Role", "Admin"));
     options.AddPolicy("Seller", policy =>
-    {
-        policy.RequireAssertion(context =>
-        {
-            var user = context.User;
-            var roleClaim = user.FindFirst("Role");
-            if (roleClaim != null && roleClaim.Value == "Seller")
-            {
-                return true;
-            }
-            return false;
-        });
-    });
-
-    // Chính sách cho vai trò shipper
+        policy.RequireClaim("Role", "Seller"));
     options.AddPolicy("Shipper", policy =>
-    {
-        policy.RequireAssertion(context =>
-        {
-            var user = context.User;
-            var roleClaim = user.FindFirst("Role");
-            if (roleClaim != null && roleClaim.Value == "Shipper")
-            {
-                return true;
-            }
-            return false;
-        });
-    });
-
-    // Chính sách cho vai trò buyer
+        policy.RequireClaim("Role", "Shipper"));
     options.AddPolicy("Buyer", policy =>
-    {
-        policy.RequireAssertion(context =>
-        {
-            var user = context.User;
-            var roleClaim = user.FindFirst("Role");
-            if (roleClaim != null && roleClaim.Value == "Buyer")
-            {
-                return true;
-            }
-            return false;
-        });
-    });
-
-    // Chính sách cho các tài nguyên mà c? manager và seller có th? truy c?p
+        policy.RequireClaim("Role", "Buyer"));
     options.AddPolicy("AdminOrSellerAccessPolicy", policy =>
-    {
         policy.RequireAssertion(context =>
         {
-            var user = context.User;
-            var roleClaim = user.FindFirst("Role");
-            if (roleClaim != null && (roleClaim.Value == "Admin" || roleClaim.Value == "Seller"))
-            {
-                return true;
-            }
-            return false;
-        });
-    });
-
-    // Chính sách cho các tài nguyên mà c? manager, seller, và shipper ??u có th? truy c?p
+            var roleClaim = context.User.FindFirst("Role")?.Value;
+            return roleClaim == "Admin" || roleClaim == "Seller";
+        }));
     options.AddPolicy("AdminSellerOrShipperAccessPolicy", policy =>
-    {
         policy.RequireAssertion(context =>
         {
-            var user = context.User;
-            var roleClaim = user.FindFirst("Role");
-            if (roleClaim != null && (roleClaim.Value == "Admin" || roleClaim.Value == "Seller" || roleClaim.Value == "Shipper"))
-            {
-                return true;
-            }
-            return false;
-        });
-    });
+            var roleClaim = context.User.FindFirst("Role")?.Value;
+            return roleClaim == "Admin" || roleClaim == "Seller" || roleClaim == "Shipper";
+        }));
 });
 
-
-// builder.Services.AddSwaggerGen();
-//builder.Services.AddSwaggerGen(options =>
-//{
-//    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-//    {
-//        Type = SecuritySchemeType.Http,
-//        Scheme = "bearer",
-//        BearerFormat = "JWT",
-//        In = ParameterLocation.Header,
-//        Description = "Enter the JWT token obtained from the login endpoint",
-//        Name = "Authorization"
-//    });
-//    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-//                {
-//                    {
-//                        new OpenApiSecurityScheme
-//                        {
-//                            Reference = new OpenApiReference
-//                            {
-//                                Type = ReferenceType.SecurityScheme,
-//                                Id = "Bearer"
-//                            }
-//                        },
-//                        Array.Empty<string>()
-//                    }
-//                });
-//});
-builder.Services.AddAuthentication(item =>
-{
-    item.DefaultAuthenticateScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
-    item.DefaultChallengeScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(item =>
-{
-    item.RequireHttpsMetadata = true;
-    item.SaveToken = true;
-    item.TokenValidationParameters = new TokenValidationParameters()
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("c2VydmVwZXJmZWN0bHljaGVlc2VxdWlja2NvYWNoY29sbGVjdHNsb3Bld2lzZWNhbWU=")),
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ClockSkew = TimeSpan.Zero
-    };
-});
-
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    var sqlConnection = new SqlConnection(connectionString);
-
-    // Lấy access token cho Azure SQL bằng Managed Identity
-    var credential = new DefaultAzureCredential();
-    var tokenRequestContext = new TokenRequestContext(new[] { "https://database.windows.net/.default" });
-    var accessToken = credential.GetToken(tokenRequestContext).Token;
-
-    sqlConnection.AccessToken = accessToken;
-
-    options.UseSqlServer(sqlConnection);
-});
-
-
-
-builder.Services.AddControllers();
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ITokenRepository, TokenRepository>();
-builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = "Cookies";
-    options.DefaultChallengeScheme = "Google";
-})
-.AddCookie("Cookies")
-.AddGoogle("Google", options =>
-{
-    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    options.CallbackPath = "/api/Auth/google-response"; // default
-});
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000") // adjust for your frontend
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
-});
-
-
-
-
-
+// 2. Swagger config (bảo mật JWT Bearer)
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "HorizonConvergia",
-        Version = "1.0"
-    });
-
-    options.AddServer(new OpenApiServer
-    {
-        Url = "https://horizonconvergia20250530124748-b3h6hjdxe0dya2g3.canadacentral-01.azurewebsites.net"
-    });
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "HorizonConvergia API", Version = "v1" });
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
+        Description = @"JWT Authorization header using the Bearer scheme.  
+                        Enter 'Bearer' [space] and then your token in the text input below.
+                        Example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'",
+        Name = "Authorization",
         In = ParameterLocation.Header,
-        Description = "Enter the JWT token obtained from the login endpoint",
-        Name = "Authorization"
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
     });
 
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement()
     {
         {
             new OpenApiSecurityScheme
@@ -240,20 +63,84 @@ builder.Services.AddSwaggerGen(options =>
                 {
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
-                }
+                },
+                Scheme = "Bearer",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
             },
-            Array.Empty<string>()
+            new List<string>()
         }
     });
 });
+
+// 3. Authentication (Cookie + Google + JWT Bearer)
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+    .AddCookie()
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        options.CallbackPath = "/api/Auth/google-response";
+        options.SaveTokens = true;
+        options.Scope.Add("email");
+    })
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = true;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes("c2VydmVwZXJmZWN0bHljaGVlc2VxdWlja2NvYWNoY29sbGVjdHNsb3Bld2lzZWNhbWU=")),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+// 4. DbContext
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// 5. Controllers
+builder.Services.AddControllers();
+
+// 6. Các service/repository DI
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+
+// 7. CORS (bạn nên bật nếu frontend gọi API từ domain khác)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000") // thay URL frontend của bạn
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
+// 8. Swagger & SwaggerUI
 var app = builder.Build();
+
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "HorizonConvergia API V1");
-    c.RoutePrefix = "swagger"; // Có thể truy cập tại /swagger
+    c.RoutePrefix = string.Empty; // Swagger UI tại root (http://host/)
 });
-
 
 app.UseHttpsRedirection();
 

@@ -12,6 +12,7 @@ namespace Services.Interfaces
 
         Task<User?> GetUserByIdAsync(long id);
         User GetUserByUserName(string userName);
+        Task<User?> GetUserByEmail(string email);
         Task<IEnumerable<User>> SearchUsersAsync(string keyword);
         Task UpdateUserAsync(UpdateUserDTO user);
         Task<bool> DeleteUserAsync(long id);
