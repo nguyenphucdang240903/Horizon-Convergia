@@ -1,5 +1,6 @@
 ﻿using BusinessObjects.DTO.UserDTO;
 using BusinessObjects.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 
@@ -16,6 +17,7 @@ namespace HorizonConvergia.Controllers
        
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "Buyer")]
         public async Task<IActionResult> Get(long id)
         {
             var user = await _userService.GetUserByIdAsync(id);
