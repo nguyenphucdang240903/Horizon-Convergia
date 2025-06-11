@@ -123,7 +123,12 @@ namespace HorizonConvergia.Controllers
             var token = GenerateToken(user, null);
 
             // Always return JSON
-            return Ok(token); // Return the token as JSON response
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Đăng nhập Google thành công.",
+                Data = token // Data will be the TokenDTO object
+            }); // Return the token as JSON response
         }
 
 
@@ -223,7 +228,12 @@ namespace HorizonConvergia.Controllers
                     // Compare the hashed input password with the stored hashed password
                     _tokenService.ResetRefreshToken();
                     var token = GenerateToken(user, null);
-                    return Ok(token);
+                    return Ok(new ResultDTO // Wrap the TokenDTO in a ResultDTO
+                    {
+                        IsSuccess = true,
+                        Message = "Đăng nhập thành công.",
+                        Data = token // The TokenDTO object
+                    });
                 }
             }
             return BadRequest(new ResultDTO

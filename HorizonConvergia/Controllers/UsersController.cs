@@ -1,4 +1,5 @@
-﻿using BusinessObjects.DTO.UserDTO;
+﻿using BusinessObjects.DTO.ResultDTO;
+using BusinessObjects.DTO.UserDTO;
 using BusinessObjects.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,21 @@ namespace HorizonConvergia.Controllers
         public async Task<IActionResult> Get(long id)
         {
             var user = await _userService.GetUserByIdAsync(id);
-            return user is not null ? Ok(user) : NotFound();
+            if (user is not null)
+            {
+                return Ok(new ResultDTO
+                {
+                    IsSuccess = true,
+                    Message = "Lấy thông tin người dùng thành công.",
+                    Data = user
+                });
+            }
+            return NotFound(new ResultDTO
+            {
+                IsSuccess = false,
+                Message = $"Không tìm thấy người dùng với ID: {id}.",
+                Data = null
+            });
         }
 
         [HttpPut("update/{id}")]
