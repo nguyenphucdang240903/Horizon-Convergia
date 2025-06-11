@@ -18,7 +18,8 @@ namespace HorizonConvergia.Controllers
        
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Buyer")]
+        [Authorize(Policy = "Buyer")]
+
         public async Task<IActionResult> Get(long id)
         {
             var user = await _userService.GetUserByIdAsync(id);
