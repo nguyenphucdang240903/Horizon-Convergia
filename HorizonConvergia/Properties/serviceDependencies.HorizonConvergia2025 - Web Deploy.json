@@ -3,6 +3,19 @@
     "apis1": {
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.ApiManagement/service/HorizonConvergiaAPI2025/apis/HorizonConvergia2025API",
       "type": "apis.azure"
+    },
+    "mssql2": {
+      "ignored": "true",
+      "type": "mssql",
+      "connectionId": "ConnectionStrings:DefaultConnection2",
+      "dynamicId": null
+    },
+    "mssql1": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('serviceConnectorResourceGroupName')]/providers/Microsoft.Web/sites/HorizonConvergia2025/providers/Microsoft.ServiceLinker/linkers/ConnectionStringsDefaultConnection_490973BB16",
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/horizonconvergiadbserver/databases/HorizonConvergia_db",
+      "type": "mssql.azure",
+      "connectionId": "ConnectionStrings:DefaultConnection"
     }
   }
 }

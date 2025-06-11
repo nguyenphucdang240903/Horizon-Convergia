@@ -19,8 +19,14 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1-Preview.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
+	<ItemGroup>
+		<Content Update="appsettings.Production.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
-  <ItemGroup>
+
+	<ItemGroup>
     <ProjectReference Include="..\Services\Services.csproj" />
   </ItemGroup>
 
