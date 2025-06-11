@@ -139,7 +139,8 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "HorizonConvergia API V1");
-    c.RoutePrefix = string.Empty; // Swagger UI tại root (http://host/)
+    //c.RoutePrefix = string.Empty; // Swagger UI tại root (http://host/)
+    c.RoutePrefix = "swagger";
 });
 
 app.UseHttpsRedirection();

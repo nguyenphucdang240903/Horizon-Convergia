@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "mssql2": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('serviceConnectorResourceGroupName')]/providers/Microsoft.ServiceLinker/locations/canadacentral/connectors/ConnectionStringsDefaultConnection2_453F50E09B",
+      "secretStore": "LocalSecretsFile",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/horizonconvergiadbserver1/databases/HorizonConvergia_db",
+      "type": "mssql.azure",
+      "connectionId": "ConnectionStrings:DefaultConnection2",
+      "dynamicId": null
+    }
+  }
+}

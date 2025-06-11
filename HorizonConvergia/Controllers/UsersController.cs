@@ -18,6 +18,7 @@ namespace HorizonConvergia.Controllers
 
         [HttpGet("{id}")]
         [Authorize(Policy = "Buyer")]
+
         public async Task<IActionResult> Get(long id)
         {
             var user = await _userService.GetUserByIdAsync(id);
@@ -33,6 +34,7 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpDelete("{id}")]
+
         public async Task<IActionResult> DeleteUser(long id)
         {
             var result = await _userService.DeleteUserAsync(id);
