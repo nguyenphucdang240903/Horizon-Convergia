@@ -234,5 +234,132 @@ namespace HorizonConvergia.Controllers
             });
         }
         #endregion
+
+        #region Logout
+        [HttpPost]
+        [Route("Logout")]
+        public IActionResult Logout()
+        {
+            try
+            {
+                string token = HttpContext.Request.Headers["Authorization"];
+                if (string.IsNullOrEmpty(token) || !token.StartsWith("Bearer "))
+                {
+                    return BadRequest(new ResultDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Invalid token format."
+                    });
+                }
+
+                token = token.Split(' ')[1];
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var tokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("c2VydmVwZXJmZWN0bHljaGVlc2VxdWlja2NvYWNoY29sbGVjdHNsb3Bld2lzZWNhbWU=")),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero,
+                    ValidateLifetime = false
+                };
+
+                SecurityToken validatedToken;
+                var claimsPrincipal = tokenHandler.ValidateToken(token, tokenValidationParameters, out validatedToken);
+                var userIdClaim = claimsPrincipal.FindFirst("UserId");
+
+                if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out long userId))
+                {
+                    // Handle the case where the UserId claim is missing or invalid
+                    return BadRequest(new ResultDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Invalid UserId."
+                    });
+                }
+
+                var refreshToken = _tokenService.GetRefreshTokenByUserID(userId);
+                _tokenService.UpdateRefreshToken(refreshToken);
+                _tokenService.ResetRefreshToken();
+
+                if (HttpContext.Request.Headers.ContainsKey("Authorization"))
+                {
+                    HttpContext.Request.Headers.Remove("Authorization");
+                }
+
+                return Ok(new ResultDTO
+                {
+                    IsSuccess = true,
+                    Message = "Logout successfully!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ResultDTO
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong: " + ex.Message
+                });
+            }
+        }
+        #endregion
+
+
+        #region Who Am I
+        /// <summary>
+        /// Check infor of user
+        /// </summary>
+        /// <returns>Infor of user</returns>
+        [HttpGet("whoami")]
+        public IActionResult WhoAmI()
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            // Lấy thông tin về người dùng từ claims
+            var userIdClaim = User.FindFirst("UserId");
+            var userNameClaim = User.FindFirst("UserName");
+            var userEmailClaim = User.FindFirst("Email");
+            var userRoleClaim = User.FindFirst("Role");
+
+            // Kiểm tra xem các claim có tồn tại không
+            if (userIdClaim == null || userNameClaim == null || userEmailClaim == null || userRoleClaim == null)
+            {
+                return Unauthorized(new { Message = "Missing user information in claims" });
+            }
+
+            try
+            {
+                // Chuyển đổi kiểu dữ liệu
+                long userId = long.Parse(userIdClaim.Value);
+                UserRole userRole = (UserRole)Enum.Parse(typeof(UserRole), userRoleClaim.Value);
+
+                // Tạo response object
+                var response = new
+                {
+                    UserId = userId,
+                    UserName = userNameClaim.Value,
+                    Email = userEmailClaim.Value,
+                    Role = userRole.ToString() // Hoặc có thể trả về (int)userRole nếu muốn giá trị số
+                };
+
+                return Ok(response);
+            }
+            catch (FormatException)
+            {
+                return BadRequest(new { Message = "Invalid UserId format" });
+            }
+            catch (ArgumentException)
+            {
+                return BadRequest(new { Message = "Invalid Role value" });
+            }
+            catch (OverflowException)
+            {
+                return BadRequest(new { Message = "UserId value is too large" });
+            }
+        }
+        #endregion
     }
 }
