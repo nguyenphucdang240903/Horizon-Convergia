@@ -1,4 +1,5 @@
 ﻿using BusinessObjects.DTO.ProductDTO;
+using BusinessObjects.Enums;
 using BusinessObjects.Models;
 using DataAccessObjects;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +55,38 @@ namespace Services
             await _unitOfWork.Repository<Product>().AddAsync(product);
             await _unitOfWork.SaveAsync();
             return MapToDTO(product);
+        }
+
+        public async Task<ProductCreateResult?> SellerCreateAsync(string sellerId, CreateProductDTO productDto)
+        {
+            var seller = await _unitOfWork.Repository<User>().GetByIdAsync(sellerId);
+            if (seller == null)
+                return new ProductCreateResult { ErrorMessage = "Seller not found." };
+
+            if (seller.Role != UserRole.Seller)
+                return new ProductCreateResult { ErrorMessage = "User does not have the Seller role." };
+
+            var product = new Product
+            {
+                Id = Guid.NewGuid().ToString(),
+                Brand = productDto.Brand,
+                Model = productDto.Model,
+                Year = productDto.Year,
+                Price = productDto.Price,
+                Description = productDto.Description,
+                Location = productDto.Location,
+                Condition = productDto.Condition,
+                Quantity = productDto.Quantity,
+                Status = productDto.Status,
+                IsVerified = false,
+                SellerId = sellerId,
+                CategoryId = productDto.CategoryId,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.Repository<Product>().AddAsync(product);
+            await _unitOfWork.SaveAsync();
+            return new ProductCreateResult { Product = product };
+
         }
 
         public async Task<bool> UpdateAsync(string id, UpdateProductDTO dto)
@@ -124,6 +157,8 @@ namespace Services
             SellerId = dto.SellerId,
             CategoryId = dto.CategoryId
         };
+
+
     }
 
 

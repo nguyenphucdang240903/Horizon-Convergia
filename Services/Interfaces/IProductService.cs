@@ -9,6 +9,7 @@ namespace Services.Interfaces
         Task<ProductDTO> CreateAsync(CreateProductDTO productDto);
         Task<bool> UpdateAsync(string id, UpdateProductDTO productDto);
         Task<bool> DeleteAsync(string id);
+        Task<ProductCreateResult> SellerCreateAsync(string sellerId, CreateProductDTO productDto);
     }
 
 
