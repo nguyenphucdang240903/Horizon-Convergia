@@ -120,7 +120,7 @@ builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
-
+builder.Services.AddScoped<IReviewService, ReviewService>();
 // 7. CORS (bạn nên bật nếu frontend gọi API từ domain khác)
 builder.Services.AddCors(options =>
 {
