@@ -276,7 +276,7 @@ namespace HorizonConvergia.Controllers
                 var claimsPrincipal = tokenHandler.ValidateToken(token, tokenValidationParameters, out validatedToken);
                 var userIdClaim = claimsPrincipal.FindFirst("UserId");
 
-                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
                 {
                     // Handle the case where the UserId claim is missing or invalid
                     return BadRequest(new ResultDTO
@@ -286,7 +286,8 @@ namespace HorizonConvergia.Controllers
                     });
                 }
 
-                var refreshToken = _tokenService.GetRefreshTokenByUserID(userId.ToString());
+                var userId = userIdClaim.Value;
+                var refreshToken = _tokenService.GetRefreshTokenByUserID(userId);
                 _tokenService.UpdateRefreshToken(refreshToken);
                 _tokenService.ResetRefreshToken();
 
@@ -367,7 +368,7 @@ namespace HorizonConvergia.Controllers
                     Name = userNameClaim.Value,
                     Email = userEmailClaim.Value,
                     PhoneNumber = phoneClaim?.Value,
-                    Address = addressClaim?.Value,
+                    Address = addressClaim.Value,
                     Gender = gender.ToString(),
                     AvatarUrl = avatarUrlClaim?.Value,
                     Status = userStatus.ToString(),
