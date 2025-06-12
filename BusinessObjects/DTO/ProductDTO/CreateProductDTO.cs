@@ -19,8 +19,8 @@ namespace BusinessObjects.DTO.ProductDTO
         public int Quantity { get; set; }
         public ProductStatus Status { get; set; }
         public bool IsVerified { get; set; }
-        public long SellerId { get; set; }
-        public long CategoryId { get; set; }
+        public string SellerId { get; set; }
+        public string CategoryId { get; set; }
     }
 
     public class UpdateProductDTO : CreateProductDTO

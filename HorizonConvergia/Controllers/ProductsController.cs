@@ -26,7 +26,7 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(long id)
+        public async Task<IActionResult> GetById(string id)
         {
             var product = await _productService.GetByIdAsync(id);
             return product == null ? NotFound() : Ok(product);
@@ -41,7 +41,7 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(long id, [FromBody] UpdateProductDTO productDto)
+        public async Task<IActionResult> Update(string id, [FromBody] UpdateProductDTO productDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var success = await _productService.UpdateAsync(id, productDto);
@@ -49,7 +49,7 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(long id)
+        public async Task<IActionResult> Delete(string id)
         {
             var success = await _productService.DeleteAsync(id);
             return success ? NoContent() : NotFound();

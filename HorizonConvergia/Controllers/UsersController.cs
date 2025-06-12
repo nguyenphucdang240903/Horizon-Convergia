@@ -20,7 +20,7 @@ namespace HorizonConvergia.Controllers
         [HttpGet("{id}")]
         [Authorize(Policy = "Buyer")]
 
-        public async Task<IActionResult> Get(long id)
+        public async Task<IActionResult> Get(string id)
         {
             var user = await _userService.GetUserByIdAsync(id);
             if (user is not null)
@@ -41,7 +41,7 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> Update(long id, UpdateUserDTO user)
+        public async Task<IActionResult> Update(string id, UpdateUserDTO user)
         {
             user.Id = id;
             await _userService.UpdateUserAsync(user);
@@ -50,7 +50,7 @@ namespace HorizonConvergia.Controllers
 
         [HttpDelete("{id}")]
 
-        public async Task<IActionResult> DeleteUser(long id)
+        public async Task<IActionResult> DeleteUser(string id)
         {
             var result = await _userService.DeleteUserAsync(id);
             if (!result)

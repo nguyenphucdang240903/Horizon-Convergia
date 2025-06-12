@@ -4,7 +4,7 @@ namespace BusinessObjects.Models
 {
     public class Payment
     {
-        public long Id { get; set; }
+        public string Id { get; set; }
         public string PaymentMethod { get; set; }
         public decimal Amount { get; set; }
         public DateTime TransactionDate { get; set; }
@@ -14,10 +14,10 @@ namespace BusinessObjects.Models
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        public long OrderId { get; set; }
+        public string OrderId { get; set; }
         public Order Order { get; set; }
 
-        public long UserId { get; set; }
+        public string UserId { get; set; }
         public User User { get; set; }
         public ICollection<PaymentTransaction> PaymentTransactions { get; set; }
     }
