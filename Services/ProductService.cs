@@ -35,6 +35,7 @@ namespace Services
         {
             var product = new Product
             {
+                Id = Guid.NewGuid().ToString(),
                 Brand = dto.Brand,
                 Model = dto.Model,
                 Year = dto.Year,

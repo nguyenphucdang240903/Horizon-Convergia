@@ -13,14 +13,33 @@ namespace Services
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task<CategoryDTO> CreateAsync(CategoryDTO categoryDto)
+        public async Task<CategoryDTO> CreateAsync(CreateCategoryDTO categoryDto)
         {
-            throw new NotImplementedException();
+            var cate = new Category
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = categoryDto.Name,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                IsDeleted = false
+            };
+
+            await _unitOfWork.Repository<Category>().AddAsync(cate);
+            await _unitOfWork.SaveAsync();
+            return MapToDTO(cate);
         }
 
-        public Task<bool> DeleteAsync(long id)
+        public async Task<bool> DeleteAsync(string id)
         {
-            throw new NotImplementedException();
+            var category = await _unitOfWork.Repository<Category>().GetByIdAsync(id);
+            if (category == null || category.IsDeleted)
+            {
+                return false; // Category not found or already deleted
+            }
+            category.IsDeleted = true; // Soft delete
+            _unitOfWork.Repository<Category>().Update(category);
+            await _unitOfWork.SaveAsync();
+            return true;
         }
 
         public async Task<IEnumerable<CategoryDTO>> GetAllAsync()
@@ -33,14 +52,24 @@ namespace Services
             return categories.Select(c => MapToDTO(c));
         }
 
-        public Task<CategoryDTO?> GetByIdAsync(long id)
+        public async Task<CategoryDTO?> GetByIdAsync(string id)
         {
-            throw new NotImplementedException();
+            var category = await _unitOfWork.Repository<Category>().GetByIdAsync(id);
+            return category == null || category.IsDeleted ? null : MapToDTO(category);
         }
 
-        public Task<bool> UpdateAsync(long id, CategoryDTO categoryDto)
+        public async Task<bool> UpdateAsync(string id, UpdateCategoryDTO categoryDto)
         {
-            throw new NotImplementedException();
+            var existing = await _unitOfWork.Repository<Category>().GetByIdAsync(id);
+            if (existing == null || existing.IsDeleted)
+            {
+                return false; // Category not found or is deleted
+            }
+            existing.Name = categoryDto.Name;
+            existing.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.Repository<Category>().Update(existing);
+            await _unitOfWork.SaveAsync();
+            return true;
         }
 
         private CategoryDTO MapToDTO(Category category) => new CategoryDTO

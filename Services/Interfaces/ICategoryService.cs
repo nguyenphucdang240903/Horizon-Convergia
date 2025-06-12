@@ -5,9 +5,9 @@ namespace Services.Interfaces
     public interface ICategoryService
     {
         Task<IEnumerable<CategoryDTO>> GetAllAsync();
-        Task<CategoryDTO?> GetByIdAsync(long id);
-        Task<CategoryDTO> CreateAsync(CategoryDTO categoryDto);
-        Task<bool> UpdateAsync(long id, CategoryDTO categoryDto);
-        Task<bool> DeleteAsync(long id);
+        Task<CategoryDTO?> GetByIdAsync(string id);
+        Task<CategoryDTO> CreateAsync(CreateCategoryDTO categoryDto);
+        Task<bool> UpdateAsync(string id, UpdateCategoryDTO categoryDto);
+        Task<bool> DeleteAsync(string id);
     }
 }

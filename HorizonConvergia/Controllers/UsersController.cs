@@ -1,6 +1,5 @@
 ﻿using BusinessObjects.DTO.ResultDTO;
 using BusinessObjects.DTO.UserDTO;
-using BusinessObjects.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
