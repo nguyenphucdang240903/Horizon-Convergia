@@ -52,6 +52,7 @@ namespace Services
 
             var user = new User
             {
+                Id = Guid.NewGuid().ToString(),
                 Name = dto.Name,
                 Email = dto.Email,
                 Password = PasswordHasher.HashPassword(dto.Password),
@@ -89,7 +90,7 @@ namespace Services
 
 
 
-        public async Task<User?> GetUserByIdAsync(long id) =>
+        public async Task<User?> GetUserByIdAsync(string id) =>
             await _unitOfWork.Users.GetByIdAsync(id);
         public User GetUserByUserName(string userName)
         {
@@ -120,7 +121,7 @@ namespace Services
             await _unitOfWork.SaveAsync();
         }
 
-        public async Task<bool> DeleteUserAsync(long id)
+        public async Task<bool> DeleteUserAsync(string id)
         {
             var user = await _unitOfWork.Users.GetByIdAsync(id);
             if (user is not null)
@@ -133,7 +134,7 @@ namespace Services
         }
 
 
-        public async Task ChangeStatusAsync(long id, UserStatus status)
+        public async Task ChangeStatusAsync(string id, UserStatus status)
         {
             var user = await _unitOfWork.Users.GetByIdAsync(id);
             if (user is not null)
@@ -144,7 +145,7 @@ namespace Services
             }
         }
 
-        public async Task ChangeRoleAsync(long id, UserRole role)
+        public async Task ChangeRoleAsync(string id, UserRole role)
         {
             var user = await _unitOfWork.Users.GetByIdAsync(id);
             if (user is not null)
@@ -155,7 +156,7 @@ namespace Services
             }
         }
 
-        public async Task ChangePasswordAsync(long id, string newPassword)
+        public async Task ChangePasswordAsync(string id, string newPassword)
         {
             var user = await _unitOfWork.Users.GetByIdAsync(id);
             if (user is not null)
@@ -165,7 +166,7 @@ namespace Services
                 await _unitOfWork.SaveAsync();
             }
         }
-        public async Task<User> GetUserByVerificationTokenAsync(string token)
+        public async Task<User?> GetUserByVerificationTokenAsync(string token)
         {
             return await _unitOfWork.Users
                 .Query()

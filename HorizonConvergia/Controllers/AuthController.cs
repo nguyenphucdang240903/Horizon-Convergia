@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Services.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -31,7 +32,7 @@ namespace HorizonConvergia.Controllers
             _tokenService = tokenService;
             _userService = userService;
         }
-
+   
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDTO dto)
         {
@@ -64,10 +65,7 @@ namespace HorizonConvergia.Controllers
             {
                 return BadRequest("Token không hợp lệ hoặc đã hết hạn.");
             }
-
             user.IsVerified = true;
-            user.VerificationToken = null;
-            user.VerificationTokenExpires = null;
             user.UpdatedAt = DateTime.UtcNow;
 
             await _userService.UpdateUserVerificationAsync(user);
@@ -123,7 +121,12 @@ namespace HorizonConvergia.Controllers
             var token = GenerateToken(user, null);
 
             // Always return JSON
-            return Ok(token); // Return the token as JSON response
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Đăng nhập Google thành công.",
+                Data = token // Data will be the TokenDTO object
+            }); // Return the token as JSON response
         }
 
 
@@ -223,7 +226,12 @@ namespace HorizonConvergia.Controllers
                     // Compare the hashed input password with the stored hashed password
                     _tokenService.ResetRefreshToken();
                     var token = GenerateToken(user, null);
-                    return Ok(token);
+                    return Ok(new ResultDTO // Wrap the TokenDTO in a ResultDTO
+                    {
+                        IsSuccess = true,
+                        Message = "Đăng nhập thành công.",
+                        Data = token // The TokenDTO object
+                    });
                 }
             }
             return BadRequest(new ResultDTO
@@ -268,7 +276,7 @@ namespace HorizonConvergia.Controllers
                 var claimsPrincipal = tokenHandler.ValidateToken(token, tokenValidationParameters, out validatedToken);
                 var userIdClaim = claimsPrincipal.FindFirst("UserId");
 
-                if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out long userId))
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
                 {
                     // Handle the case where the UserId claim is missing or invalid
                     return BadRequest(new ResultDTO
@@ -278,7 +286,7 @@ namespace HorizonConvergia.Controllers
                     });
                 }
 
-                var refreshToken = _tokenService.GetRefreshTokenByUserID(userId);
+                var refreshToken = _tokenService.GetRefreshTokenByUserID(userId.ToString());
                 _tokenService.UpdateRefreshToken(refreshToken);
                 _tokenService.ResetRefreshToken();
 
@@ -322,7 +330,13 @@ namespace HorizonConvergia.Controllers
             var userIdClaim = User.FindFirst("UserId");
             var userNameClaim = User.FindFirst("UserName");
             var userEmailClaim = User.FindFirst("Email");
+            var phoneClaim = User.FindFirst("PhoneNumber");
+            var addressClaim = User.FindFirst("Address");
+            var genderClaim = User.FindFirst("Gender");
+            var avatarUrlClaim = User.FindFirst("AvatarUrl");
+            var statusClaim = User.FindFirst("Status");
             var userRoleClaim = User.FindFirst("Role");
+            var dobClaim = User.FindFirst("Dob");
 
             // Kiểm tra xem các claim có tồn tại không
             if (userIdClaim == null || userNameClaim == null || userEmailClaim == null || userRoleClaim == null)
@@ -333,31 +347,39 @@ namespace HorizonConvergia.Controllers
             try
             {
                 // Chuyển đổi kiểu dữ liệu
-                long userId = long.Parse(userIdClaim.Value);
+                string userId = userIdClaim.Value;
                 UserRole userRole = (UserRole)Enum.Parse(typeof(UserRole), userRoleClaim.Value);
-
+                UserStatus userStatus = statusClaim != null ? Enum.Parse<UserStatus>(statusClaim.Value) : UserStatus.Active; // default
+                Gender gender = Gender.Male;
+                if (genderClaim != null && Enum.TryParse<Gender>(genderClaim.Value, out var parsedGender))
+                {
+                    gender = parsedGender;
+                }
+                DateTime? dob = null;
+                if (dobClaim != null && DateTime.TryParse(dobClaim.Value, out DateTime parsedDob))
+                {
+                    dob = parsedDob;
+                }
                 // Tạo response object
                 var response = new
                 {
-                    UserId = userId,
-                    UserName = userNameClaim.Value,
+                    Id = userId,
+                    Name = userNameClaim.Value,
                     Email = userEmailClaim.Value,
-                    Role = userRole.ToString() // Hoặc có thể trả về (int)userRole nếu muốn giá trị số
+                    PhoneNumber = phoneClaim?.Value,
+                    Address = addressClaim?.Value,
+                    Gender = gender.ToString(),
+                    AvatarUrl = avatarUrlClaim?.Value,
+                    Status = userStatus.ToString(),
+                    Role = userRole.ToString(),
+                    Dob = dob
                 };
 
                 return Ok(response);
             }
-            catch (FormatException)
+            catch (Exception ex)
             {
-                return BadRequest(new { Message = "Invalid UserId format" });
-            }
-            catch (ArgumentException)
-            {
-                return BadRequest(new { Message = "Invalid Role value" });
-            }
-            catch (OverflowException)
-            {
-                return BadRequest(new { Message = "UserId value is too large" });
+                return BadRequest(new { Message = "Error reading user information", Detail = ex.Message });
             }
         }
         #endregion

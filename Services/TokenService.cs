@@ -14,9 +14,13 @@ namespace Services
 
         public void GenerateRefreshToken(Token token)
         {
+            if (string.IsNullOrEmpty(token.Id))
+            {
+                token.Id = Guid.NewGuid().ToString();
+            }
             try
             {
-                var existingToken = _unitOfWork.Tokens.Get(x => x.Id == token.Id);
+                var existingToken = _unitOfWork.Tokens.Get(x => x.UserId == token.UserId);
                 if (existingToken != null)
                 {
                     existingToken.AccessToken = token.AccessToken;
@@ -48,11 +52,11 @@ namespace Services
                 throw new Exception(ex.Message);
             }
         }
-        public Token GetRefreshTokenByUserID(long id)
+        public Token GetRefreshTokenByUserID(string id)
         {
             try
             {
-                var existingToken = _unitOfWork.Tokens.Get(x => x.Id == id);
+                var existingToken = _unitOfWork.Tokens.Get(x => x.UserId == id);
                 return existingToken;
             }
             catch (Exception ex)

@@ -4,7 +4,7 @@
     {
         void GenerateRefreshToken(Token token);
         Token GetRefreshToken(string refreshToken);
-        Token GetRefreshTokenByUserID(long id);
+        Token GetRefreshTokenByUserID(string id);
         void RemoveAllRefreshToken();
         void ResetRefreshToken();
         void UpdateRefreshToken(Token refreshToken);

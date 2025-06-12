@@ -10,15 +10,15 @@ namespace Services.Interfaces
         Task<User> RegisterNewUserAsync(RegisterUserDTO dto);
 
 
-        Task<User?> GetUserByIdAsync(long id);
+        Task<User?> GetUserByIdAsync(string id);
         User GetUserByUserName(string userName);
         Task<User?> GetUserByEmail(string email);
         Task<IEnumerable<User>> SearchUsersAsync(string keyword);
         Task UpdateUserAsync(UpdateUserDTO user);
-        Task<bool> DeleteUserAsync(long id);
-        Task ChangeStatusAsync(long id, UserStatus status);
-        Task ChangeRoleAsync(long id, UserRole role);
-        Task ChangePasswordAsync(long id, string newPassword);
+        Task<bool> DeleteUserAsync(string id);
+        Task ChangeStatusAsync(string id, UserStatus status);
+        Task ChangeRoleAsync(string id, UserRole role);
+        Task ChangePasswordAsync(string id, string newPassword);
         Task<User> GetUserByVerificationTokenAsync(string token);
         Task UpdateUserVerificationAsync(User user);
 

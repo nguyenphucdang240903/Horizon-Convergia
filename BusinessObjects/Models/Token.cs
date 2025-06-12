@@ -3,7 +3,7 @@
 public partial class Token
 {
     [Key]
-    public long Id { get; set; }
+    public string Id { get; set; }
 
     public string AccessToken { get; set; }
 
@@ -12,5 +12,5 @@ public partial class Token
     public DateTime? ExpiredTime { get; set; }
 
     public int Status { get; set; }
-    public long UserId { get; set; }
+    public string UserId { get; set; }  
 }

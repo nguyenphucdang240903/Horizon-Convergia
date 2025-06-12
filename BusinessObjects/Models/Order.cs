@@ -4,7 +4,7 @@ namespace BusinessObjects.Models
 {
     public class Order
     {
-        public long Id { get; set; }
+        public string Id { get; set; }
         public string OrderNo { get; set; }
         public decimal TotalPrice { get; set; }
         public string ShippingAddress { get; set; }
@@ -14,10 +14,10 @@ namespace BusinessObjects.Models
         public DateTime UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
 
-        public long BuyerId { get; set; }
+        public string BuyerId { get; set; }
         public User Buyer { get; set; }
 
-        public long SellerId { get; set; }
+        public string SellerId { get; set; }
         public User Seller { get; set; }
         public Shipping Shipping { get; set; }
         public Payment Payment { get; set; }
