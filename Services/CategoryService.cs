@@ -1,5 +1,4 @@
 ﻿using BusinessObjects.DTO.CategoryDTO;
-using BusinessObjects.DTO.ProductDTO;
 using BusinessObjects.Models;
 using DataAccessObjects;
 using Microsoft.EntityFrameworkCore;
@@ -44,12 +43,12 @@ namespace Services
             throw new NotImplementedException();
         }
 
-        private CategoryDTO MapToDTO(Category product) => new CategoryDTO
+        private CategoryDTO MapToDTO(Category category) => new CategoryDTO
         {
-            Id = product.Id,
-            Name = product.Name,
-            CreatedAt = product.CreatedAt,
-            UpdatedAt = product.UpdatedAt
+            Id = category.Id,
+            Name = category.Name,
+            CreatedAt = category.CreatedAt,
+            UpdatedAt = category.UpdatedAt
         };
     }
 }

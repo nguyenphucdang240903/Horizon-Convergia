@@ -79,32 +79,6 @@ namespace Services
             return true;
         }
 
-
-        public async Task<bool> UpdateAsync(string id, ProductDTO productDto)
-        {
-            var existing = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
-            if (existing == null) return false;
-
-            // update properties
-            existing.Brand = productDto.Brand;
-            existing.Model = productDto.Model;
-            existing.Year = productDto.Year;
-            existing.Price = productDto.Price;
-            existing.Description = productDto.Description;
-            existing.Location = productDto.Location;
-            existing.Condition = productDto.Condition;
-            existing.Quantity = productDto.Quantity;
-            existing.Status = productDto.Status;
-            existing.IsVerified = productDto.IsVerified;
-            existing.CategoryId = productDto.CategoryId;
-            existing.SellerId = productDto.SellerId;
-            existing.UpdatedAt = DateTime.UtcNow;
-
-            _unitOfWork.Repository<Product>().Update(existing);
-            await _unitOfWork.SaveAsync();
-            return true;
-        }
-
         public async Task<bool> DeleteAsync(string id)
         {
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
