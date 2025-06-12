@@ -4,7 +4,7 @@ namespace BusinessObjects.Models
 {
     public class Product
     {
-        public long Id { get; set; }
+        public string Id { get; set; }
         public string Brand { get; set; }
         public string Model { get; set; }
         public int Year { get; set; }
@@ -18,9 +18,9 @@ namespace BusinessObjects.Models
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        public long SellerId { get; set; }
+        public string SellerId { get; set; }
         public User Seller { get; set; }
-        public long CategoryId { get; set; }
+        public string CategoryId { get; set; }
         public Category Category { get; set; }
 
         public ICollection<Images> Images { get; set; }

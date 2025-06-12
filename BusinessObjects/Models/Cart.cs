@@ -2,7 +2,7 @@
 {
     public class Cart
     {
-        public long Id { get; set; }
+        public string Id { get; set; }
         public string CartNo { get; set; }
         public string Status { get; set; }
         public decimal Price { get; set; }
@@ -12,10 +12,10 @@
         public DateTime UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
 
-        public long ProductId { get; set; }
+        public string ProductId { get; set; }
         public Product Product { get; set; }
 
-        public long BuyerId { get; set; }
+        public string BuyerId { get; set; }
         public User Buyer { get; set; }
     }
 }

@@ -20,7 +20,7 @@ namespace Services
             return products.Select(p => MapToDTO(p));
         }
 
-        public async Task<ProductDTO?> GetByIdAsync(long id)
+        public async Task<ProductDTO?> GetByIdAsync(string id)
         {
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
             return product == null ? null : MapToDTO(product);
@@ -50,7 +50,7 @@ namespace Services
             return MapToDTO(product);
         }
 
-        public async Task<bool> UpdateAsync(long id, UpdateProductDTO dto)
+        public async Task<bool> UpdateAsync(string id, UpdateProductDTO dto)
         {
             var existing = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
             if (existing == null) return false;
@@ -75,7 +75,7 @@ namespace Services
         }
 
 
-        public async Task<bool> UpdateAsync(long id, ProductDTO productDto)
+        public async Task<bool> UpdateAsync(string id, ProductDTO productDto)
         {
             var existing = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
             if (existing == null) return false;
@@ -100,7 +100,7 @@ namespace Services
             return true;
         }
 
-        public async Task<bool> DeleteAsync(long id)
+        public async Task<bool> DeleteAsync(string id)
         {
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
             if (product == null) return false;

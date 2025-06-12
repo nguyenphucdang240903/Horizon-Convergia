@@ -1,4 +1,5 @@
-﻿using BusinessObjects.DTO.UserDTO;
+﻿using BusinessObjects.DTO.ResultDTO;
+using BusinessObjects.DTO.UserDTO;
 using BusinessObjects.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,14 +20,28 @@ namespace HorizonConvergia.Controllers
         [HttpGet("{id}")]
         [Authorize(Policy = "Buyer")]
 
-        public async Task<IActionResult> Get(long id)
+        public async Task<IActionResult> Get(string id)
         {
             var user = await _userService.GetUserByIdAsync(id);
-            return user is not null ? Ok(user) : NotFound();
+            if (user is not null)
+            {
+                return Ok(new ResultDTO
+                {
+                    IsSuccess = true,
+                    Message = "Lấy thông tin người dùng thành công.",
+                    Data = user
+                });
+            }
+            return NotFound(new ResultDTO
+            {
+                IsSuccess = false,
+                Message = $"Không tìm thấy người dùng với ID: {id}.",
+                Data = null
+            });
         }
 
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> Update(long id, UpdateUserDTO user)
+        public async Task<IActionResult> Update(string id, UpdateUserDTO user)
         {
             user.Id = id;
             await _userService.UpdateUserAsync(user);
@@ -35,7 +50,7 @@ namespace HorizonConvergia.Controllers
 
         [HttpDelete("{id}")]
 
-        public async Task<IActionResult> DeleteUser(long id)
+        public async Task<IActionResult> DeleteUser(string id)
         {
             var result = await _userService.DeleteUserAsync(id);
             if (!result)
