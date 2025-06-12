@@ -1,6 +1,4 @@
-﻿using BusinessObjects.Models;
-
-namespace Services.Interfaces
+﻿namespace Services.Interfaces
 {
     public interface ITokenService
     {

@@ -1,6 +1,7 @@
 ﻿using BusinessObjects.DTO.ProductDTO;
 using BusinessObjects.Models;
 using DataAccessObjects;
+using Microsoft.EntityFrameworkCore;
 using Services.Interfaces;
 
 namespace Services
@@ -16,7 +17,11 @@ namespace Services
 
         public async Task<IEnumerable<ProductDTO>> GetAllAsync()
         {
-            var products = await _unitOfWork.Repository<Product>().GetAllAsync();
+            var products = await _unitOfWork.Repository<Product>()
+                .Query()
+                .Where(p => p.IsVerified)
+                .ToListAsync();
+
             return products.Select(p => MapToDTO(p));
         }
 
@@ -39,7 +44,7 @@ namespace Services
                 Condition = dto.Condition,
                 Quantity = dto.Quantity,
                 Status = dto.Status,
-                IsVerified = dto.IsVerified,
+                IsVerified = false,
                 SellerId = dto.SellerId,
                 CategoryId = dto.CategoryId,
                 CreatedAt = DateTime.UtcNow
@@ -67,32 +72,6 @@ namespace Services
             existing.IsVerified = dto.IsVerified;
             existing.SellerId = dto.SellerId;
             existing.CategoryId = dto.CategoryId;
-            existing.UpdatedAt = DateTime.UtcNow;
-
-            _unitOfWork.Repository<Product>().Update(existing);
-            await _unitOfWork.SaveAsync();
-            return true;
-        }
-
-
-        public async Task<bool> UpdateAsync(long id, ProductDTO productDto)
-        {
-            var existing = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
-            if (existing == null) return false;
-
-            // update properties
-            existing.Brand = productDto.Brand;
-            existing.Model = productDto.Model;
-            existing.Year = productDto.Year;
-            existing.Price = productDto.Price;
-            existing.Description = productDto.Description;
-            existing.Location = productDto.Location;
-            existing.Condition = productDto.Condition;
-            existing.Quantity = productDto.Quantity;
-            existing.Status = productDto.Status;
-            existing.IsVerified = productDto.IsVerified;
-            existing.CategoryId = productDto.CategoryId;
-            existing.SellerId = productDto.SellerId;
             existing.UpdatedAt = DateTime.UtcNow;
 
             _unitOfWork.Repository<Product>().Update(existing);

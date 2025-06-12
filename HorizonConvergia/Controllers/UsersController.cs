@@ -1,5 +1,4 @@
 ﻿using BusinessObjects.DTO.UserDTO;
-using BusinessObjects.Models;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 
@@ -13,7 +12,7 @@ namespace HorizonConvergia.Controllers
 
         public UsersController(IUserService userService) => _userService = userService;
 
-       
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(long id)

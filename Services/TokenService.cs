@@ -1,5 +1,4 @@
-﻿using BusinessObjects.Models;
-using DataAccessObjects;
+﻿using DataAccessObjects;
 using Services.Interfaces;
 
 namespace Services

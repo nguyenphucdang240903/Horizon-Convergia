@@ -12,5 +12,5 @@ public partial class Token
     public DateTime? ExpiredTime { get; set; }
 
     public int Status { get; set; }
-    public long UserId { get; set; }  
+    public long UserId { get; set; }
 }

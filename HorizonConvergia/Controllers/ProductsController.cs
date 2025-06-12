@@ -1,5 +1,4 @@
 ﻿using BusinessObjects.DTO.ProductDTO;
-using BusinessObjects.Models;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 
