@@ -30,5 +30,23 @@ namespace Services
 
             await client.SendMailAsync(message);
         }
+        public async Task SendResetPasswordEmailAsync(string toEmail, string resetLink)
+        {
+            var client = new SmtpClient("smtp.gmail.com", 587)
+            {
+                EnableSsl = true,
+                Credentials = new NetworkCredential(_from, _password)
+            };
+
+            var message = new MailMessage(_from, toEmail)
+            {
+                Subject = "Đặt lại mật khẩu - HorizonConvergia",
+                Body = $"Bạn vừa yêu cầu đặt lại mật khẩu.\nNhấn vào liên kết sau để đặt lại:\n{resetLink}\n\nLiên kết này sẽ hết hạn sau 1 giờ.",
+                IsBodyHtml = false
+            };
+
+            await client.SendMailAsync(message);
+        }
     }
+
 }
