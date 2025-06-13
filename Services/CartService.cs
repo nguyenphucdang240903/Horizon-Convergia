@@ -28,7 +28,7 @@ namespace Services
                 return new CartCreateResult { ErrorMessage = "Product not found." };
             }
 
-            if (buyer == null || !buyer.IsVerified)
+            if (buyer == null || !buyer.IsVerified || buyer.Role != BusinessObjects.Enums.UserRole.Buyer)
             {
                 return new CartCreateResult { ErrorMessage = "Buyer not found." };
             }
