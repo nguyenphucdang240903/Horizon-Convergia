@@ -1,6 +1,8 @@
 ﻿using BusinessObjects.DTO.ProductDTO;
+using BusinessObjects.Enums;
 using BusinessObjects.Models;
 using DataAccessObjects;
+using Microsoft.EntityFrameworkCore;
 using Services.Interfaces;
 
 namespace Services
@@ -16,7 +18,11 @@ namespace Services
 
         public async Task<IEnumerable<ProductDTO>> GetAllAsync()
         {
-            var products = await _unitOfWork.Repository<Product>().GetAllAsync();
+            var products = await _unitOfWork.Repository<Product>()
+                .Query()
+                .Where(p => p.IsVerified)
+                .ToListAsync();
+
             return products.Select(p => MapToDTO(p));
         }
 
@@ -30,6 +36,7 @@ namespace Services
         {
             var product = new Product
             {
+                Id = Guid.NewGuid().ToString(),
                 Brand = dto.Brand,
                 Model = dto.Model,
                 Year = dto.Year,
@@ -39,7 +46,7 @@ namespace Services
                 Condition = dto.Condition,
                 Quantity = dto.Quantity,
                 Status = dto.Status,
-                IsVerified = dto.IsVerified,
+                IsVerified = false,
                 SellerId = dto.SellerId,
                 CategoryId = dto.CategoryId,
                 CreatedAt = DateTime.UtcNow
@@ -48,6 +55,38 @@ namespace Services
             await _unitOfWork.Repository<Product>().AddAsync(product);
             await _unitOfWork.SaveAsync();
             return MapToDTO(product);
+        }
+
+        public async Task<ProductCreateResult?> SellerCreateAsync(string sellerId, CreateProductDTO productDto)
+        {
+            var seller = await _unitOfWork.Repository<User>().GetByIdAsync(sellerId);
+            if (seller == null || !seller.IsVerified || seller.IsDeleted)
+                return new ProductCreateResult { ErrorMessage = "Seller not found." };
+
+            if (seller.Role != UserRole.Seller)
+                return new ProductCreateResult { ErrorMessage = "User does not have the Seller role." };
+
+            var product = new Product
+            {
+                Id = Guid.NewGuid().ToString(),
+                Brand = productDto.Brand,
+                Model = productDto.Model,
+                Year = productDto.Year,
+                Price = productDto.Price,
+                Description = productDto.Description,
+                Location = productDto.Location,
+                Condition = productDto.Condition,
+                Quantity = productDto.Quantity,
+                Status = productDto.Status,
+                IsVerified = false,
+                SellerId = sellerId,
+                CategoryId = productDto.CategoryId,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.Repository<Product>().AddAsync(product);
+            await _unitOfWork.SaveAsync();
+            return new ProductCreateResult { Product = product };
+
         }
 
         public async Task<bool> UpdateAsync(string id, UpdateProductDTO dto)
@@ -67,32 +106,6 @@ namespace Services
             existing.IsVerified = dto.IsVerified;
             existing.SellerId = dto.SellerId;
             existing.CategoryId = dto.CategoryId;
-            existing.UpdatedAt = DateTime.UtcNow;
-
-            _unitOfWork.Repository<Product>().Update(existing);
-            await _unitOfWork.SaveAsync();
-            return true;
-        }
-
-
-        public async Task<bool> UpdateAsync(string id, ProductDTO productDto)
-        {
-            var existing = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
-            if (existing == null) return false;
-
-            // update properties
-            existing.Brand = productDto.Brand;
-            existing.Model = productDto.Model;
-            existing.Year = productDto.Year;
-            existing.Price = productDto.Price;
-            existing.Description = productDto.Description;
-            existing.Location = productDto.Location;
-            existing.Condition = productDto.Condition;
-            existing.Quantity = productDto.Quantity;
-            existing.Status = productDto.Status;
-            existing.IsVerified = productDto.IsVerified;
-            existing.CategoryId = productDto.CategoryId;
-            existing.SellerId = productDto.SellerId;
             existing.UpdatedAt = DateTime.UtcNow;
 
             _unitOfWork.Repository<Product>().Update(existing);
@@ -144,6 +157,23 @@ namespace Services
             SellerId = dto.SellerId,
             CategoryId = dto.CategoryId
         };
+
+        public async Task<string> VerifyProduct(string id)
+        {
+            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
+            if (product == null)
+            {
+                return "Product not found.";
+            }
+            if (product.IsVerified)
+            {
+                return "Product is already verified.";
+            }
+            product.IsVerified = true;
+            _unitOfWork.Repository<Product>().Update(product);
+            await _unitOfWork.SaveAsync();
+            return "Product verified successfully.";
+        }
     }
 
 

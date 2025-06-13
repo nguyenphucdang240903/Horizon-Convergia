@@ -1,5 +1,4 @@
 ﻿using BusinessObjects.DTO.ProductDTO;
-using BusinessObjects.Models;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 
@@ -40,12 +39,33 @@ namespace HorizonConvergia.Controllers
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
+        [HttpPost("{sellerId}")]
+        public async Task<IActionResult> SellerCreate(string sellerId, [FromBody] CreateProductDTO productDto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var result = await _productService.SellerCreateAsync(sellerId, productDto);
+
+            if (!string.IsNullOrEmpty(result.ErrorMessage))
+                return BadRequest(new { message = result.ErrorMessage });
+
+            return CreatedAtAction(nameof(GetById), new { id = result.Product.Id }, result.Product);
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateProductDTO productDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var success = await _productService.UpdateAsync(id, productDto);
             return success ? NoContent() : NotFound();
+        }
+
+        [HttpPost("verify/{id}")]
+        public async Task<IActionResult> VerifyProduct(string id)
+        {
+            var result = await _productService.VerifyProduct(id);
+            if (result == null)
+                return NotFound();
+            return Ok(new { message = "Product verified successfully", productId = result });
         }
 
         [HttpDelete("{id}")]
