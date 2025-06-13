@@ -22,6 +22,8 @@ namespace BusinessObjects.Models
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
+        public string? ResetPasswordToken { get; set; }
+        public DateTime? ResetPasswordTokenExpires { get; set; }
         public ICollection<Product> Products { get; set; }
         public ICollection<Review> Reviews { get; set; }
         public ICollection<Cart> Carts { get; set; }
