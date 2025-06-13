@@ -1,15 +1,18 @@
-﻿using DataAccessObjects;
+﻿using BusinessObjects.Enums;
+using DataAccessObjects;
 using DataAccessObjects.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Repositories;
 using Repositories.Interfaces;
 using Services;
 using Services.Interfaces;
 using System.Text;
+using Swashbuckle.AspNetCore.Annotations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,21 +44,24 @@ builder.Services.AddAuthorization(options =>
 // 2. Swagger config (bảo mật JWT Bearer)
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "HorizonConvergia API", Version = "v1" });
-
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "HorizonConvergia API",
+        Version = "v1"
+    });
+    options.EnableAnnotations();
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = @"JWT Authorization header using the Bearer scheme.  
+        Description = @"JWT Authorization header using the Bearer scheme. 
                         Enter 'Bearer' [space] and then your token in the text input below.
-                        Example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'",
+                        Example: 'Bearer 12345abcdef'",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = "Bearer"
+        Scheme = "bearer",
+        BearerFormat = "JWT"
     });
-
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
@@ -65,14 +71,18 @@ builder.Services.AddSwaggerGen(options =>
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 },
-                Scheme = "Bearer",
+                Scheme = "bearer",
                 Name = "Authorization",
-                In = ParameterLocation.Header,
+                In = ParameterLocation.Header
             },
             Array.Empty<string>()
         }
     });
 });
+
+
+
+
 
 // 3. Authentication (Cookie + Google + JWT Bearer)
 builder.Services.AddAuthentication(options =>
@@ -100,7 +110,9 @@ builder.Services.AddAuthentication(options =>
             IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("c2VydmVwZXJmZWN0bHljaGVlc2VxdWlja2NvYWNoY29sbGVjdHNsb3Bld2lzZWNhbWU=")),
             ValidateIssuer = false,
             ValidateAudience = false,
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
+            NameClaimType = "UserName",
+            RoleClaimType = "Role"
         };
     });
 
@@ -126,10 +138,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "https://www.horizonconvergia.click/") // thay URL frontend của bạn
+        policy.AllowAnyOrigin() 
               .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowAnyMethod(); 
+                                
     });
 });
 
