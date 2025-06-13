@@ -1,6 +1,5 @@
 ﻿using BusinessObjects.DTO.ResultDTO;
 using BusinessObjects.DTO.UserDTO;
-using BusinessObjects.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
@@ -15,7 +14,7 @@ namespace HorizonConvergia.Controllers
 
         public UsersController(IUserService userService) => _userService = userService;
 
-       
+
 
         [HttpGet("{id}")]
         [Authorize(Policy = "Admin")]

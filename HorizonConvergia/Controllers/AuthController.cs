@@ -18,7 +18,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace HorizonConvergia.Controllers
 {
@@ -34,7 +33,7 @@ namespace HorizonConvergia.Controllers
             _tokenService = tokenService;
             _userService = userService;
         }
-   
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDTO dto)
         {
@@ -102,7 +101,7 @@ namespace HorizonConvergia.Controllers
             if (user == null || user.ResetPasswordTokenExpires < DateTime.UtcNow)
                 return BadRequest(new { Message = "Token không hợp lệ hoặc đã hết hạn." });
 
-            user.Password = PasswordHasher.HashPassword(dto.NewPassword); // hoặc dùng hàm mã hóa mật khẩu của bạn
+            user.Password = PasswordHasher.HashPassword(dto.NewPassword); 
             user.ResetPasswordToken = null;
             user.ResetPasswordTokenExpires = null;
 
