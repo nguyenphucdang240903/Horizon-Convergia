@@ -81,28 +81,28 @@ namespace HorizonConvergia.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id, [FromBody] DeleteReviewDTO reviewDto)
-        {
-            try
-            {
-                var success = await _reviewService.DeleteAsync(id, reviewDto);
-                return Ok(new ResultDTO
-                {
-                    IsSuccess = true,
-                    Message = "Delete Review Success.",
-                    Data = null
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new ResultDTO
-                {
-                    IsSuccess = false,
-                    Message = ex.Message,
-                    Data = null
-                });
-            }
-        }
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> Delete(string id, [FromBody] DeleteReviewDTO reviewDto)
+        //{
+        //    try
+        //    {
+        //        var success = await _reviewService.DeleteAsync(id, reviewDto);
+        //        return Ok(new ResultDTO
+        //        {
+        //            IsSuccess = true,
+        //            Message = "Delete Review Success.",
+        //            Data = null
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(new ResultDTO
+        //        {
+        //            IsSuccess = false,
+        //            Message = ex.Message,
+        //            Data = null
+        //        });
+        //    }
+        //}
     }
 }
