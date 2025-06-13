@@ -7,9 +7,11 @@ namespace Services.Interfaces
         Task<IEnumerable<ProductDTO>> GetAllAsync();
         Task<ProductDTO?> GetByIdAsync(string id);
         Task<ProductDTO> CreateAsync(CreateProductDTO productDto);
-        Task<bool> UpdateAsync(string id, UpdateProductDTO productDto);
-        Task<bool> DeleteAsync(string id);
         Task<ProductCreateResult> SellerCreateAsync(string sellerId, CreateProductDTO productDto);
+        Task<bool> UpdateAsync(string id, UpdateProductDTO productDto);
+        Task<string> VerifyProduct(string id);
+        Task<bool> DeleteAsync(string id);
+        
     }
 
 

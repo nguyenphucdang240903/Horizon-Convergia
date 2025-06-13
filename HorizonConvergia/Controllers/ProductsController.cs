@@ -59,6 +59,15 @@ namespace HorizonConvergia.Controllers
             return success ? NoContent() : NotFound();
         }
 
+        [HttpPost("verify/{id}")]
+        public async Task<IActionResult> VerifyProduct(string id)
+        {
+            var result = await _productService.VerifyProduct(id);
+            if (result == null)
+                return NotFound();
+            return Ok(new { message = "Product verified successfully", productId = result });
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {

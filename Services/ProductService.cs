@@ -60,7 +60,7 @@ namespace Services
         public async Task<ProductCreateResult?> SellerCreateAsync(string sellerId, CreateProductDTO productDto)
         {
             var seller = await _unitOfWork.Repository<User>().GetByIdAsync(sellerId);
-            if (seller == null)
+            if (seller == null || !seller.IsVerified || seller.IsDeleted)
                 return new ProductCreateResult { ErrorMessage = "Seller not found." };
 
             if (seller.Role != UserRole.Seller)
@@ -158,7 +158,22 @@ namespace Services
             CategoryId = dto.CategoryId
         };
 
-
+        public async Task<string> VerifyProduct(string id)
+        {
+            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
+            if (product == null)
+            {
+                return "Product not found.";
+            }
+            if (product.IsVerified)
+            {
+                return "Product is already verified.";
+            }
+            product.IsVerified = true;
+            _unitOfWork.Repository<Product>().Update(product);
+            await _unitOfWork.SaveAsync();
+            return "Product verified successfully.";
+        }
     }
 
 
