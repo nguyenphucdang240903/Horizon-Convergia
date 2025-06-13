@@ -7,7 +7,6 @@ using BusinessObjects.Security;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Services.Interfaces;
@@ -33,7 +32,7 @@ namespace HorizonConvergia.Controllers
             _tokenService = tokenService;
             _userService = userService;
         }
-        [AllowAnonymous]
+   
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDTO dto)
         {
@@ -58,7 +57,6 @@ namespace HorizonConvergia.Controllers
                 });
             }
         }
-        [AllowAnonymous]
         [HttpGet("verify-email")]
         public async Task<IActionResult> VerifyEmail(string token)
         {
@@ -86,7 +84,7 @@ namespace HorizonConvergia.Controllers
         }
 
 
-        [AllowAnonymous]
+
         [HttpGet("google-login")]
         public IActionResult GoogleLogin()
         {
@@ -94,7 +92,7 @@ namespace HorizonConvergia.Controllers
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
-        [AllowAnonymous]
+
         [HttpGet("google-response")]
         public async Task<IActionResult> GoogleResponse()
         {
@@ -205,7 +203,7 @@ namespace HorizonConvergia.Controllers
         }
 
         #endregion
-        [AllowAnonymous]
+
         #region Login
         [HttpPost]
         [Route("Login")]
@@ -370,7 +368,7 @@ namespace HorizonConvergia.Controllers
                     Name = userNameClaim.Value,
                     Email = userEmailClaim.Value,
                     PhoneNumber = phoneClaim?.Value,
-                    Address = addressClaim?.Value,
+                    Address = addressClaim.Value,
                     Gender = gender.ToString(),
                     AvatarUrl = avatarUrlClaim?.Value,
                     Status = userStatus.ToString(),
