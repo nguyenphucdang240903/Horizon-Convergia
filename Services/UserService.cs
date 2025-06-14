@@ -105,11 +105,40 @@ namespace Services
         public async Task<User> GetUserByEmail(string email) => await _unitOfWork.Users.GetByIdAsync(email);
 
 
-        public async Task<IEnumerable<User>> SearchUsersAsync(string keyword) =>
-            await _unitOfWork.Users.SearchAsync(keyword);
+        public async Task<IEnumerable<UserBasicDTO>> SearchUsersAsync(string keyword, int pageIndex, int pageSize)
+        {
+            var users = await _unitOfWork.Users.SearchAsync(keyword, pageIndex, pageSize);
+
+            return users.Select(u => new UserBasicDTO
+            {
+                Id = u.Id,
+                Name = u.Name,
+                Email = u.Email,
+                PhoneNumber = u.PhoneNumber,
+                AvatarUrl = u.AvatarUrl,
+                Status = u.Status,
+                Role = u.Role
+            });
+        }
+
+        public async Task<int> CountSearchUsersAsync(string keyword)
+        {
+            return await _unitOfWork.Users.CountSearchAsync(keyword);
+        }
+
 
         public async Task UpdateUserAsync(UpdateUserDTO user)
         {
+            if (string.IsNullOrWhiteSpace(user.Name) || !char.IsUpper(user.Name[0]))
+                throw new Exception("Tên phải bắt đầu bằng chữ in hoa.");
+            var emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+            if (!Regex.IsMatch(user.Email, emailPattern))
+                throw new Exception("Email không đúng định dạng.");
+            var phonePattern = @"^0\d{9,10}$";
+            if (!Regex.IsMatch(user.PhoneNumber, phonePattern))
+                throw new Exception("Số điện thoại phải từ 10 đến 11 số và bắt đầu bằng số 0.");
+            if (user.Dob.HasValue && user.Dob.Value.Date > DateTime.Today)
+                throw new Exception("Ngày sinh không được lớn hơn ngày hiện tại.");
             var existingUser = await _unitOfWork.Users.GetByIdAsync(user.Id);
             existingUser.Address = user.Address;
             existingUser.Email = user.Email;
@@ -155,15 +184,13 @@ namespace Services
                 await _unitOfWork.SaveAsync();
             }
         }
-
         public async Task ChangePasswordAsync(string id, string newPassword)
         {
             var user = await _unitOfWork.Users.GetByIdAsync(id);
             if (user is not null)
             {
-                user.Password = newPassword; // Hashing should be applied in real scenarios
-                _unitOfWork.Users.Update(user);
-                await _unitOfWork.SaveAsync();
+                user.Password = PasswordHasher.HashPassword(newPassword); 
+                await UpdatePasswordAsync(user);
             }
         }
         public async Task<User?> GetUserByVerificationTokenAsync(string token)

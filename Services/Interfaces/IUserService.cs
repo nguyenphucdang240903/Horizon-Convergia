@@ -11,11 +11,11 @@ namespace Services.Interfaces
         Task<User?> GetUserByResetTokenAsync(string token);
         Task UpdateResetPasswordTokenAsync(User user);
         Task UpdatePasswordAsync(User user);
-
+        Task<IEnumerable<UserBasicDTO>> SearchUsersAsync(string keyword, int pageIndex, int pageSize);
+        Task<int> CountSearchUsersAsync(string keyword);
         Task<User?> GetUserByIdAsync(string id);
         User GetUserByUserName(string userName);
         Task<User?> GetUserByEmail(string email);
-        Task<IEnumerable<User>> SearchUsersAsync(string keyword);
         Task UpdateUserAsync(UpdateUserDTO user);
         Task<bool> DeleteUserAsync(string id);
         Task ChangeStatusAsync(string id, UserStatus status);

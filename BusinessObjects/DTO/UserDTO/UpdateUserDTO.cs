@@ -1,4 +1,6 @@
-﻿namespace BusinessObjects.DTO.UserDTO
+﻿using BusinessObjects.Enums;
+
+namespace BusinessObjects.DTO.UserDTO
 {
     public class UpdateUserDTO
     {
@@ -10,5 +12,19 @@
         public string AvatarUrl { get; set; }
 
         public DateTime? Dob { get; set; }
+    }
+    public class ChangeStatusDTO
+    {
+        public UserStatus Status { get; set; }
+    }
+
+    public class ChangeRoleDTO
+    {
+        public UserRole Role { get; set; }
+    }
+
+    public class ChangePasswordDTO
+    {
+        public string NewPassword { get; set; } = string.Empty;
     }
 }
