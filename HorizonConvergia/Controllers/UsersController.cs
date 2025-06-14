@@ -46,7 +46,7 @@ namespace HorizonConvergia.Controllers
             return Ok(new ResultDTO
             {
                 IsSuccess = true,
-                Message = "Update thanh cong",
+                Message = "Update thành công",
                 Data = user
             });
 
@@ -59,10 +59,31 @@ namespace HorizonConvergia.Controllers
             var result = await _userService.DeleteUserAsync(id);
             if (!result)
             {
-                return NotFound($"User with ID {id} not found.");
+                return NotFound($"Đéo tìm thấy người dùng có ID {id}");
             }
 
-            return Ok(new { message = $"User with ID {id} deleted successfully." });
+            return Ok(new { message = $"Người dùng với ID {id} xóa thành công." });
         }
+        [HttpGet("search")]
+        [Authorize(Policy = "Admin")]
+        public async Task<IActionResult> SearchUsers([FromQuery] string keyword, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        {
+            var users = await _userService.SearchUsersAsync(keyword, pageIndex, pageSize);
+            var total = await _userService.CountSearchUsersAsync(keyword);
+
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Tìm kiếm người dùng thành công.",
+                Data = new PagedResultDTO<UserBasicDTO>
+                {
+                    Items = users,
+                    TotalRecords = total,
+                    PageIndex = pageIndex,
+                    PageSize = pageSize
+                }
+            });
+        }
+
     }
 }
