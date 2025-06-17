@@ -123,6 +123,23 @@ namespace Services
             return true;
         }
 
+        public async Task<string> VerifyProduct(string id)
+        {
+            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
+            if (product == null)
+            {
+                return "Product not found.";
+            }
+            if (product.IsVerified)
+            {
+                return "Product is already verified.";
+            }
+            product.IsVerified = true;
+            _unitOfWork.Repository<Product>().Update(product);
+            await _unitOfWork.SaveAsync();
+            return "Product verified successfully.";
+        }
+
         private ProductDTO MapToDTO(Product product) => new ProductDTO
         {
             Id = product.Id,
@@ -158,22 +175,7 @@ namespace Services
             CategoryId = dto.CategoryId
         };
 
-        public async Task<string> VerifyProduct(string id)
-        {
-            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
-            if (product == null)
-            {
-                return "Product not found.";
-            }
-            if (product.IsVerified)
-            {
-                return "Product is already verified.";
-            }
-            product.IsVerified = true;
-            _unitOfWork.Repository<Product>().Update(product);
-            await _unitOfWork.SaveAsync();
-            return "Product verified successfully.";
-        }
+        
     }
 
 
