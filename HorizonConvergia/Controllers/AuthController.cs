@@ -7,6 +7,7 @@ using BusinessObjects.Security;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Services;
@@ -33,7 +34,7 @@ namespace HorizonConvergia.Controllers
             _tokenService = tokenService;
             _userService = userService;
         }
-
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDTO dto)
         {
@@ -243,6 +244,7 @@ namespace HorizonConvergia.Controllers
         #endregion
 
         #region Login
+        
         [HttpPost]
         [Route("Login")]
         public IActionResult Login(string email, string password)
@@ -421,5 +423,49 @@ namespace HorizonConvergia.Controllers
             }
         }
         #endregion
-    }
+
+        [HttpPut("{id}/change-status")]
+        [Authorize(Policy = "Admin")]
+        public async Task<IActionResult> ChangeStatus(string id, [FromBody] ChangeStatusDTO dto)
+        {
+            await _userService.ChangeStatusAsync(id, dto.Status);
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Thay đổi  status thành công",
+                Data = dto
+            });
+            
+        }
+
+        [HttpPut("{id}/change-role")]
+        [Authorize(Policy = "Admin")]
+        public async Task<IActionResult> ChangeRole(string id, [FromBody] ChangeRoleDTO dto)
+        {
+            await _userService.ChangeRoleAsync(id, dto.Role);
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Thay đổi role thành công",
+                Data = dto
+            });
+        }
+
+        [HttpPut("{id}/change-password")]
+        [Authorize] 
+        public async Task<IActionResult> ChangePassword(string id, [FromBody] ChangePasswordDTO dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.NewPassword))
+                return BadRequest("Mật khẩu không được để trống.");
+
+            await _userService.ChangePasswordAsync(id, dto.NewPassword);
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Đổi mật khẩu thành công",
+                Data = dto
+            });
+        }
+    
+}
 }
