@@ -17,8 +17,7 @@ namespace HorizonConvergia.Controllers
 
 
         [HttpGet("{id}")]
-        [Authorize(Policy = "Buyer")]
-
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> Get(string id)
         {
             var user = await _userService.GetUserByIdAsync(id);
@@ -44,11 +43,17 @@ namespace HorizonConvergia.Controllers
         {
             user.Id = id;
             await _userService.UpdateUserAsync(user);
-            return NoContent();
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Update thanh cong",
+                Data = user
+            });
+
         }
 
         [HttpDelete("{id}")]
-
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> DeleteUser(string id)
         {
             var result = await _userService.DeleteUserAsync(id);

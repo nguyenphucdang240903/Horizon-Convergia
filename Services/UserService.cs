@@ -172,6 +172,24 @@ namespace Services
                 .Query()
                 .FirstOrDefaultAsync(u => u.VerificationToken == token);
         }
+        public async Task<User?> GetUserByResetTokenAsync(string token)
+        {
+            return await _unitOfWork.Users
+                .Query()
+                .FirstOrDefaultAsync(u => u.ResetPasswordToken == token);
+        }
+
+        public async Task UpdateResetPasswordTokenAsync(User user)
+        {
+            _unitOfWork.Users.Update(user);
+            await _unitOfWork.SaveAsync();
+        }
+
+        public async Task UpdatePasswordAsync(User user)
+        {
+            _unitOfWork.Users.Update(user);
+            await _unitOfWork.SaveAsync();
+        }
 
         public async Task UpdateUserVerificationAsync(User user)
         {

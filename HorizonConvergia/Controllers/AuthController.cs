@@ -9,13 +9,15 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Services;
 using Services.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace HorizonConvergia.Controllers
 {
@@ -71,6 +73,43 @@ namespace HorizonConvergia.Controllers
 
             return Ok("Tài khoản đã được xác minh thành công.");
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO dto)
+        {
+            var user = await _userService.GetUserByEmailAsync(dto.Email);
+            if (user == null)
+                return BadRequest(new { Message = "Email không tồn tại." });
+
+            user.ResetPasswordToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+            user.ResetPasswordTokenExpires = DateTime.UtcNow.AddHours(1);
+
+            await _userService.UpdateResetPasswordTokenAsync(user);
+
+            var resetLink = $"{Request.Scheme}://{Request.Host}/reset-password?token={WebUtility.UrlEncode(user.ResetPasswordToken)}";
+
+            var emailService = new EmailService();
+            await emailService.SendResetPasswordEmailAsync(dto.Email, resetLink);
+
+            return Ok(new { Message = "Vui lòng kiểm tra email để đặt lại mật khẩu." });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)
+        {
+            var user = await _userService.GetUserByResetTokenAsync(dto.Token);
+            if (user == null || user.ResetPasswordTokenExpires < DateTime.UtcNow)
+                return BadRequest(new { Message = "Token không hợp lệ hoặc đã hết hạn." });
+
+            user.Password = PasswordHasher.HashPassword(dto.NewPassword); 
+            user.ResetPasswordToken = null;
+            user.ResetPasswordTokenExpires = null;
+
+            await _userService.UpdatePasswordAsync(user);
+
+            return Ok(new { Message = "Mật khẩu đã được đặt lại thành công." });
+        }
+
 
 
         [NonAction]

@@ -8,7 +8,9 @@ namespace Services.Interfaces
     {
         Task<User> GetUserByEmailAsync(string email);
         Task<User> RegisterNewUserAsync(RegisterUserDTO dto);
-
+        Task<User?> GetUserByResetTokenAsync(string token);
+        Task UpdateResetPasswordTokenAsync(User user);
+        Task UpdatePasswordAsync(User user);
 
         Task<User?> GetUserByIdAsync(string id);
         User GetUserByUserName(string userName);
