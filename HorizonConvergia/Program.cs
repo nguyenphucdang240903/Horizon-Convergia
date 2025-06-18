@@ -1,5 +1,6 @@
 ﻿using DataAccessObjects;
 using DataAccessObjects.Data;
+using DataAccessObjects.Setting;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -120,6 +121,14 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<PaymentService, PaymentService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+
+builder.Services.Configure<PayOSSettings>(
+    builder.Configuration.GetSection("PayOS"));
+
+
 
 // 7. CORS (bạn nên bật nếu frontend gọi API từ domain khác)
 builder.Services.AddCors(options =>

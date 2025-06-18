@@ -2,10 +2,10 @@
 {
     public enum OrderStatus
     {
-        Pending,          // wating to chose shipper
-        Confirmed,        // comfirmed by admin
+        Pending,          
+        Confirmed,        // comfirmed by seller
         Processing,
-        Shipping,
+        Shipping,           // choser shipper by admin
         Delivered,
         Cancelled,
         Returned,

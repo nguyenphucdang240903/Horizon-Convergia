@@ -20,10 +20,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="DTO\OrderDTO\" />
+    <PackageReference Include="payOS" Version="1.0.9" />
   </ItemGroup>
 
 </Project>
