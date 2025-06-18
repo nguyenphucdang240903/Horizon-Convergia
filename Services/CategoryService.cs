@@ -19,6 +19,7 @@ namespace Services
             {
                 Id = Guid.NewGuid().ToString(),
                 Name = categoryDto.Name,
+                ImageUrl = categoryDto.ImageUrl,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 IsDeleted = false
@@ -66,6 +67,7 @@ namespace Services
                 return false; // Category not found or is deleted
             }
             existing.Name = categoryDto.Name;
+            existing.ImageUrl = categoryDto.ImageUrl;
             existing.UpdatedAt = DateTime.UtcNow;
             _unitOfWork.Repository<Category>().Update(existing);
             await _unitOfWork.SaveAsync();
@@ -76,6 +78,7 @@ namespace Services
         {
             Id = category.Id,
             Name = category.Name,
+            ImageUrl = category.ImageUrl,
             CreatedAt = category.CreatedAt,
             UpdatedAt = category.UpdatedAt
         };

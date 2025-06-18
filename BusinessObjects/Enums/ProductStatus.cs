@@ -4,6 +4,7 @@
     {
         Active,
         OutOfStock,
+        UnPaid_Seller,
         Suspended,     // lock by admin
     }
 }
