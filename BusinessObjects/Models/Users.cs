@@ -15,6 +15,9 @@ namespace BusinessObjects.Models
         public UserStatus Status { get; set; }
         public UserRole Role { get; set; }
         public DateTime? Dob { get; set; }
+        public string? ShopName { get; set; }
+        public string? shopDescription { get; set; }
+        public string? BusinessType { get; set; }
         public string? VerificationToken { get; set; }
         public DateTime? VerificationTokenExpires { get; set; }
         public bool IsVerified { get; set; }

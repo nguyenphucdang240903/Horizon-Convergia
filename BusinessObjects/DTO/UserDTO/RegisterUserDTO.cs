@@ -11,6 +11,10 @@ namespace BusinessObjects.DTO.UserDTO
         public string Address { get; set; }
         public Gender Gender { get; set; }
         public DateTime? Dob { get; set; }
+        public UserRole Role { get; set; }
+        public string? ShopName { get; set; }
+        public string? ShopDescription { get; set; }
+        public string? BusinessType { get; set; }
     }
 
 }
