@@ -102,7 +102,7 @@ namespace HorizonConvergia.Controllers
             if (user == null || user.ResetPasswordTokenExpires < DateTime.UtcNow)
                 return BadRequest(new { Message = "Token không hợp lệ hoặc đã hết hạn." });
 
-            user.Password = PasswordHasher.HashPassword(dto.NewPassword); 
+            user.Password = PasswordHasher.HashPassword(dto.NewPassword);
             user.ResetPasswordToken = null;
             user.ResetPasswordTokenExpires = null;
 
@@ -184,7 +184,13 @@ namespace HorizonConvergia.Controllers
         new Claim("UserId", user.Id.ToString()),
         new Claim("UserName", user.Name),
         new Claim("Email", user.Email),
-        new Claim("Role", user.Role.ToString())
+        new Claim("Role", user.Role.ToString()),
+        new Claim("PhoneNumber", user.PhoneNumber ?? ""),
+        new Claim("Address", user.Address ?? ""),
+        new Claim("Gender", user.Gender.ToString()),
+        new Claim("AvatarUrl", user.AvatarUrl ?? ""),
+        new Claim("Status", user.Status.ToString()),
+        new Claim("Dob", user.Dob?.ToString("yyyy-MM-dd") ?? "")
     };
 
             var securityKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes("c2VydmVwZXJmZWN0bHljaGVlc2VxdWlja2NvYWNoY29sbGVjdHNsb3Bld2lzZWNhbWU="));
@@ -244,7 +250,7 @@ namespace HorizonConvergia.Controllers
         #endregion
 
         #region Login
-        
+
         [HttpPost]
         [Route("Login")]
         public IActionResult Login(string email, string password)
@@ -435,7 +441,7 @@ namespace HorizonConvergia.Controllers
                 Message = "Thay đổi  status thành công",
                 Data = dto
             });
-            
+
         }
 
         [HttpPut("{id}/change-role")]
@@ -452,7 +458,7 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpPut("{id}/change-password")]
-        [Authorize] 
+        [Authorize]
         public async Task<IActionResult> ChangePassword(string id, [FromBody] ChangePasswordDTO dto)
         {
             if (string.IsNullOrWhiteSpace(dto.NewPassword))
@@ -466,6 +472,6 @@ namespace HorizonConvergia.Controllers
                 Data = dto
             });
         }
-    
-}
+
+    }
 }
