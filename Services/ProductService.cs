@@ -1,8 +1,13 @@
-﻿using BusinessObjects.DTO.ProductDTO;
+﻿using BusinessObjects.DTO.PaymentDTO;
+using BusinessObjects.DTO.ProductDTO;
 using BusinessObjects.Enums;
 using BusinessObjects.Models;
 using DataAccessObjects;
+using DataAccessObjects.Setting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Net.payOS;
+using Net.payOS.Types;
 using Services.Interfaces;
 
 namespace Services
@@ -10,17 +15,20 @@ namespace Services
     public class ProductService : IProductService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly PayOS _payos;
 
-        public ProductService(IUnitOfWork unitOfWork)
+        public ProductService(IUnitOfWork unitOfWork, IOptions<PayOSSettings> options)
         {
             _unitOfWork = unitOfWork;
+            var settings = options.Value;
+            _payos = new PayOS(settings.ClientId, settings.ApiKey, settings.ChecksumKey);
         }
 
         public async Task<IEnumerable<ProductDTO>> GetAllAsync()
         {
             var products = await _unitOfWork.Repository<Product>()
                 .Query()
-                .Where(p => p.IsVerified)
+                .Where(p => p.IsVerified && p.Status == ProductStatus.Active)
                 .ToListAsync();
 
             return products.Select(p => MapToDTO(p));
@@ -45,7 +53,7 @@ namespace Services
                 Location = dto.Location,
                 Condition = dto.Condition,
                 Quantity = dto.Quantity,
-                Status = dto.Status,
+                Status = ProductStatus.UnPaid_Seller,
                 IsVerified = false,
                 SellerId = dto.SellerId,
                 CategoryId = dto.CategoryId,
@@ -61,10 +69,10 @@ namespace Services
         {
             var seller = await _unitOfWork.Repository<User>().GetByIdAsync(sellerId);
             if (seller == null || !seller.IsVerified || seller.IsDeleted)
-                return new ProductCreateResult { ErrorMessage = "Seller not found." };
+                return new ProductCreateResult { ErrorMessage = "Không tìm thấy người bán." };
 
             if (seller.Role != UserRole.Seller)
-                return new ProductCreateResult { ErrorMessage = "User does not have the Seller role." };
+                return new ProductCreateResult { ErrorMessage = "Người dùng này không có vai trò Seller." };
 
             var product = new Product
             {
@@ -77,7 +85,7 @@ namespace Services
                 Location = productDto.Location,
                 Condition = productDto.Condition,
                 Quantity = productDto.Quantity,
-                Status = productDto.Status,
+                Status = ProductStatus.UnPaid_Seller,
                 IsVerified = false,
                 SellerId = sellerId,
                 CategoryId = productDto.CategoryId,
@@ -102,8 +110,6 @@ namespace Services
             existing.Location = dto.Location;
             existing.Condition = dto.Condition;
             existing.Quantity = dto.Quantity;
-            existing.Status = dto.Status;
-            existing.IsVerified = dto.IsVerified;
             existing.SellerId = dto.SellerId;
             existing.CategoryId = dto.CategoryId;
             existing.UpdatedAt = DateTime.UtcNow;
@@ -128,18 +134,84 @@ namespace Services
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
             if (product == null)
             {
-                return "Product not found.";
+                return "Không tìm thấy sản phẩm.";
             }
             if (product.IsVerified)
             {
-                return "Product is already verified.";
+                return "Sản phẩm đã được xác minh.";
             }
             product.IsVerified = true;
             _unitOfWork.Repository<Product>().Update(product);
             await _unitOfWork.SaveAsync();
-            return "Product verified successfully.";
+            return "Xác minh sản phẩm thành công.";
         }
 
+        public async Task<string> SendPaymentLinkToSellerAsync(string productId,  string returnUrl)
+        {
+            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(productId);
+            if (product == null || !product.IsVerified || product.Status != ProductStatus.UnPaid_Seller)
+            {
+                return "Không tìm thấy sản phẩm.";
+            }
+            var seller = await _unitOfWork.Repository<User>().GetByIdAsync(product.SellerId);
+            if (seller == null || !seller.IsVerified || seller.IsDeleted || seller.Role != UserRole.Seller)
+            {
+                return "Không tìm thấy người bán.";
+            }
+
+            var orderCode = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var description = $"{product.Description}";
+
+            var items = new List<ItemData>
+            {
+                new ItemData(
+                    name: "Thanh toán HorizonConvergia",
+                    quantity: product.Quantity,
+                    price: (int)(product.Price)
+                )
+            };
+            var paymentData = new PaymentData(
+                orderCode: orderCode,
+                amount: (int)(product.Price)*product.Quantity,
+                description: description,
+                items: items,
+                returnUrl: returnUrl,
+                cancelUrl: returnUrl
+            );
+
+            var paymentResult = await _payos.createPaymentLink(paymentData);
+            //var payment = new Payment
+            //{
+            //    Id = Guid.NewGuid().ToString(),
+            //    Amount = product.Price * product.Quantity,
+            //    CreatedAt = DateTime.UtcNow,
+            //    UpdatedAt = DateTime.UtcNow,
+            //    OrderId = product.Id,
+            //    UserId = product.SellerId,
+            //    PaymentMethod = "PayOS",
+            //    Reference = orderCode.ToString(),
+            //    Description = description,
+            //    PaymentStatus = PaymentStatus.Pending
+            //};
+
+            //await _unitOfWork.Repository<Payment>().AddAsync(payment);
+            //await _unitOfWork.SaveAsync();
+
+            return paymentResult.checkoutUrl;
+        }
+        public async Task<bool> ActivateProductAfterPaymentAsync(string productId)
+        {
+            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(productId);
+            if (product == null || product.Status != ProductStatus.UnPaid_Seller)
+            {
+                return false;
+            }
+            product.Status = ProductStatus.Active;
+            product.IsVerified = true;
+            _unitOfWork.Repository<Product>().Update(product);
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
         private ProductDTO MapToDTO(Product product) => new ProductDTO
         {
             Id = product.Id,

@@ -37,13 +37,13 @@ namespace Services
 
             // Tạo item cho hóa đơn
             var items = new List<ItemData>
-    {
-        new ItemData(
-            name: "Thanh toán HorizonConvergia",
-            quantity: 1,
-            price: (int)(dto.Amount * 1000)
-        )
-    };
+            {
+                new ItemData(
+                    name: "Thanh toán HorizonConvergia",
+                    quantity: 1,
+                    price: (int)(dto.Amount * 1000)
+                )
+            };
             var paymentData = new PaymentData(
                 orderCode: orderCode,
                 amount: (int)(dto.Amount * 1000),
