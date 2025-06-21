@@ -39,7 +39,7 @@ namespace HorizonConvergia.Controllers
         }
 
 
-        [HttpPost("payos-callback")]
+        [HttpGet("payos-callback")]
         public async Task<IActionResult> PayOSCallback([FromBody] PayOSReturnDTO dto)
         {
             var result = await _paymentService.HandlePayOSCallbackAsync(dto);
