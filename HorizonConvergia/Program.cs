@@ -110,6 +110,16 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        Console.WriteLine("DEBUG: Connection string 'DefaultConnection' is NULL or EMPTY.");
+    }
+    else
+    {
+        // Cẩn thận với việc log mật khẩu trong production, đây chỉ là để debug tạm thời
+        Console.WriteLine($"DEBUG: Attempting to connect with string: {connectionString}");
+    }
+
     options.UseNpgsql(connectionString);
 });
 
