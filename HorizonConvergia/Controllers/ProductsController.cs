@@ -65,7 +65,7 @@ namespace HorizonConvergia.Controllers
             var result = await _productService.VerifyProduct(id);
             if (result == null)
                 return NotFound();
-            return Ok(new { message = "Product verified successfully", productId = result });
+            return Ok(new { message = "Xác minh sản phẩm thành công.", productId = result });
         }
 
         [HttpDelete("{id}")]
@@ -74,7 +74,24 @@ namespace HorizonConvergia.Controllers
             var success = await _productService.DeleteAsync(id);
             return success ? NoContent() : NotFound();
         }
-    }
 
+        [HttpPost("send-payment-link/{productId}")]
+        public async Task<IActionResult> SendPaymentLinkToSellerAsync(string productId, string returnUrl)
+        {
+            var link = await _productService.SendPaymentLinkToSellerAsync(productId, returnUrl);
+            if (string.IsNullOrEmpty(link))
+            {
+                return BadRequest("Không gửi được link thanh toán.");
+            }
+            return Ok(link);
+        }
+
+        [HttpPut("activate/{productId}")]
+        public async Task<IActionResult> ActivateProductAfterPaymentAsync(string productId)
+        {
+            var success = await _productService.ActivateProductAfterPaymentAsync(productId);
+            return success ? NoContent() : NotFound();
+        }
+    }
 
 }
