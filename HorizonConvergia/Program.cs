@@ -105,8 +105,13 @@ builder.Services.AddAuthentication(options =>
     });
 
 // 4. DbContext
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("PostgreSqlConnection");
+    options.UseNpgsql(connectionString);
+});
 
 // 5. Controllers
 builder.Services.AddControllers();
