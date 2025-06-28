@@ -156,6 +156,16 @@ namespace Services
             return true;
         }
 
+        public async Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync()
+        {
+            var products = await _unitOfWork.Repository<Product>()
+                .Query()
+                .Where(p => !p.IsVerified && p.Status == ProductStatus.UnPaid_Seller)
+                .ToListAsync();
+
+            return products.Select(p => MapToDTO(p));
+        }
+
         public async Task<string> VerifyProduct(string id)
         {
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);

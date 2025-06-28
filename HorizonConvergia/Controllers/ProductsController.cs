@@ -27,6 +27,13 @@ namespace HorizonConvergia.Controllers
             return Ok(products);
         }
 
+        [HttpGet("unverified-unpaid")]
+        public async Task<IActionResult> GetUnverifiedUnpaidProducts()
+        {
+            var products = await _productService.GetUnverifiedUnpaidProductsAsync();
+            return Ok(products);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
