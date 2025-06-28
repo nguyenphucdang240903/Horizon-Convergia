@@ -60,11 +60,28 @@ namespace Services
             var products = await query.ToListAsync();
             return products.Select(p => MapToDTO(p));
         }
-
         public async Task<ProductDTO?> GetByIdAsync(string id)
         {
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
             return product == null ? null : MapToDTO(product);
+        }
+        public async Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync()
+        {
+            var products = await _unitOfWork.Repository<Product>()
+                .Query()
+                .Where(p => !p.IsVerified && p.Status == ProductStatus.UnPaid_Seller)
+                .ToListAsync();
+
+            return products.Select(p => MapToDTO(p));
+        }
+        public async Task<IEnumerable<ProductDTO>> GetUnpaidProductsAsync()
+        {
+            var products = await _unitOfWork.Repository<Product>()
+                .Query()
+                .Where(p => p.IsVerified && p.Status == ProductStatus.UnPaid_Seller)
+                .ToListAsync();
+
+            return products.Select(p => MapToDTO(p));
         }
 
         public async Task<ProductDTO> CreateAsync(CreateProductDTO dto)
@@ -91,7 +108,6 @@ namespace Services
             await _unitOfWork.SaveAsync();
             return MapToDTO(product);
         }
-
         public async Task<ProductCreateResult?> SellerCreateAsync(string sellerId, CreateProductDTO productDto)
         {
             var seller = await _unitOfWork.Repository<User>().GetByIdAsync(sellerId);
@@ -142,76 +158,7 @@ namespace Services
 
             return new ProductCreateResult { Product = product };
         }
-
-        public async Task<bool> UpdateAsync(string id, UpdateProductDTO dto)
-        {
-            var existing = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
-            if (existing == null) return false;
-
-            existing.Brand = dto.Brand;
-            existing.Model = dto.Model;
-            existing.Year = dto.Year;
-            existing.Price = dto.Price;
-            existing.Description = dto.Description;
-            existing.Location = dto.Location;
-            existing.Condition = dto.Condition;
-            existing.Quantity = dto.Quantity;
-            existing.CategoryId = dto.CategoryId;
-            existing.UpdatedAt = DateTime.UtcNow;
-
-            _unitOfWork.Repository<Product>().Update(existing);
-            await _unitOfWork.SaveAsync();
-            return true;
-        }
-
-        public async Task<bool> DeleteAsync(string id)
-        {
-            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
-            if (product == null) return false;
-
-            _unitOfWork.Repository<Product>().Delete(product);
-            await _unitOfWork.SaveAsync();
-            return true;
-        }
-
-        public async Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync()
-        {
-            var products = await _unitOfWork.Repository<Product>()
-                .Query()
-                .Where(p => !p.IsVerified && p.Status == ProductStatus.UnPaid_Seller)
-                .ToListAsync();
-
-            return products.Select(p => MapToDTO(p));
-        }
-
-        public async Task<IEnumerable<ProductDTO>> GetUnpaidProductsAsync()
-        {
-            var products = await _unitOfWork.Repository<Product>()
-                .Query()
-                .Where(p => p.IsVerified && p.Status == ProductStatus.UnPaid_Seller)
-                .ToListAsync();
-
-            return products.Select(p => MapToDTO(p));
-        }
-
-        public async Task<string> VerifyProduct(string id)
-        {
-            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
-            if (product == null)
-            {
-                return "Không tìm thấy sản phẩm.";
-            }
-            if (product.IsVerified)
-            {
-                return "Sản phẩm đã được xác minh.";
-            }
-            product.IsVerified = true;
-            _unitOfWork.Repository<Product>().Update(product);
-            await _unitOfWork.SaveAsync();
-            return "Xác minh sản phẩm thành công.";
-        }
-
-        public async Task<string> SendPaymentLinkToSellerAsync(string productId,  string returnUrl)
+        public async Task<string> SendPaymentLinkToSellerAsync(string productId, string returnUrl)
         {
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(productId);
             if (product == null || !product.IsVerified || product.Status != ProductStatus.UnPaid_Seller)
@@ -237,7 +184,7 @@ namespace Services
             };
             var paymentData = new PaymentData(
                 orderCode: orderCode,
-                amount: (int)(product.Price)*product.Quantity,
+                amount: (int)(product.Price) * product.Quantity,
                 description: description,
                 items: items,
                 returnUrl: returnUrl,
@@ -264,6 +211,44 @@ namespace Services
 
             return paymentResult.checkoutUrl;
         }
+
+
+        public async Task<bool> UpdateAsync(string id, UpdateProductDTO dto)
+        {
+            var existing = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Brand = dto.Brand;
+            existing.Model = dto.Model;
+            existing.Year = dto.Year;
+            existing.Price = dto.Price;
+            existing.Description = dto.Description;
+            existing.Location = dto.Location;
+            existing.Condition = dto.Condition;
+            existing.Quantity = dto.Quantity;
+            existing.CategoryId = dto.CategoryId;
+            existing.UpdatedAt = DateTime.UtcNow;
+
+            _unitOfWork.Repository<Product>().Update(existing);
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
+        public async Task<string> VerifyProduct(string id)
+        {
+            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
+            if (product == null)
+            {
+                return "Không tìm thấy sản phẩm.";
+            }
+            if (product.IsVerified)
+            {
+                return "Sản phẩm đã được xác minh.";
+            }
+            product.IsVerified = true;
+            _unitOfWork.Repository<Product>().Update(product);
+            await _unitOfWork.SaveAsync();
+            return "Xác minh sản phẩm thành công.";
+        }
         public async Task<bool> ActivateProductAfterPaymentAsync(string productId)
         {
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(productId);
@@ -277,7 +262,20 @@ namespace Services
             await _unitOfWork.SaveAsync();
             return true;
         }
-        private ProductDTO MapToDTO(Product product) => new ProductDTO
+
+        public async Task<bool> DeleteAsync(string id)
+        {
+            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
+            if (product == null) return false;
+
+            _unitOfWork.Repository<Product>().Delete(product);
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
+
+        
+        
+         private ProductDTO MapToDTO(Product product) => new ProductDTO
         {
             Id = product.Id,
             Brand = product.Brand,

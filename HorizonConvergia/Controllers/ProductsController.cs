@@ -48,6 +48,7 @@ namespace HorizonConvergia.Controllers
             return product == null ? NotFound() : Ok(product);
         }
 
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateProductDTO productDto)
         {
@@ -68,6 +69,18 @@ namespace HorizonConvergia.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.Product.Id }, result.Product);
         }
 
+        [HttpPost("send-payment-link/{productId}")]
+        public async Task<IActionResult> SendPaymentLinkToSellerAsync(string productId, string returnUrl)
+        {
+            var link = await _productService.SendPaymentLinkToSellerAsync(productId, returnUrl);
+            if (string.IsNullOrEmpty(link))
+            {
+                return BadRequest("Không gửi được link thanh toán.");
+            }
+            return Ok(link);
+        }
+
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateProductDTO productDto)
         {
@@ -85,6 +98,13 @@ namespace HorizonConvergia.Controllers
             return Ok(new { message = "Xác minh sản phẩm thành công.", productId = result });
         }
 
+        [HttpPut("activate/{productId}")]
+        public async Task<IActionResult> ActivateProductAfterPaymentAsync(string productId)
+        {
+            var success = await _productService.ActivateProductAfterPaymentAsync(productId);
+            return success ? NoContent() : NotFound();
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
@@ -92,23 +112,7 @@ namespace HorizonConvergia.Controllers
             return success ? NoContent() : NotFound();
         }
 
-        [HttpPost("send-payment-link/{productId}")]
-        public async Task<IActionResult> SendPaymentLinkToSellerAsync(string productId, string returnUrl)
-        {
-            var link = await _productService.SendPaymentLinkToSellerAsync(productId, returnUrl);
-            if (string.IsNullOrEmpty(link))
-            {
-                return BadRequest("Không gửi được link thanh toán.");
-            }
-            return Ok(link);
+        
         }
-
-        [HttpPut("activate/{productId}")]
-        public async Task<IActionResult> ActivateProductAfterPaymentAsync(string productId)
-        {
-            var success = await _productService.ActivateProductAfterPaymentAsync(productId);
-            return success ? NoContent() : NotFound();
-        }
-    }
 
 }

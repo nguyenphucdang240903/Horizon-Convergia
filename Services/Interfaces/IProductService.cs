@@ -4,19 +4,24 @@ namespace Services.Interfaces
 {
     public interface IProductService
     {
-        Task<IEnumerable<ProductDTO>> GetAllAsync(string? categoryId = null,string? sortField = null,bool ascending = true);
+        // GET
+        Task<IEnumerable<ProductDTO>> GetAllAsync(string? categoryId = null, string? sortField = null, bool ascending = true);
         Task<ProductDTO?> GetByIdAsync(string id);
-        Task<ProductDTO> CreateAsync(CreateProductDTO productDto);
-        Task<ProductCreateResult> SellerCreateAsync(string sellerId, CreateProductDTO productDto);
-        Task<bool> UpdateAsync(string id, UpdateProductDTO productDto);
-        Task<string> VerifyProduct(string id);
-        Task<bool> DeleteAsync(string id);
         Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync();
         Task<IEnumerable<ProductDTO>> GetUnpaidProductsAsync();
+
+        // POST
+        Task<ProductDTO> CreateAsync(CreateProductDTO productDto);
+        Task<ProductCreateResult> SellerCreateAsync(string sellerId, CreateProductDTO productDto);
         Task<string> SendPaymentLinkToSellerAsync(string productId, string returnUrl);
+
+        // PUT
+        Task<bool> UpdateAsync(string id, UpdateProductDTO productDto);
+        Task<string> VerifyProduct(string id);
         Task<bool> ActivateProductAfterPaymentAsync(string productId);
 
+        // DELETE
+        Task<bool> DeleteAsync(string id);
     }
-
 
 }
