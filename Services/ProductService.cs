@@ -106,6 +106,22 @@ namespace Services
 
             await _unitOfWork.Repository<Product>().AddAsync(product);
             await _unitOfWork.SaveAsync();
+
+            // Add images if any
+            if (dto.ImageUrls != null && dto.ImageUrls.Any())
+            {
+                foreach (var imageUrl in dto.ImageUrls)
+                {
+                    var image = new Images
+                    {
+                        ImagesUrl = imageUrl,
+                        ProductId = product.Id
+                    };
+                    await _unitOfWork.Repository<Images>().AddAsync(image);
+                }
+                await _unitOfWork.SaveAsync();
+            }
+
             return MapToDTO(product);
         }
         public async Task<ProductCreateResult?> SellerCreateAsync(string sellerId, CreateProductDTO productDto)
@@ -154,7 +170,6 @@ namespace Services
                 }
                 await _unitOfWork.SaveAsync();
             }
-            await _unitOfWork.SaveAsync();
 
             return new ProductCreateResult { Product = product };
         }
