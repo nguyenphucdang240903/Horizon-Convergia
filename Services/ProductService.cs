@@ -1,5 +1,4 @@
-﻿using BusinessObjects.DTO.PaymentDTO;
-using BusinessObjects.DTO.ProductDTO;
+﻿using BusinessObjects.DTO.ProductDTO;
 using BusinessObjects.Enums;
 using BusinessObjects.Models;
 using DataAccessObjects;
@@ -288,9 +287,9 @@ namespace Services
             return true;
         }
 
-        
-        
-         private ProductDTO MapToDTO(Product product) => new ProductDTO
+
+
+        private ProductDTO MapToDTO(Product product) => new ProductDTO
         {
             Id = product.Id,
             Brand = product.Brand,
@@ -325,7 +324,7 @@ namespace Services
             CategoryId = dto.CategoryId
         };
 
-        
+
     }
 
 
