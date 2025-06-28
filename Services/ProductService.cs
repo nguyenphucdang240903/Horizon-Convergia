@@ -156,7 +156,6 @@ namespace Services
             existing.Location = dto.Location;
             existing.Condition = dto.Condition;
             existing.Quantity = dto.Quantity;
-            existing.SellerId = dto.SellerId;
             existing.CategoryId = dto.CategoryId;
             existing.UpdatedAt = DateTime.UtcNow;
 
