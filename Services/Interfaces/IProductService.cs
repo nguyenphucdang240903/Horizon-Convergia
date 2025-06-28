@@ -4,7 +4,7 @@ namespace Services.Interfaces
 {
     public interface IProductService
     {
-        Task<IEnumerable<ProductDTO>> GetAllAsync();
+        Task<IEnumerable<ProductDTO>> GetAllAsync(string? categoryId = null,string? sortField = null,bool ascending = true);
         Task<ProductDTO?> GetByIdAsync(string id);
         Task<ProductDTO> CreateAsync(CreateProductDTO productDto);
         Task<ProductCreateResult> SellerCreateAsync(string sellerId, CreateProductDTO productDto);

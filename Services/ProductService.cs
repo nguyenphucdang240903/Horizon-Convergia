@@ -24,13 +24,40 @@ namespace Services
             _payos = new PayOS(settings.ClientId, settings.ApiKey, settings.ChecksumKey);
         }
 
-        public async Task<IEnumerable<ProductDTO>> GetAllAsync()
+        public async Task<IEnumerable<ProductDTO>> GetAllAsync(
+            string? categoryId = null,
+            string? sortField = null,
+            bool ascending = true)
         {
-            var products = await _unitOfWork.Repository<Product>()
-                .Query()
-                .Where(p => p.IsVerified && p.Status == ProductStatus.Active)
-                .ToListAsync();
+            var query = _unitOfWork.Repository<Product>()
+        .Query()
+        .Where(p => p.IsVerified && p.Status == ProductStatus.Active);
 
+            // Filter by Category
+            if (!string.IsNullOrEmpty(categoryId))
+            {
+                query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            // Sort by field
+            if (!string.IsNullOrEmpty(sortField))
+            {
+                query = sortField.ToLower() switch
+                {
+                    "price" => ascending ? query.OrderBy(p => p.Price) : query.OrderByDescending(p => p.Price),
+                    "year" => ascending ? query.OrderBy(p => p.Year) : query.OrderByDescending(p => p.Year),
+                    "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
+                    "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
+                    _ => query // No sorting if field is not recognized
+                };
+            }
+            else
+            {
+                // Default sort by CreatedAt descending
+                query = query.OrderByDescending(p => p.CreatedAt);
+            }
+
+            var products = await query.ToListAsync();
             return products.Select(p => MapToDTO(p));
         }
 

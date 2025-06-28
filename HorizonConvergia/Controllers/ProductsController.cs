@@ -18,9 +18,12 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(
+            [FromQuery] string? categoryId = null,
+            [FromQuery] string? sortField = null,
+            [FromQuery] bool ascending = true)
         {
-            var products = await _productService.GetAllAsync();
+            var products = await _productService.GetAllAsync(categoryId, sortField, ascending);
             return Ok(products);
         }
 
