@@ -118,10 +118,29 @@ namespace Services
                 CategoryId = productDto.CategoryId,
                 CreatedAt = DateTime.UtcNow
             };
+
             await _unitOfWork.Repository<Product>().AddAsync(product);
             await _unitOfWork.SaveAsync();
-            return new ProductCreateResult { Product = product };
 
+            // Add images if any
+            if (productDto.ImageUrls != null && productDto.ImageUrls.Any())
+            {
+                foreach (var imageUrl in productDto.ImageUrls)
+                {
+                    var image = new Images
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        ImagesUrl = imageUrl,
+                        ProductId = product.Id,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await _unitOfWork.Repository<Images>().AddAsync(image);
+                }
+                await _unitOfWork.SaveAsync();
+            }
+            await _unitOfWork.SaveAsync();
+
+            return new ProductCreateResult { Product = product };
         }
 
         public async Task<bool> UpdateAsync(string id, UpdateProductDTO dto)

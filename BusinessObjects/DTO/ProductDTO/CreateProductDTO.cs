@@ -14,6 +14,7 @@ namespace BusinessObjects.DTO.ProductDTO
         public int Quantity { get; set; }
         public string SellerId { get; set; }
         public string CategoryId { get; set; }
+        public List<string> ImageUrls { get; set; } = new();
     }
 
     public class UpdateProductDTO : CreateProductDTO
