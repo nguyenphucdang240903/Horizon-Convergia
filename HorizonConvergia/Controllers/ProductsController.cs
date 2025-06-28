@@ -34,6 +34,13 @@ namespace HorizonConvergia.Controllers
             return Ok(products);
         }
 
+        [HttpGet("unpaid")]
+        public async Task<IActionResult> GetUnpaidProducts()
+        {
+            var products = await _productService.GetUnpaidProductsAsync();
+            return Ok(products);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
@@ -69,7 +76,7 @@ namespace HorizonConvergia.Controllers
             return success ? NoContent() : NotFound();
         }
 
-        [HttpPost("verify/{id}")]
+        [HttpPut("verify/{id}")]
         public async Task<IActionResult> VerifyProduct(string id)
         {
             var result = await _productService.VerifyProduct(id);

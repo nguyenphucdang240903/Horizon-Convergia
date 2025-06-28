@@ -12,6 +12,7 @@ namespace Services.Interfaces
         Task<string> VerifyProduct(string id);
         Task<bool> DeleteAsync(string id);
         Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync();
+        Task<IEnumerable<ProductDTO>> GetUnpaidProductsAsync()
         Task<string> SendPaymentLinkToSellerAsync(string productId, string returnUrl);
         Task<bool> ActivateProductAfterPaymentAsync(string productId);
 
