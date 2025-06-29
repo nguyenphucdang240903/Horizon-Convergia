@@ -13,32 +13,44 @@ namespace Repositories
             await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
         public async Task<IEnumerable<User>> SearchAsync(string keyword, int pageIndex, int pageSize)
-{
-    keyword = keyword?.ToLower() ?? "";
+        {
+            var query = _context.Users.AsQueryable();
 
-    return await _context.Users
-        .AsNoTracking()
-        .Where(u =>
-            u.Name.ToLower().Contains(keyword) ||
-            u.Email.ToLower().Contains(keyword) ||
-            u.PhoneNumber.ToLower().Contains(keyword) ||
-            u.Address.ToLower().Contains(keyword))
-        .OrderByDescending(u => u.CreatedAt)
-        .Skip((pageIndex - 1) * pageSize)
-        .Take(pageSize)
-        .ToListAsync();
-}
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                keyword = keyword.ToLower();
+                query = query.Where(u =>
+                    u.Name.ToLower().Contains(keyword) ||
+                    u.Email.ToLower().Contains(keyword) ||
+                    u.PhoneNumber.ToLower().Contains(keyword) ||
+                    u.Address.ToLower().Contains(keyword));
+            }
 
-public async Task<int> CountSearchAsync(string keyword)
-{
-    keyword = keyword?.ToLower() ?? "";
+            return await query
+                .AsNoTracking()
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
 
-    return await _context.Users
-        .CountAsync(u =>
-            u.Name.ToLower().Contains(keyword) ||
-            u.Email.ToLower().Contains(keyword));
-}
+        public async Task<int> CountSearchAsync(string keyword)
+        {
+            var query = _context.Users.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                keyword = keyword.ToLower();
+                query = query.Where(u =>
+                    u.Name.ToLower().Contains(keyword) ||
+                    u.Email.ToLower().Contains(keyword) ||
+                    u.PhoneNumber.ToLower().Contains(keyword) ||
+                    u.Address.ToLower().Contains(keyword));
+            }
+
+            return await query.CountAsync();
+        }
+
 
     }
-
 }

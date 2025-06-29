@@ -169,43 +169,45 @@ namespace Services
                 }
                 await _unitOfWork.SaveAsync();
             }
-
-            return new ProductCreateResult { Product = product };
-        }
         public async Task<string> SendPaymentLinkToSellerAsync(string productId, string returnUrl)
+
         {
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(productId);
             if (product == null || !product.IsVerified || product.Status != ProductStatus.UnPaid_Seller)
-            {
-                return "Không tìm thấy sản phẩm.";
-            }
+                return "Không tìm thấy sản phẩm hợp lệ.";
+
             var seller = await _unitOfWork.Repository<User>().GetByIdAsync(product.SellerId);
             if (seller == null || !seller.IsVerified || seller.IsDeleted || seller.Role != UserRole.Seller)
-            {
-                return "Không tìm thấy người bán.";
-            }
+                return "Không tìm thấy người bán hợp lệ.";
 
             var orderCode = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var description = $"{product.Description}";
-
             var items = new List<ItemData>
-            {
-                new ItemData(
-                    name: "Thanh toán HorizonConvergia",
-                    quantity: product.Quantity,
-                    price: (int)(product.Price)
-                )
-            };
+    {
+        new ItemData(
+            name: "Thanh toán sản phẩm HorizonConvergia",
+            quantity: product.Quantity,
+            price: (int)(product.Price)
+        )
+    };
+            var returnUrl = "https://localhost:7076/api/Payments/payos-callback";
             var paymentData = new PaymentData(
                 orderCode: orderCode,
+
+                amount: (int)(product.Price * product.Quantity),
+                description: (product.Model ?? "HorizonConvergia").Substring(0, Math.Min(25, product.Model?.Length ?? 0)),
+
                 amount: (int)(product.Price) * product.Quantity,
                 description: description,
+
                 items: items,
                 returnUrl: returnUrl,
                 cancelUrl: returnUrl
             );
 
             var paymentResult = await _payos.createPaymentLink(paymentData);
+
+
+            var payment = new Payment
             //var payment = new Payment
             //{
             //    Id = Guid.NewGuid().ToString(),
@@ -268,13 +270,25 @@ namespace Services
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(productId);
             if (product == null || product.Status != ProductStatus.UnPaid_Seller)
             {
-                return false;
-            }
-            product.Status = ProductStatus.Active;
-            product.IsVerified = true;
-            _unitOfWork.Repository<Product>().Update(product);
+                Id = Guid.NewGuid().ToString(),
+                Amount = product.Price * product.Quantity,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                OrderId = product.Id, 
+                UserId = product.SellerId,
+                PaymentMethod = "PayOS",
+                Reference = orderCode.ToString(),
+                Description = $"Thanh toán đăng bán sản phẩm: {product.Model}",
+                PaymentStatus = PaymentStatus.Pending
+            };
+
+            await _unitOfWork.Repository<Payment>().AddAsync(payment);
             await _unitOfWork.SaveAsync();
-            return true;
+
+            var emailService = new EmailService();
+            await emailService.SendPaymentEmailAsync(seller.Email, paymentResult.checkoutUrl);
+
+            return "Đã gửi link thanh toán tới email người bán.";
         }
 
         public async Task<bool> DeleteAsync(string id)

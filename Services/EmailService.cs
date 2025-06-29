@@ -42,6 +42,23 @@ namespace Services
 
             await client.SendMailAsync(message);
         }
+        public async Task SendPaymentEmailAsync(string toEmail, string verificationLink)
+        {
+            var client = new SmtpClient("smtp.gmail.com", 587)
+            {
+                EnableSsl = true,
+                Credentials = new NetworkCredential(_from, _password)
+            };
+
+            var message = new MailMessage(_from, toEmail)
+            {
+                Subject = "Thanh toán phí dịch vụ",
+                Body = $"Để thanh toán vui lòng nhấp vào liên kết sau:\n{verificationLink}",
+                IsBodyHtml = false
+            };
+
+            await client.SendMailAsync(message);
+        }
     }
 
 }
