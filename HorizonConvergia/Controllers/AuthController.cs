@@ -283,7 +283,7 @@ namespace HorizonConvergia.Controllers
             return BadRequest(new ResultDTO
             {
                 IsSuccess = false,
-                Message = "Status Code:401 Unauthorized",
+                Message = "Sai email hoặc mật khẩu",
                 Data = null
             });
         }

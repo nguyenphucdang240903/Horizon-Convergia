@@ -99,6 +99,26 @@ namespace Services
             return user;
         }
 
+        public async Task<IEnumerable<UserBasicDTO>> GetAllUsersAsync(int pageIndex, int pageSize)
+        {
+            var users = await _unitOfWork.Users.Query()
+                .Where(u => !u.IsDeleted)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return users.Select(u => new UserBasicDTO
+            {
+                Id = u.Id,
+                Name = u.Name,
+                Email = u.Email,
+                PhoneNumber = u.PhoneNumber,
+                AvatarUrl = u.AvatarUrl,
+                Status = u.Status,
+                Role = u.Role
+            });
+        }
+
 
         public async Task<User?> GetUserByEmailAsync(string email)
         {
@@ -143,7 +163,10 @@ namespace Services
             return await _unitOfWork.Users.CountSearchAsync(keyword);
         }
 
-
+        public async Task<int> CountAllUsersAsync()
+        {
+            return await _unitOfWork.Users.Query().CountAsync(u => !u.IsDeleted);
+        }
         public async Task UpdateUserAsync(UpdateUserDTO user)
         {
             if (string.IsNullOrWhiteSpace(user.Name) || !char.IsUpper(user.Name[0]))

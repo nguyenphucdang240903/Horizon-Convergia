@@ -14,7 +14,25 @@ namespace HorizonConvergia.Controllers
 
         public UsersController(IUserService userService) => _userService = userService;
 
-
+        [HttpGet("all")]
+        //[Authorize(Policy = "Admin")]
+        public async Task<IActionResult> GetAllUsers([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        {
+            var users = await _userService.GetAllUsersAsync(pageIndex, pageSize);
+            var total = await _userService.CountAllUsersAsync();
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Lấy danh sách người dùng thành công.",
+                Data = new PagedResultDTO<UserBasicDTO>
+                {
+                    Items = users,
+                    TotalRecords = total,
+                    PageIndex = pageIndex,
+                    PageSize = pageSize
+                }
+            });
+        }
 
         [HttpGet("{id}")]
         [Authorize(Policy = "Admin")]

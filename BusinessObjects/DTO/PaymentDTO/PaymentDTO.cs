@@ -12,14 +12,17 @@ namespace BusinessObjects.DTO.PaymentDTO
         public decimal Amount { get; set; }
         public string PaymentMethod { get; set; } = "BankTransfer";
         public string Description { get; set; }
-
-        public string ReturnUrl { get; set; }
     }
     public class PayOSReturnDTO
     {
         public string OrderCode { get; set; }
         public string Status { get; set; }
         public string id { get; set; }
+    }
+
+    public class SendPaymentLinkDTO
+    {
+        public string ProductId { get; set; }
     }
 
 }

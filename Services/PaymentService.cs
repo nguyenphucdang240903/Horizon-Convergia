@@ -32,10 +32,9 @@ namespace Services
 
         public async Task<string> CreatePayOSUrlAsync(CreatePaymentRequestDTO dto, string userId)
         {
+            var ReturnUrl = "https://localhost:7076/api/Payments/payos-callback";
             var orderCode = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var description = dto.Description ?? "Thanh toán đơn hàng HorizonConvergia";
-
-            // Tạo item cho hóa đơn
             var items = new List<ItemData>
             {
                 new ItemData(
@@ -49,8 +48,8 @@ namespace Services
                 amount: (int)(dto.Amount * 1000),
                 description: description,
                 items: items,
-                returnUrl: dto.ReturnUrl,
-                cancelUrl: dto.ReturnUrl
+                returnUrl: ReturnUrl,
+                cancelUrl: ReturnUrl
             );
 
             var paymentResult = await _payos.createPaymentLink(paymentData);
@@ -101,6 +100,28 @@ namespace Services
                 ? PaymentStatus.Completed
                 : PaymentStatus.Failed;
             payment.UpdatedAt = DateTime.UtcNow;
+
+            var order = await _unitOfWork.Repository<Order>().GetByIdAsync(payment.OrderId);
+
+            if (order != null)
+            {
+                if (transaction.TransactionStatus == TransactionStatus.Success)
+                {
+                    order.Status = OrderStatus.Pending;
+                    _unitOfWork.Repository<Order>().Update(order);
+                }
+            }
+            else
+            {
+                var product = await _unitOfWork.Repository<Product>().GetByIdAsync(payment.OrderId);
+                if (product != null && transaction.TransactionStatus == TransactionStatus.Success)
+                {
+                    product.Status = ProductStatus.Active;
+                    product.IsVerified = true;
+                    product.UpdatedAt = DateTime.UtcNow;
+                    _unitOfWork.Repository<Product>().Update(product);
+                }
+            }
 
             await _unitOfWork.Repository<PaymentTransaction>().AddAsync(transaction);
             _unitOfWork.Repository<Payment>().Update(payment);

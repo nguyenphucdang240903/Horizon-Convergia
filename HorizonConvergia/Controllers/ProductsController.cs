@@ -1,4 +1,5 @@
-﻿using BusinessObjects.DTO.ProductDTO;
+﻿using BusinessObjects.DTO.PaymentDTO;
+using BusinessObjects.DTO.ProductDTO;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 
@@ -75,23 +76,21 @@ namespace HorizonConvergia.Controllers
             return success ? NoContent() : NotFound();
         }
 
-        [HttpPost("send-payment-link/{productId}")]
-        public async Task<IActionResult> SendPaymentLinkToSellerAsync(string productId, string returnUrl)
+        [HttpPost("send-payment-link")]
+        public async Task<IActionResult> SendPaymentLinkToSellerAsync([FromBody] SendPaymentLinkDTO dto)
         {
-            var link = await _productService.SendPaymentLinkToSellerAsync(productId, returnUrl);
-            if (string.IsNullOrEmpty(link))
-            {
+            if (string.IsNullOrWhiteSpace(dto.ProductId))
+                return BadRequest("Thiếu thông tin.");
+            var result = await _productService.SendPaymentLinkToSellerAsync(dto.ProductId);
+
+            if (string.IsNullOrWhiteSpace(result))
                 return BadRequest("Không gửi được link thanh toán.");
-            }
-            return Ok(link);
+
+            return Ok(new { message = "Đã gửi link thanh toán", url = result });
         }
 
-        [HttpPut("activate/{productId}")]
-        public async Task<IActionResult> ActivateProductAfterPaymentAsync(string productId)
-        {
-            var success = await _productService.ActivateProductAfterPaymentAsync(productId);
-            return success ? NoContent() : NotFound();
-        }
+
+
     }
 
 }
