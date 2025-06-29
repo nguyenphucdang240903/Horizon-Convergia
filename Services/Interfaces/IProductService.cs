@@ -18,9 +18,8 @@ namespace Services.Interfaces
         // PUT
         Task<bool> UpdateAsync(string id, UpdateProductDTO productDto);
         Task<string> VerifyProduct(string id);
-        Task<bool> DeleteAsync(string id);
-        Task<string> SendPaymentLinkToSellerAsync(string productId);
         Task<bool> ActivateProductAfterPaymentAsync(string productId);
+
         // DELETE
         Task<bool> DeleteAsync(string id);
     }
