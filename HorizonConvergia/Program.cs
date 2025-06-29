@@ -105,8 +105,23 @@ builder.Services.AddAuthentication(options =>
     });
 
 // 4. DbContext
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        Console.WriteLine("DEBUG: Connection string 'DefaultConnection' is NULL or EMPTY.");
+    }
+    else
+    {
+        // Cẩn thận với việc log mật khẩu trong production, đây chỉ là để debug tạm thời
+        Console.WriteLine($"DEBUG: Attempting to connect with string: {connectionString}");
+    }
+
+    options.UseNpgsql(connectionString);
+});
 
 // 5. Controllers
 builder.Services.AddControllers();
@@ -125,6 +140,9 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<PaymentService, PaymentService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IImagesService, ImagesService>();
+builder.Services.AddScoped<IBlogService, BlogService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+
 
 builder.Services.Configure<PayOSSettings>(
     builder.Configuration.GetSection("PayOS"));

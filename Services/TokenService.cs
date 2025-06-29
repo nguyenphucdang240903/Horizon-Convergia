@@ -20,6 +20,10 @@ namespace Services
             }
             try
             {
+                if (token.ExpiredTime.HasValue && (token.ExpiredTime.Value.Kind == DateTimeKind.Local || token.ExpiredTime.Value.Kind == DateTimeKind.Unspecified))
+                {
+                    token.ExpiredTime = token.ExpiredTime.Value.ToUniversalTime();
+                }
                 var existingToken = _unitOfWork.Tokens.Get(x => x.UserId == token.UserId);
                 if (existingToken != null)
                 {

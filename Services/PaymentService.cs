@@ -91,7 +91,7 @@ namespace Services
                 Amount = payment.Amount,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                Reference = dto.TransactionId,
+                Reference = dto.id,
                 TransactionType = "PayOS",
                 TransactionStatus = dto.Status == "PAID" ? TransactionStatus.Success : TransactionStatus.Failed,
                 UserId = payment.UserId
