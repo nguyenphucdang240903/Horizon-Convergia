@@ -6,15 +6,14 @@ namespace Services.Interfaces
 {
     public interface IUserService
     {
-        Task<IEnumerable<UserBasicDTO>> GetAllUsersAsync(int pageIndex, int pageSize);
         Task<User> GetUserByEmailAsync(string email);
         Task<User> RegisterNewUserAsync(RegisterUserDTO dto);
         Task<User?> GetUserByResetTokenAsync(string token);
         Task UpdateResetPasswordTokenAsync(User user);
         Task UpdatePasswordAsync(User user);
-        Task<IEnumerable<UserBasicDTO>> SearchUsersAsync(string keyword, int pageIndex, int pageSize);
-        Task<int> CountSearchUsersAsync(string keyword);
-        Task<int> CountAllUsersAsync();
+        Task<IEnumerable<UserBasicDTO>> SearchUsersAsync(string? keyword, UserRole? role, UserStatus? status, int pageIndex, int pageSize, string sortBy, string sortOrder);
+        Task<int> CountSearchUsersAsync(string? keyword, UserRole? role, UserStatus? status);
+
         Task<User?> GetUserByIdAsync(string id);
         User GetUserByUserName(string userName);
         Task<User?> GetUserByEmail(string email);

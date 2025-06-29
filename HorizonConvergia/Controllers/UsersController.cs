@@ -1,5 +1,6 @@
 ﻿using BusinessObjects.DTO.ResultDTO;
 using BusinessObjects.DTO.UserDTO;
+using BusinessObjects.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
@@ -14,25 +15,6 @@ namespace HorizonConvergia.Controllers
 
         public UsersController(IUserService userService) => _userService = userService;
 
-        [HttpGet("getAllUser ")]
-        [Authorize(Policy = "Admin")]
-        public async Task<IActionResult> GetAllUsers([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
-        {
-            var users = await _userService.GetAllUsersAsync(pageIndex, pageSize);
-            var total = await _userService.CountAllUsersAsync();
-            return Ok(new ResultDTO
-            {
-                IsSuccess = true,
-                Message = "Lấy danh sách người dùng thành công.",
-                Data = new PagedResultDTO<UserBasicDTO>
-                {
-                    Items = users,
-                    TotalRecords = total,
-                    PageIndex = pageIndex,
-                    PageSize = pageSize
-                }
-            });
-        }
         [HttpPost("admin-create")]
         [Authorize(Policy = "Admin")]
         public async Task<IActionResult> AdminCreateUser([FromBody] RegisterUserDTO dto)
@@ -100,11 +82,18 @@ namespace HorizonConvergia.Controllers
             return Ok(new { message = $"Người dùng với ID {id} xóa thành công." });
         }
         [HttpGet("search")]
-        [Authorize(Policy = "Admin")]
-        public async Task<IActionResult> SearchUsers([FromQuery] string? keyword, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        //[Authorize(Policy = "Admin")]
+        public async Task<IActionResult> SearchUsers(
+     [FromQuery] string? keyword,
+     [FromQuery] UserRole? role,
+     [FromQuery] UserStatus? status,
+     [FromQuery] int pageIndex = 1,
+     [FromQuery] int pageSize = 10,
+     [FromQuery] string sortBy = "CreatedAt",
+     [FromQuery] string sortOrder = "desc")
         {
-            var users = await _userService.SearchUsersAsync(keyword, pageIndex, pageSize);
-            var total = await _userService.CountSearchUsersAsync(keyword);
+            var users = await _userService.SearchUsersAsync(keyword, role, status, pageIndex, pageSize, sortBy, sortOrder);
+            var total = await _userService.CountSearchUsersAsync(keyword, role, status);
 
             return Ok(new ResultDTO
             {
@@ -119,6 +108,7 @@ namespace HorizonConvergia.Controllers
                 }
             });
         }
+
 
     }
 }
