@@ -82,7 +82,7 @@ namespace HorizonConvergia.Controllers
             return Ok(new { message = $"Người dùng với ID {id} xóa thành công." });
         }
         [HttpGet("search")]
-        //[Authorize(Policy = "Admin")]
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> SearchUsers(
      [FromQuery] string? keyword,
      [FromQuery] UserRole? role,
