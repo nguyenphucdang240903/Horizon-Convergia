@@ -43,13 +43,18 @@ namespace Services
             return true;
         }
 
-        public async Task<IEnumerable<CategoryDTO>> GetAllAsync()
+        public async Task<IEnumerable<CategoryDTO>> GetAllAsync(string? name = null)
         {
-            var categories = await _unitOfWork.Repository<Category>()
+            var query = _unitOfWork.Repository<Category>()
                 .Query()
-                .Where(c => c.IsDeleted == false)
-                .ToListAsync();
+                .Where(c => c.IsDeleted == false);
 
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                query = query.Where(c => EF.Functions.Like(c.Name, $"%{name}%"));
+            }
+
+            var categories = await query.ToListAsync();
             return categories.Select(c => MapToDTO(c));
         }
 
