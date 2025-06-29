@@ -19,7 +19,7 @@ namespace BusinessObjects.DTO.PaymentDTO
     {
         public string OrderCode { get; set; }
         public string Status { get; set; }
-        public string TransactionId { get; set; }
+        public string id { get; set; }
     }
 
 }

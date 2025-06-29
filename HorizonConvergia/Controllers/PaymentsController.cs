@@ -39,8 +39,8 @@ namespace HorizonConvergia.Controllers
         }
 
 
-        [HttpPost("payos-callback")]
-        public async Task<IActionResult> PayOSCallback([FromBody] PayOSReturnDTO dto)
+        [HttpGet("payos-callback")]
+        public async Task<IActionResult> PayOSCallback([FromQuery] PayOSReturnDTO dto)
         {
             var result = await _paymentService.HandlePayOSCallbackAsync(dto);
             return result ? Ok("Thanh toán thành công") : BadRequest("Thanh toán thất bại");
