@@ -14,7 +14,7 @@ namespace HorizonConvergia.Controllers
 
         public UsersController(IUserService userService) => _userService = userService;
 
-        [HttpGet("all")]
+        [HttpGet("getAllUser ")]
         [Authorize(Policy = "Admin")]
         public async Task<IActionResult> GetAllUsers([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
         {
@@ -30,6 +30,23 @@ namespace HorizonConvergia.Controllers
                     TotalRecords = total,
                     PageIndex = pageIndex,
                     PageSize = pageSize
+                }
+            });
+        }
+        [HttpPost("admin-create")]
+        //[Authorize(Policy = "Admin")]
+        public async Task<IActionResult> AdminCreateUser([FromBody] RegisterUserDTO dto)
+        {
+            var user = await _userService.AdminCreateUserAsync(dto);
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Tạo tài khoản thành công, vui lòng kiểm tra email để xác thực.",
+                Data = new
+                {
+                    user.Id,
+                    user.Email,
+                    user.Role
                 }
             });
         }
