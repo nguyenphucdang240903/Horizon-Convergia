@@ -15,6 +15,9 @@ namespace BusinessObjects.Models
         public UserStatus Status { get; set; }
         public UserRole Role { get; set; }
         public DateTime? Dob { get; set; }
+        public string? ShopName { get; set; }
+        public string? shopDescription { get; set; }
+        public string? BusinessType { get; set; }
         public string? VerificationToken { get; set; }
         public DateTime? VerificationTokenExpires { get; set; }
         public bool IsVerified { get; set; }
@@ -22,6 +25,8 @@ namespace BusinessObjects.Models
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
+        public string? ResetPasswordToken { get; set; }
+        public DateTime? ResetPasswordTokenExpires { get; set; }
         public ICollection<Product> Products { get; set; }
         public ICollection<Review> Reviews { get; set; }
         public ICollection<Cart> Carts { get; set; }

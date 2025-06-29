@@ -15,11 +15,12 @@ namespace DataAccessObjects.Migrations
                 name: "Categories",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    ImageUrl = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -30,12 +31,12 @@ namespace DataAccessObjects.Migrations
                 name: "Token",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    AccessToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    AccessToken = table.Column<string>(type: "text", nullable: false),
+                    RefreshToken = table.Column<string>(type: "text", nullable: false),
+                    ExpiredTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -46,23 +47,28 @@ namespace DataAccessObjects.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AvatarUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Dob = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    VerificationToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    VerificationTokenExpires = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsVerified = table.Column<bool>(type: "bit", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: false),
+                    Address = table.Column<string>(type: "text", nullable: false),
+                    Gender = table.Column<string>(type: "text", nullable: false),
+                    AvatarUrl = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    Role = table.Column<string>(type: "text", nullable: false),
+                    Dob = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ShopName = table.Column<string>(type: "text", nullable: true),
+                    shopDescription = table.Column<string>(type: "text", nullable: true),
+                    BusinessType = table.Column<string>(type: "text", nullable: true),
+                    VerificationToken = table.Column<string>(type: "text", nullable: true),
+                    VerificationTokenExpires = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsVerified = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ResetPasswordToken = table.Column<string>(type: "text", nullable: true),
+                    ResetPasswordTokenExpires = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -73,10 +79,13 @@ namespace DataAccessObjects.Migrations
                 name: "Blogs",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AuthorId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Content = table.Column<string>(type: "text", nullable: false),
+                    ImageUrl = table.Column<string>(type: "text", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    AuthorId = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -93,11 +102,11 @@ namespace DataAccessObjects.Migrations
                 name: "Messages",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    SenderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ReceiverId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Content = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    SenderId = table.Column<string>(type: "text", nullable: false),
+                    ReceiverId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -120,17 +129,17 @@ namespace DataAccessObjects.Migrations
                 name: "Orders",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    OrderNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ShippingAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Discount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    BuyerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    SellerId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    OrderNo = table.Column<string>(type: "text", nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    ShippingAddress = table.Column<string>(type: "text", nullable: false),
+                    Discount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    BuyerId = table.Column<string>(type: "text", nullable: false),
+                    SellerId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -153,21 +162,21 @@ namespace DataAccessObjects.Migrations
                 name: "Products",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Brand = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Model = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Year = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Condition = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsVerified = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    SellerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CategoryId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Brand = table.Column<string>(type: "text", nullable: false),
+                    Model = table.Column<string>(type: "text", nullable: false),
+                    Year = table.Column<int>(type: "integer", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Location = table.Column<string>(type: "text", nullable: false),
+                    Condition = table.Column<string>(type: "text", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    IsVerified = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    SellerId = table.Column<string>(type: "text", nullable: false),
+                    CategoryId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -190,17 +199,17 @@ namespace DataAccessObjects.Migrations
                 name: "Payments",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TransactionDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PaymentStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Reference = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    OrderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    PaymentMethod = table.Column<string>(type: "text", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
+                    TransactionDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    PaymentStatus = table.Column<string>(type: "text", nullable: false),
+                    Reference = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    OrderId = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -223,16 +232,16 @@ namespace DataAccessObjects.Migrations
                 name: "Shippings",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CarrierId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TrackingNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ShippingFee = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ActualDeliveryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    OrderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    CarrierId = table.Column<string>(type: "text", nullable: false),
+                    TrackingNumber = table.Column<string>(type: "text", nullable: false),
+                    ShippingFee = table.Column<decimal>(type: "numeric", nullable: false),
+                    ActualDeliveryDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    OrderId = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -255,17 +264,17 @@ namespace DataAccessObjects.Migrations
                 name: "Carts",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CartNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Discount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    ProductId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    BuyerId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    CartNo = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    Discount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    ProductId = table.Column<string>(type: "text", nullable: false),
+                    BuyerId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -288,10 +297,10 @@ namespace DataAccessObjects.Migrations
                 name: "Images",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ImagesUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ProductId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    ImagesUrl = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ProductId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -308,13 +317,13 @@ namespace DataAccessObjects.Migrations
                 name: "OrderDetails",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProductType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Discount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    OrderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProductId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    ProductType = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    Discount = table.Column<decimal>(type: "numeric", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    OrderId = table.Column<string>(type: "text", nullable: false),
+                    ProductId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -337,14 +346,14 @@ namespace DataAccessObjects.Migrations
                 name: "Reviews",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Rating = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    ProductId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Comment = table.Column<string>(type: "text", nullable: false),
+                    Rating = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    ProductId = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -367,15 +376,15 @@ namespace DataAccessObjects.Migrations
                 name: "PaymentTransactions",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PaymentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TransactionType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TransactionStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Reference = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    PaymentId = table.Column<string>(type: "text", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
+                    TransactionType = table.Column<string>(type: "text", nullable: false),
+                    TransactionStatus = table.Column<string>(type: "text", nullable: false),
+                    Reference = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -1,6 +1,5 @@
 ﻿using BusinessObjects.DTO.ResultDTO;
 using BusinessObjects.DTO.UserDTO;
-using BusinessObjects.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
@@ -15,11 +14,28 @@ namespace HorizonConvergia.Controllers
 
         public UsersController(IUserService userService) => _userService = userService;
 
-       
+        [HttpGet("all")]
+        [Authorize(Policy = "Admin")]
+        public async Task<IActionResult> GetAllUsers([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        {
+            var users = await _userService.GetAllUsersAsync(pageIndex, pageSize);
+            var total = await _userService.CountAllUsersAsync();
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Lấy danh sách người dùng thành công.",
+                Data = new PagedResultDTO<UserBasicDTO>
+                {
+                    Items = users,
+                    TotalRecords = total,
+                    PageIndex = pageIndex,
+                    PageSize = pageSize
+                }
+            });
+        }
 
         [HttpGet("{id}")]
-        [Authorize(Policy = "Buyer")]
-
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> Get(string id)
         {
             var user = await _userService.GetUserByIdAsync(id);
@@ -45,20 +61,47 @@ namespace HorizonConvergia.Controllers
         {
             user.Id = id;
             await _userService.UpdateUserAsync(user);
-            return NoContent();
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Update thành công",
+                Data = user
+            });
+
         }
 
         [HttpDelete("{id}")]
-
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> DeleteUser(string id)
         {
             var result = await _userService.DeleteUserAsync(id);
             if (!result)
             {
-                return NotFound($"User with ID {id} not found.");
+                return NotFound($"Đéo tìm thấy người dùng có ID {id}");
             }
 
-            return Ok(new { message = $"User with ID {id} deleted successfully." });
+            return Ok(new { message = $"Người dùng với ID {id} xóa thành công." });
         }
+        [HttpGet("search")]
+        [Authorize(Policy = "Admin")]
+        public async Task<IActionResult> SearchUsers([FromQuery] string? keyword, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        {
+            var users = await _userService.SearchUsersAsync(keyword, pageIndex, pageSize);
+            var total = await _userService.CountSearchUsersAsync(keyword);
+
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Tìm kiếm người dùng thành công.",
+                Data = new PagedResultDTO<UserBasicDTO>
+                {
+                    Items = users,
+                    TotalRecords = total,
+                    PageIndex = pageIndex,
+                    PageSize = pageSize
+                }
+            });
+        }
+
     }
 }

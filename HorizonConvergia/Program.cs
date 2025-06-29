@@ -1,5 +1,6 @@
 ﻿using DataAccessObjects;
 using DataAccessObjects.Data;
+using DataAccessObjects.Setting;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,6 @@ using Repositories;
 using Repositories.Interfaces;
 using Services;
 using Services.Interfaces;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -105,8 +105,23 @@ builder.Services.AddAuthentication(options =>
     });
 
 // 4. DbContext
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        Console.WriteLine("DEBUG: Connection string 'DefaultConnection' is NULL or EMPTY.");
+    }
+    else
+    {
+        // Cẩn thận với việc log mật khẩu trong production, đây chỉ là để debug tạm thời
+        Console.WriteLine($"DEBUG: Attempting to connect with string: {connectionString}");
+    }
+
+    options.UseNpgsql(connectionString);
+});
 
 // 5. Controllers
 builder.Services.AddControllers();
@@ -119,6 +134,20 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<PaymentService, PaymentService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IImagesService, ImagesService>();
+builder.Services.AddScoped<IBlogService, BlogService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+
+
+builder.Services.Configure<PayOSSettings>(
+    builder.Configuration.GetSection("PayOS"));
+
+
 
 // 7. CORS (bạn nên bật nếu frontend gọi API từ domain khác)
 builder.Services.AddCors(options =>

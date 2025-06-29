@@ -7,16 +7,18 @@ using BusinessObjects.Security;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Services;
 using Services.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace HorizonConvergia.Controllers
 {
@@ -32,7 +34,7 @@ namespace HorizonConvergia.Controllers
             _tokenService = tokenService;
             _userService = userService;
         }
-   
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDTO dto)
         {
@@ -72,6 +74,43 @@ namespace HorizonConvergia.Controllers
 
             return Ok("Tài khoản đã được xác minh thành công.");
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO dto)
+        {
+            var user = await _userService.GetUserByEmailAsync(dto.Email);
+            if (user == null)
+                return BadRequest(new { Message = "Email không tồn tại." });
+
+            user.ResetPasswordToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+            user.ResetPasswordTokenExpires = DateTime.UtcNow.AddHours(1);
+
+            await _userService.UpdateResetPasswordTokenAsync(user);
+
+            var resetLink = $"{Request.Scheme}://{Request.Host}/reset-password?token={WebUtility.UrlEncode(user.ResetPasswordToken)}";
+
+            var emailService = new EmailService();
+            await emailService.SendResetPasswordEmailAsync(dto.Email, resetLink);
+
+            return Ok(new { Message = "Vui lòng kiểm tra email để đặt lại mật khẩu." });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)
+        {
+            var user = await _userService.GetUserByResetTokenAsync(dto.Token);
+            if (user == null || user.ResetPasswordTokenExpires < DateTime.UtcNow)
+                return BadRequest(new { Message = "Token không hợp lệ hoặc đã hết hạn." });
+
+            user.Password = PasswordHasher.HashPassword(dto.NewPassword);
+            user.ResetPasswordToken = null;
+            user.ResetPasswordTokenExpires = null;
+
+            await _userService.UpdatePasswordAsync(user);
+
+            return Ok(new { Message = "Mật khẩu đã được đặt lại thành công." });
+        }
+
 
 
         [NonAction]
@@ -145,7 +184,13 @@ namespace HorizonConvergia.Controllers
         new Claim("UserId", user.Id.ToString()),
         new Claim("UserName", user.Name),
         new Claim("Email", user.Email),
-        new Claim("Role", user.Role.ToString())
+        new Claim("Role", user.Role.ToString()),
+        new Claim("PhoneNumber", user.PhoneNumber ?? ""),
+        new Claim("Address", user.Address ?? ""),
+        new Claim("Gender", user.Gender.ToString()),
+        new Claim("AvatarUrl", user.AvatarUrl ?? ""),
+        new Claim("Status", user.Status.ToString()),
+        new Claim("Dob", user.Dob?.ToString("yyyy-MM-dd") ?? "")
     };
 
             var securityKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes("c2VydmVwZXJmZWN0bHljaGVlc2VxdWlja2NvYWNoY29sbGVjdHNsb3Bld2lzZWNhbWU="));
@@ -205,6 +250,7 @@ namespace HorizonConvergia.Controllers
         #endregion
 
         #region Login
+
         [HttpPost]
         [Route("Login")]
         public IActionResult Login(string email, string password)
@@ -237,7 +283,7 @@ namespace HorizonConvergia.Controllers
             return BadRequest(new ResultDTO
             {
                 IsSuccess = false,
-                Message = "Status Code:401 Unauthorized",
+                Message = "Sai email hoặc mật khẩu",
                 Data = null
             });
         }
@@ -383,5 +429,49 @@ namespace HorizonConvergia.Controllers
             }
         }
         #endregion
+
+        [HttpPut("{id}/change-status")]
+        [Authorize(Policy = "Admin")]
+        public async Task<IActionResult> ChangeStatus(string id, [FromBody] ChangeStatusDTO dto)
+        {
+            await _userService.ChangeStatusAsync(id, dto.Status);
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Thay đổi  status thành công",
+                Data = dto
+            });
+
+        }
+
+        [HttpPut("{id}/change-role")]
+        [Authorize(Policy = "Admin")]
+        public async Task<IActionResult> ChangeRole(string id, [FromBody] ChangeRoleDTO dto)
+        {
+            await _userService.ChangeRoleAsync(id, dto.Role);
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Thay đổi role thành công",
+                Data = dto
+            });
+        }
+
+        [HttpPut("{id}/change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(string id, [FromBody] ChangePasswordDTO dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.NewPassword))
+                return BadRequest("Mật khẩu không được để trống.");
+
+            await _userService.ChangePasswordAsync(id, dto.NewPassword);
+            return Ok(new ResultDTO
+            {
+                IsSuccess = true,
+                Message = "Đổi mật khẩu thành công",
+                Data = dto
+            });
+        }
+
     }
 }
