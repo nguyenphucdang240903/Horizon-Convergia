@@ -250,6 +250,7 @@ namespace Services
             if (user is not null)
             {
                 user.IsDeleted = true;
+                user.Status = UserStatus.Blocked;
                 _unitOfWork.Users.Update(user);
                 await _unitOfWork.SaveAsync();
             }

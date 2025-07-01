@@ -110,16 +110,6 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    if (string.IsNullOrEmpty(connectionString))
-    {
-        Console.WriteLine("DEBUG: Connection string 'DefaultConnection' is NULL or EMPTY.");
-    }
-    else
-    {
-        // Cẩn thận với việc log mật khẩu trong production, đây chỉ là để debug tạm thời
-        Console.WriteLine($"DEBUG: Attempting to connect with string: {connectionString}");
-    }
-
     options.UseNpgsql(connectionString);
 });
 
@@ -154,7 +144,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000") // thay URL frontend của bạn
+        policy.WithOrigins(
+                "http://localhost:3000",                 
+                "https://www.horizonconvergia.click",     
+                "https://horizon-convergia.onrender.com"  
+            )
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
