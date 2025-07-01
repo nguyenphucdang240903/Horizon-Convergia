@@ -256,7 +256,7 @@ namespace HorizonConvergia.Controllers
         public IActionResult Login(string email, string password)
         {
             var user = _userService.GetUserByEmailAsync(email).Result;
-            if (user.IsDeleted == false)
+            if (user.IsDeleted == false && user.Status == UserStatus.Blocked)
             {
                 if (user != null && user.IsVerified == true)
                 {
@@ -292,7 +292,7 @@ namespace HorizonConvergia.Controllers
             return BadRequest(new ResultDTO
             {
                 IsSuccess = false,
-                Message = "Tai khoan da bi xoa",
+                Message = "Tài khoản đã bị xóa",
                 Data = null
             });
         }
