@@ -26,11 +26,13 @@ namespace Services
         public async Task<IEnumerable<ProductDTO>> GetAllAsync(
             string? categoryId = null,
             string? sortField = null,
-            bool ascending = true)
+            bool ascending = true,
+            int pageNumber = 1,
+            int pageSize = 5)
         {
             var query = _unitOfWork.Repository<Product>()
-        .Query()
-        .Where(p => p.IsVerified && p.Status == ProductStatus.Active);
+                .Query()
+                .Where(p => p.IsVerified && p.Status == ProductStatus.Active);
 
             // Filter by Category
             if (!string.IsNullOrEmpty(categoryId))
@@ -56,6 +58,9 @@ namespace Services
                 query = query.OrderByDescending(p => p.CreatedAt);
             }
 
+            // Pagination
+            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+
             var products = await query.ToListAsync();
             return products.Select(p => MapToDTO(p));
         }
@@ -64,25 +69,95 @@ namespace Services
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
             return product == null ? null : MapToDTO(product);
         }
-        public async Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync()
+        public async Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync(string sellerId, 
+            string? categoryId = null, 
+            string? sortField = null, 
+            bool ascending = true, 
+            int pageNumber = 1, 
+            int pageSize = 5)
         {
-            var products = await _unitOfWork.Repository<Product>()
-                .Query()
-                .Where(p => !p.IsVerified && p.Status == ProductStatus.UnPaid_Seller)
-                .ToListAsync();
+            var seller = await _unitOfWork.Repository<User>().GetByIdAsync(sellerId);
+            if (seller == null || !seller.IsVerified || seller.IsDeleted || seller.Role != UserRole.Seller)
+            {
+                return Enumerable.Empty<ProductDTO>();
+            }
 
+            var query = _unitOfWork.Repository<Product>()
+                .Query()
+                .Where(p => !p.IsVerified && p.Status == ProductStatus.UnPaid_Seller && p.SellerId == sellerId);
+
+            if(!string.IsNullOrEmpty(categoryId))
+            {
+                query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            if (!string.IsNullOrEmpty(sortField)) 
+            { 
+                query = sortField.ToLower() switch
+                {
+                    "price" => ascending ? query.OrderBy(p => p.Price) : query.OrderByDescending(p => p.Price),
+                    "year" => ascending ? query.OrderBy(p => p.Year) : query.OrderByDescending(p => p.Year),
+                    "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
+                    "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
+                    _ => query // No sorting if field is not recognized
+                };
+            }
+            else
+            {                 
+                query = query.OrderByDescending(p => p.CreatedAt);
+            }
+
+            query = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+
+            var products = await query.ToListAsync();
             return products.Select(p => MapToDTO(p));
         }
-        public async Task<IEnumerable<ProductDTO>> GetUnpaidProductsAsync()
+        public async Task<IEnumerable<ProductDTO>> GetUnpaidProductsAsync(string sellerId, 
+            string? categoryId = null, 
+            string? sortField = null, 
+            bool ascending = true, 
+            int pageNumber = 1, 
+            int pageSize = 5)
         {
-            var products = await _unitOfWork.Repository<Product>()
-                .Query()
-                .Where(p => p.IsVerified && p.Status == ProductStatus.UnPaid_Seller)
-                .ToListAsync();
+            var seller = await _unitOfWork.Repository<User>().GetByIdAsync(sellerId);
+            if (seller == null || !seller.IsVerified || seller.IsDeleted || seller.Role != UserRole.Seller)
+            {
+                return Enumerable.Empty<ProductDTO>();
+            }
 
+            var query =  _unitOfWork.Repository<Product>()
+                 .Query()
+                 .Where(p => p.SellerId == sellerId && p.Status == ProductStatus.UnPaid_Seller && p.SellerId == sellerId);
+
+            if (!string.IsNullOrEmpty(categoryId))
+            {
+                query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            if (!string.IsNullOrEmpty(sortField)) {
+                query = sortField.ToLower() switch
+                {
+                    "price" => ascending ? query.OrderBy(p => p.Price) : query.OrderByDescending(p => p.Price),
+                    "year" => ascending ? query.OrderBy(p => p.Year) : query.OrderByDescending(p => p.Year),
+                    "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
+                    "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
+                    _ => query // No sorting if field is not recognized
+                };
+            }
+            else
+            {
+                query = query.OrderByDescending(p => p.CreatedAt);
+            }
+            query = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+            var products = await query.ToListAsync();
             return products.Select(p => MapToDTO(p));
         }
 
+       
         public async Task<ProductDTO> CreateAsync(CreateProductDTO dto)
         {
             var product = new Product
