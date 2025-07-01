@@ -256,34 +256,43 @@ namespace HorizonConvergia.Controllers
         public IActionResult Login(string email, string password)
         {
             var user = _userService.GetUserByEmailAsync(email).Result;
-            if (user != null && user.IsVerified == true)
+            if (user.IsDeleted == false)
             {
-                // Hash the input password with SHA256
-                var hashedInputPasswordString = PasswordHasher.HashPassword(password);
-
-                if (hashedInputPasswordString == user.Password)
+                if (user != null && user.IsVerified == true)
                 {
-                    // Convert userId to string using .ToString()
-                    var claims = new List<Claim>
+                    // Hash the input password with SHA256
+                    var hashedInputPasswordString = PasswordHasher.HashPassword(password);
+
+                    if (hashedInputPasswordString == user.Password)
+                    {
+                        // Convert userId to string using .ToString()
+                        var claims = new List<Claim>
     {
         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
         new Claim(ClaimTypes.Name, user.Email)
     };
-                    // Compare the hashed input password with the stored hashed password
-                    _tokenService.ResetRefreshToken();
-                    var token = GenerateToken(user, null);
-                    return Ok(new ResultDTO // Wrap the TokenDTO in a ResultDTO
-                    {
-                        IsSuccess = true,
-                        Message = "Đăng nhập thành công.",
-                        Data = token // The TokenDTO object
-                    });
+                        // Compare the hashed input password with the stored hashed password
+                        _tokenService.ResetRefreshToken();
+                        var token = GenerateToken(user, null);
+                        return Ok(new ResultDTO // Wrap the TokenDTO in a ResultDTO
+                        {
+                            IsSuccess = true,
+                            Message = "Đăng nhập thành công.",
+                            Data = token // The TokenDTO object
+                        });
+                    }
                 }
+                return BadRequest(new ResultDTO
+                {
+                    IsSuccess = false,
+                    Message = "Sai email hoặc mật khẩu",
+                    Data = null
+                });
             }
             return BadRequest(new ResultDTO
             {
                 IsSuccess = false,
-                Message = "Sai email hoặc mật khẩu",
+                Message = "Tai khoan da bi xoa",
                 Data = null
             });
         }
