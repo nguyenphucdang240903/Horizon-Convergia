@@ -340,7 +340,8 @@ namespace DataAccessObjects.Migrations
                         name: "FK_Payments_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Payments_Users_UserId",
                         column: x => x.UserId,
@@ -418,7 +419,8 @@ namespace DataAccessObjects.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Carts_BuyerId",
                 table: "Carts",
-                column: "BuyerId");
+                column: "BuyerId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Carts_ProductId",
@@ -469,7 +471,8 @@ namespace DataAccessObjects.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_ProductId",
                 table: "Payments",
-                column: "ProductId");
+                column: "ProductId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_UserId",

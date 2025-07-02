@@ -29,7 +29,7 @@ namespace BusinessObjects.Models
         public DateTime? ResetPasswordTokenExpires { get; set; }
         public ICollection<Product> Products { get; set; }
         public ICollection<Review> Reviews { get; set; }
-        public ICollection<Cart> Carts { get; set; }
+        public Cart? Cart { get; set; }
         public ICollection<Message> SentMessages { get; set; }
         public ICollection<Message> ReceivedMessages { get; set; }
         public ICollection<Payment> Payments { get; set; }
