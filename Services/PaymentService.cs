@@ -40,12 +40,12 @@ namespace Services
                 new ItemData(
                     name: "Thanh toán HorizonConvergia",
                     quantity: 1,
-                    price: (int)(dto.Amount * 1000)
+                    price: (int)(dto.Amount)
                 )
             };
             var paymentData = new PaymentData(
                 orderCode: orderCode,
-                amount: (int)(dto.Amount * 1000),
+                amount: (int)(dto.Amount),
                 description: description,
                 items: items,
                 returnUrl: ReturnUrl,
@@ -101,19 +101,21 @@ namespace Services
                 : PaymentStatus.Failed;
             payment.UpdatedAt = DateTime.UtcNow;
 
-            var order = await _unitOfWork.Repository<Order>().GetByIdAsync(payment.OrderId);
-
-            if (order != null)
+            if (payment.PaymentType == PaymentType.BuyerPayment)
             {
-                if (transaction.TransactionStatus == TransactionStatus.Success)
+                // Buyer thanh toán đơn hàng
+                var order = await _unitOfWork.Repository<Order>().GetByIdAsync(payment.OrderId);
+                if (order != null && transaction.TransactionStatus == TransactionStatus.Success)
                 {
-                    order.Status = OrderStatus.Pending;
+                    order.Status = OrderStatus.Confirmed; // Đơn hàng chờ seller xác nhận
+                    order.UpdatedAt = DateTime.UtcNow;
                     _unitOfWork.Repository<Order>().Update(order);
                 }
             }
-            else
+            else if (payment.PaymentType == PaymentType.SellerPayment)
             {
-                var product = await _unitOfWork.Repository<Product>().GetByIdAsync(payment.OrderId);
+                // Seller thanh toán để kích hoạt sản phẩm
+                var product = await _unitOfWork.Repository<Product>().GetByIdAsync(payment.ProductId);
                 if (product != null && transaction.TransactionStatus == TransactionStatus.Success)
                 {
                     product.Status = ProductStatus.Active;

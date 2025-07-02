@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccessObjects.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250619064539_InitialCreate")]
+    [Migration("20250702045309_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -284,7 +284,6 @@ namespace DataAccessObjects.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("OrderId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PaymentMethod")
@@ -293,6 +292,12 @@ namespace DataAccessObjects.Migrations
 
                     b.Property<string>("PaymentStatus")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("PaymentType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProductId")
                         .HasColumnType("text");
 
                     b.Property<string>("Reference")
@@ -313,6 +318,8 @@ namespace DataAccessObjects.Migrations
 
                     b.HasIndex("OrderId")
                         .IsUnique();
+
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("UserId");
 
@@ -723,8 +730,11 @@ namespace DataAccessObjects.Migrations
                     b.HasOne("BusinessObjects.Models.Order", "Order")
                         .WithOne("Payment")
                         .HasForeignKey("BusinessObjects.Models.Payment", "OrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BusinessObjects.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId");
 
                     b.HasOne("BusinessObjects.Models.User", "User")
                         .WithMany("Payments")
@@ -733,6 +743,8 @@ namespace DataAccessObjects.Migrations
                         .IsRequired();
 
                     b.Navigation("Order");
+
+                    b.Navigation("Product");
 
                     b.Navigation("User");
                 });

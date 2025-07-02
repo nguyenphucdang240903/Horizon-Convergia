@@ -123,7 +123,12 @@ namespace DataAccessObjects.Data
                 .WithOne(o => o.Shipping)
                 .HasForeignKey<Shipping>(s => s.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
-
+            // Order - Product (1-1)
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.Product)
+                .WithOne(pr => pr.Payment)
+                .HasForeignKey<Payment>(p => p.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
             // Order - Payment (1-1)
             modelBuilder.Entity<Payment>()
                 .HasOne(p => p.Order)

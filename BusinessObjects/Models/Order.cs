@@ -20,7 +20,7 @@ namespace BusinessObjects.Models
         public string SellerId { get; set; }
         public User Seller { get; set; }
         public Shipping Shipping { get; set; }
-        public Payment Payment { get; set; }
+        public Payment? Payment { get; set; }
 
         public ICollection<OrderDetail> OrderDetails { get; set; }
 
