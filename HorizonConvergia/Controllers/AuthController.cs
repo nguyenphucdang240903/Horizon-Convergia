@@ -256,7 +256,7 @@ namespace HorizonConvergia.Controllers
         public IActionResult Login(string email, string password)
         {
             var user = _userService.GetUserByEmailAsync(email).Result;
-            if (user.IsDeleted == false && user.Status == UserStatus.Blocked)
+            if (user.IsDeleted == false && user.Status == UserStatus.Active)
             {
                 if (user != null && user.IsVerified == true)
                 {
