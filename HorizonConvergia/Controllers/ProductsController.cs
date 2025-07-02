@@ -23,23 +23,35 @@ namespace HorizonConvergia.Controllers
         public async Task<IActionResult> GetAll(
             [FromQuery] string? categoryId = null,
             [FromQuery] string? sortField = null,
-            [FromQuery] bool ascending = true)
+            [FromQuery] bool ascending = true,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 5)
         {
-            var products = await _productService.GetAllAsync(categoryId, sortField, ascending);
+            var products = await _productService.GetAllAsync(categoryId, sortField, ascending, pageNumber, pageSize);
             return Ok(products);
         }
 
-        [HttpGet("unverified-unpaid")]
-        public async Task<IActionResult> GetUnverifiedUnpaidProducts()
+        [HttpGet("unverified-unpaid/{sellerId}")]
+        public async Task<IActionResult> GetUnverifiedUnpaidProducts(string sellerId,
+            [FromQuery] string? categoryId = null,
+            [FromQuery] string? sortField = null,
+            [FromQuery] bool ascending = true,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 5)
         {
-            var products = await _productService.GetUnverifiedUnpaidProductsAsync();
+            var products = await _productService.GetUnverifiedUnpaidProductsAsync(sellerId, categoryId, sortField, ascending, pageNumber, pageSize);
             return Ok(products);
         }
 
-        [HttpGet("unpaid")]
-        public async Task<IActionResult> GetUnpaidProducts()
+        [HttpGet("unpaid/{sellerId}")]
+        public async Task<IActionResult> GetUnpaidProducts(string sellerId,
+            [FromQuery] string? categoryId = null,
+            [FromQuery] string? sortField = null,
+            [FromQuery] bool ascending = true,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 5)
         {
-            var products = await _productService.GetUnpaidProductsAsync();
+            var products = await _productService.GetUnpaidProductsAsync(sellerId, categoryId, sortField, ascending, pageNumber, pageSize);
             return Ok(products);
         }
 
