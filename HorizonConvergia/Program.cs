@@ -132,6 +132,7 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IImagesService, ImagesService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 builder.Services.Configure<PayOSSettings>(

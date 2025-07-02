@@ -17,6 +17,7 @@ namespace BusinessObjects.Models
         public bool IsVerified { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public Payment? Payment { get; set; }
 
         public string SellerId { get; set; }
         public User Seller { get; set; }

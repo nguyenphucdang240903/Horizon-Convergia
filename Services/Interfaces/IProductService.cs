@@ -26,12 +26,10 @@ namespace Services.Interfaces
         // POST
         Task<ProductDTO> CreateAsync(CreateProductDTO productDto);
         Task<ProductCreateResult> SellerCreateAsync(string sellerId, CreateProductDTO productDto);
-        Task<string> SendPaymentLinkToSellerAsync(string productId, string returnUrl);
-
+        Task<string> SendPaymentLinkToSellerAsync(string productId);
         // PUT
         Task<bool> UpdateAsync(string id, UpdateProductDTO productDto);
-        Task<string> VerifyProduct(string id);
-        Task<bool> ActivateProductAfterPaymentAsync(string productId);
+
 
         // DELETE
         Task<bool> DeleteAsync(string id);

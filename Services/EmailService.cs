@@ -1,9 +1,10 @@
-﻿using System.Net;
+﻿using Services.Interfaces;
+using System.Net;
 using System.Net.Mail;
 
 namespace Services
 {
-    public class EmailService
+    public class EmailService : IEmailService
     {
         private readonly string _from = "phucdnse172283@fpt.edu.vn";
         private readonly string _password = "ageb pldq kmav qtmq";
