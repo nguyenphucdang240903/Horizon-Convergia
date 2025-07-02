@@ -96,7 +96,8 @@ namespace DataAccessObjects.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BuyerId");
+                    b.HasIndex("BuyerId")
+                        .IsUnique();
 
                     b.HasIndex("ProductId");
 
@@ -316,7 +317,8 @@ namespace DataAccessObjects.Migrations
                     b.HasIndex("OrderId")
                         .IsUnique();
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductId")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -638,8 +640,8 @@ namespace DataAccessObjects.Migrations
             modelBuilder.Entity("BusinessObjects.Models.Cart", b =>
                 {
                     b.HasOne("BusinessObjects.Models.User", "Buyer")
-                        .WithMany("Carts")
-                        .HasForeignKey("BuyerId")
+                        .WithOne("Cart")
+                        .HasForeignKey("BusinessObjects.Models.Cart", "BuyerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -730,8 +732,9 @@ namespace DataAccessObjects.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("BusinessObjects.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId");
+                        .WithOne("Payment")
+                        .HasForeignKey("BusinessObjects.Models.Payment", "ProductId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("BusinessObjects.Models.User", "User")
                         .WithMany("Payments")
@@ -831,8 +834,7 @@ namespace DataAccessObjects.Migrations
                 {
                     b.Navigation("OrderDetails");
 
-                    b.Navigation("Payment")
-                        .IsRequired();
+                    b.Navigation("Payment");
 
                     b.Navigation("Shipping")
                         .IsRequired();
@@ -849,6 +851,8 @@ namespace DataAccessObjects.Migrations
 
                     b.Navigation("Images");
 
+                    b.Navigation("Payment");
+
                     b.Navigation("Reviews");
                 });
 
@@ -856,7 +860,7 @@ namespace DataAccessObjects.Migrations
                 {
                     b.Navigation("Blogs");
 
-                    b.Navigation("Carts");
+                    b.Navigation("Cart");
 
                     b.Navigation("OrdersAsBuyer");
 

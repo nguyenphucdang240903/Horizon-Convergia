@@ -9,7 +9,9 @@ namespace Services.Interfaces
 {
     public interface IOrderService
     {
-        Task<string> CreateOrderAsync(CreateOrderDTO orderDto);
+        Task<List<string>> CreateOrderAsync(CreateOrderFromCartDTO dto, string buyerId);
+        Task<PagedResult<OrderListDTO>> SearchOrdersAsync(OrderSearchDTO searchDto);
+        Task<OrderDetailDTO> GetOrderDetailAsync(string orderId);
     }
 
 }

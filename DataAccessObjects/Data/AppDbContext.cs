@@ -41,11 +41,11 @@ namespace DataAccessObjects.Data
                 .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // User - Cart (1-n)
+            // User - Cart (1-1)
             modelBuilder.Entity<Cart>()
                 .HasOne(c => c.Buyer)
-                .WithMany(u => u.Carts)
-                .HasForeignKey(c => c.BuyerId)
+                .WithOne(u => u.Cart)
+                .HasForeignKey<Cart>(c => c.BuyerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // User - Shipping (1-n)
