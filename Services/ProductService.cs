@@ -177,7 +177,16 @@ namespace Services
                 IsVerified = false,
                 SellerId = dto.SellerId,
                 CategoryId = dto.CategoryId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+
+                EngineCapacity = dto.EngineCapacity,
+                FuelType = dto.FuelType,
+                Mileage = dto.Mileage,
+                Color = dto.Color,
+                AccessoryType = dto.AccessoryType,
+                Size = dto.Size,
+                SparePartType = dto.SparePartType,
+                VehicleCompatible = dto.VehicleCompatible
             };
 
             await _unitOfWork.Repository<Product>().AddAsync(product);
@@ -190,6 +199,7 @@ namespace Services
                 {
                     var image = new Images
                     {
+                        Id = Guid.NewGuid().ToString(),
                         ImagesUrl = imageUrl,
                         ProductId = product.Id
                     };
@@ -224,7 +234,16 @@ namespace Services
                 IsVerified = false,
                 SellerId = sellerId,
                 CategoryId = productDto.CategoryId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+
+                EngineCapacity = productDto.EngineCapacity,
+                FuelType = productDto.FuelType,
+                Mileage = productDto.Mileage,
+                Color = productDto.Color,
+                AccessoryType = productDto.AccessoryType,
+                Size = productDto.Size,
+                SparePartType = productDto.SparePartType,
+                VehicleCompatible = productDto.VehicleCompatible
             };
 
             await _unitOfWork.Repository<Product>().AddAsync(product);
@@ -322,6 +341,14 @@ namespace Services
             existing.Quantity = dto.Quantity;
             existing.CategoryId = dto.CategoryId;
             existing.UpdatedAt = DateTime.UtcNow;
+            existing.EngineCapacity = dto.EngineCapacity;
+            existing.FuelType = dto.FuelType;
+            existing.Mileage = dto.Mileage;
+            existing.Color = dto.Color;
+            existing.AccessoryType = dto.AccessoryType;
+            existing.Size = dto.Size;
+            existing.SparePartType = dto.SparePartType;
+            existing.VehicleCompatible = dto.VehicleCompatible;
 
             _unitOfWork.Repository<Product>().Update(existing);
             await _unitOfWork.SaveAsync();
@@ -356,7 +383,16 @@ namespace Services
             IsVerified = product.IsVerified,
             CreatedAt = product.CreatedAt,
             SellerId = product.SellerId,
-            CategoryId = product.CategoryId
+            CategoryId = product.CategoryId,
+            // New optional fields
+            EngineCapacity = product.EngineCapacity,
+            FuelType = product.FuelType,
+            Mileage = product.Mileage,
+            Color = product.Color,
+            AccessoryType = product.AccessoryType,
+            Size = product.Size,
+            SparePartType = product.SparePartType,
+            VehicleCompatible = product.VehicleCompatible
         };
 
         private Product MapToEntity(ProductDTO dto) => new Product
