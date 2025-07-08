@@ -30,7 +30,6 @@ namespace Services
             if (carts == null || !carts.Any())
                 throw new Exception("No valid cart items found.");
 
-            // Lấy tất cả sản phẩm liên quan trong giỏ 1 lần, tránh truy vấn lặp
             var productIds = carts.Select(c => c.ProductId).Distinct().ToList();
             var products = _unitOfWork.Repository<Product>()
                 .Query()
@@ -38,7 +37,6 @@ namespace Services
                 .Where(p => productIds.Contains(p.Id))
                 .ToList();
 
-            // Kiểm tra tồn kho và trạng thái từng sản phẩm
             foreach (var cart in carts)
             {
                 var product = products.FirstOrDefault(p => p.Id == cart.ProductId);
@@ -50,7 +48,6 @@ namespace Services
                     throw new Exception($"Product {product.Model} only has {product.Quantity} item(s) left in stock.");
             }
 
-            // Nhóm theo SellerId
             var groupedCarts = carts.GroupBy(c => products.First(p => p.Id == c.ProductId).SellerId);
             var orderNumbers = new List<string>();
 
@@ -193,5 +190,77 @@ namespace Services
                 PageSize = searchDto.PageSize
             };
         }
+        public async Task<bool> UpdateOrderStatusAsync(string orderId, OrderStatus newStatus)
+        {
+            var orderRepo = _unitOfWork.Repository<Order>();
+            var payoutRepo = _unitOfWork.Repository<PayoutRequest>();
+
+            var order = orderRepo
+                .Query()
+                .Include(o => o.OrderDetails)
+                .FirstOrDefault(o => o.Id == orderId && !o.IsDeleted);
+
+            if (order == null) throw new Exception("Order not found");
+
+            // Nếu không thay đổi trạng thái, bỏ qua
+            if (order.Status == newStatus) return false;
+
+            order.Status = newStatus;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            if (newStatus == OrderStatus.Shipping)
+            {
+                bool sellerAlreadyPaid = payoutRepo.Query()
+                    .Any(p => p.UserId == order.SellerId && p.Reference == $"ORDER-{order.Id}");
+
+                if (!sellerAlreadyPaid)
+                {
+                    decimal platformFee = 0.1m; // 10% hoa hồng
+                    decimal payoutAmount = order.TotalPrice * (1 - platformFee);
+
+                    await payoutRepo.AddAsync(new PayoutRequest
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = order.SellerId,
+                        Amount = payoutAmount,
+                        Reference = $"ORDER-{order.Id}",
+                        Status = PayoutStatus.Pending,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
+            if (newStatus == OrderStatus.Delivered)
+            {
+                var shipping = _unitOfWork.Repository<Shipping>()
+                    .Query()
+                    .FirstOrDefault(s => s.OrderId == order.Id);
+
+                if (shipping != null)
+                {
+                    bool shipperAlreadyPaid = _unitOfWork.Repository<PayoutRequest>()
+                        .Query()
+                        .Any(p => p.UserId == shipping.UserId && p.Reference == $"ORDER-{order.Id}");
+
+                    if (!shipperAlreadyPaid)
+                    {
+                        decimal shipFee = 50000m;
+
+                        await _unitOfWork.Repository<PayoutRequest>().AddAsync(new PayoutRequest
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            UserId = shipping.UserId,
+                            Amount = shipFee,
+                            Reference = $"ORDER-{order.Id}",
+                            Status = PayoutStatus.Pending,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
+            }
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
+
     }
 }
