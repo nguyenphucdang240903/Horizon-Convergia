@@ -1,4 +1,5 @@
 ﻿using BusinessObjects.DTO.CartDTO;
+using BusinessObjects.Enums;
 using BusinessObjects.Models;
 using DataAccessObjects;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +24,7 @@ namespace Services
             var addProduct = await _unitOfWork.Repository<Product>().GetByIdAsync(productId);
             var buyer = await _unitOfWork.Repository<User>().GetByIdAsync(buyerId);
 
-            if (addProduct == null || !addProduct.IsVerified)
+            if (addProduct == null || !addProduct.IsVerified || addProduct.Status == ProductStatus.UnPaid_Seller)
             {
                 return new CartCreateResult { ErrorMessage = "Product not found." };
             }

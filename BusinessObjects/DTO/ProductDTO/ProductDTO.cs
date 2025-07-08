@@ -14,6 +14,16 @@ namespace BusinessObjects.DTO.ProductDTO
         public string Location { get; set; }
         public string Condition { get; set; }
         public int Quantity { get; set; }
+
+        public int? EngineCapacity { get; set; }
+        public string? FuelType { get; set; }
+        public decimal? Mileage { get; set; }
+        public string? Color { get; set; }
+        public string? AccessoryType { get; set; }
+        public string? Size { get; set; }
+        public string? SparePartType { get; set; }
+        public string? VehicleCompatible { get; set; }
+
         public ProductStatus Status { get; set; }
         public bool IsVerified { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -34,6 +44,14 @@ namespace BusinessObjects.DTO.ProductDTO
                 Location = v.Location,
                 Condition = v.Condition,
                 Quantity = v.Quantity,
+                EngineCapacity = v.EngineCapacity,
+                FuelType = v.FuelType,
+                AccessoryType = v.AccessoryType,
+                Size = v.Size,
+                Mileage = v.Mileage,
+                Color = v.Color,
+                SparePartType = v.SparePartType,
+                VehicleCompatible = v.VehicleCompatible,
                 Status = v.Status,
                 IsVerified = v.IsVerified,
                 CreatedAt = v.CreatedAt,

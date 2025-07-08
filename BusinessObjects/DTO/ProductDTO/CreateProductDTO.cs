@@ -12,6 +12,16 @@ namespace BusinessObjects.DTO.ProductDTO
         public string Location { get; set; }
         public string Condition { get; set; }
         public int Quantity { get; set; }
+
+        public int? EngineCapacity { get; set; }
+        public string? FuelType { get; set; }
+        public decimal? Mileage { get; set; }
+        public string? Color { get; set; }
+        public string? AccessoryType { get; set; }
+        public string? Size { get; set; }
+        public string? SparePartType { get; set; }
+        public string? VehicleCompatible { get; set; }
+
         public string SellerId { get; set; }
         public string CategoryId { get; set; }
         public List<string> ImageUrls { get; set; } = new();
@@ -27,6 +37,16 @@ namespace BusinessObjects.DTO.ProductDTO
         public string Location { get; set; }
         public string Condition { get; set; }
         public int Quantity { get; set; }
+
+        public int? EngineCapacity { get; set; }
+        public string? FuelType { get; set; }
+        public decimal? Mileage { get; set; }
+        public string? Color { get; set; }
+        public string? AccessoryType { get; set; }
+        public string? Size { get; set; }
+        public string? SparePartType { get; set; }
+        public string? VehicleCompatible { get; set; }
+
         public string CategoryId { get; set; }
         //public List<string> ImageUrls { get; set; } = new();
     }
