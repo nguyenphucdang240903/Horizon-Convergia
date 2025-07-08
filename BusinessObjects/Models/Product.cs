@@ -13,6 +13,16 @@ namespace BusinessObjects.Models
         public string Location { get; set; }
         public string Condition { get; set; }
         public int Quantity { get; set; }
+
+        public int? EngineCapacity { get; set; }
+        public string? FuelType { get; set; }
+        public decimal? Mileage { get; set; }
+        public string? Color { get; set; }
+        public string? AccessoryType { get; set; }
+        public string? Size { get; set; }
+        public string? SparePartType { get; set; }
+        public string? VehicleCompatible { get; set; }
+
         public ProductStatus Status { get; set; }
         public bool IsVerified { get; set; }
         public DateTime CreatedAt { get; set; }
