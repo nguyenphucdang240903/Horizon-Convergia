@@ -67,6 +67,9 @@ namespace DataAccessObjects.Migrations
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    BankName = table.Column<string>(type: "text", nullable: false),
+                    BankAccountNumber = table.Column<string>(type: "text", nullable: false),
+                    BankAccountName = table.Column<string>(type: "text", nullable: false),
                     ResetPasswordToken = table.Column<string>(type: "text", nullable: true),
                     ResetPasswordTokenExpires = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -159,6 +162,29 @@ namespace DataAccessObjects.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PayoutRequests",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Reference = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ProcessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PayoutRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PayoutRequests_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Products",
                 columns: table => new
                 {
@@ -171,6 +197,14 @@ namespace DataAccessObjects.Migrations
                     Location = table.Column<string>(type: "text", nullable: false),
                     Condition = table.Column<string>(type: "text", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
+                    EngineCapacity = table.Column<int>(type: "integer", nullable: true),
+                    FuelType = table.Column<string>(type: "text", nullable: true),
+                    Mileage = table.Column<decimal>(type: "numeric", nullable: true),
+                    Color = table.Column<string>(type: "text", nullable: true),
+                    AccessoryType = table.Column<string>(type: "text", nullable: true),
+                    Size = table.Column<string>(type: "text", nullable: true),
+                    SparePartType = table.Column<string>(type: "text", nullable: true),
+                    VehicleCompatible = table.Column<string>(type: "text", nullable: true),
                     Status = table.Column<string>(type: "text", nullable: false),
                     IsVerified = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -490,6 +524,11 @@ namespace DataAccessObjects.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PayoutRequests_UserId",
+                table: "PayoutRequests",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_CategoryId",
                 table: "Products",
                 column: "CategoryId");
@@ -541,6 +580,9 @@ namespace DataAccessObjects.Migrations
 
             migrationBuilder.DropTable(
                 name: "PaymentTransactions");
+
+            migrationBuilder.DropTable(
+                name: "PayoutRequests");
 
             migrationBuilder.DropTable(
                 name: "Reviews");

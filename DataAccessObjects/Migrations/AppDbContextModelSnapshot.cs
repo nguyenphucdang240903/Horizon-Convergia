@@ -368,9 +368,44 @@ namespace DataAccessObjects.Migrations
                     b.ToTable("PaymentTransactions");
                 });
 
+            modelBuilder.Entity("BusinessObjects.Models.PayoutRequest", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PayoutRequests");
+                });
+
             modelBuilder.Entity("BusinessObjects.Models.Product", b =>
                 {
                     b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AccessoryType")
                         .HasColumnType("text");
 
                     b.Property<string>("Brand")
@@ -379,6 +414,9 @@ namespace DataAccessObjects.Migrations
 
                     b.Property<string>("CategoryId")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Color")
                         .HasColumnType("text");
 
                     b.Property<string>("Condition")
@@ -392,12 +430,21 @@ namespace DataAccessObjects.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("EngineCapacity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FuelType")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsVerified")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<decimal?>("Mileage")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Model")
                         .IsRequired()
@@ -413,12 +460,21 @@ namespace DataAccessObjects.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Size")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SparePartType")
+                        .HasColumnType("text");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VehicleCompatible")
+                        .HasColumnType("text");
 
                     b.Property<int>("Year")
                         .HasColumnType("integer");
@@ -527,6 +583,18 @@ namespace DataAccessObjects.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("AvatarUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BankAccountName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BankAccountNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("BusinessType")
@@ -764,6 +832,17 @@ namespace DataAccessObjects.Migrations
                         .IsRequired();
 
                     b.Navigation("Payment");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BusinessObjects.Models.PayoutRequest", b =>
+                {
+                    b.HasOne("BusinessObjects.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
