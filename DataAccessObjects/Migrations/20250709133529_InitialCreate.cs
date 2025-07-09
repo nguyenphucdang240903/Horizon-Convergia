@@ -67,9 +67,9 @@ namespace DataAccessObjects.Migrations
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    BankName = table.Column<string>(type: "text", nullable: false),
-                    BankAccountNumber = table.Column<string>(type: "text", nullable: false),
-                    BankAccountName = table.Column<string>(type: "text", nullable: false),
+                    BankName = table.Column<string>(type: "text", nullable: true),
+                    BankAccountNumber = table.Column<string>(type: "text", nullable: true),
+                    BankAccountName = table.Column<string>(type: "text", nullable: true),
                     ResetPasswordToken = table.Column<string>(type: "text", nullable: true),
                     ResetPasswordTokenExpires = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -159,29 +159,6 @@ namespace DataAccessObjects.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PayoutRequests",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
-                    Reference = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ProcessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PayoutRequests", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PayoutRequests_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -524,11 +501,6 @@ namespace DataAccessObjects.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PayoutRequests_UserId",
-                table: "PayoutRequests",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Products_CategoryId",
                 table: "Products",
                 column: "CategoryId");
@@ -580,9 +552,6 @@ namespace DataAccessObjects.Migrations
 
             migrationBuilder.DropTable(
                 name: "PaymentTransactions");
-
-            migrationBuilder.DropTable(
-                name: "PayoutRequests");
 
             migrationBuilder.DropTable(
                 name: "Reviews");
