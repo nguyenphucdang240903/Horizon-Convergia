@@ -53,38 +53,41 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpGet("GetPendingPayouts")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> GetPendingPayouts()
         {
-            var payouts = await _unitOfWork.Repository<PayoutRequest>().Query()
-                .Where(p => p.Status == PayoutStatus.Pending)
+            var payouts = await _unitOfWork.Repository<Payment>().Query()
+                .Where(p => (p.PaymentType == PaymentType.PayoutToSeller || p.PaymentType == PaymentType.PayoutToShipper)
+                            && p.PaymentStatus == PaymentStatus.Pending)
                 .Include(p => p.User)
                 .Select(p => new PayoutViewDTO
                 {
-                    PayoutRequestId = p.Id,
+                    PaymentId = p.Id,
                     UserId = p.UserId,
                     FullName = p.User.Name,
                     BankName = p.User.BankName,
                     BankAccountNumber = p.User.BankAccountNumber,
+                    BankAccountName = p.User.BankAccountName,
                     Amount = p.Amount,
                     Reference = p.Reference,
                     CreatedAt = p.CreatedAt,
-                    Status = p.Status
+                    Status = p.PaymentStatus
                 }).ToListAsync();
 
             return Ok(payouts);
         }
+
         [HttpPost("approve")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> ApprovePayout([FromBody] ApprovePayoutDTO dto)
         {
-            var payout = _unitOfWork.Repository<PayoutRequest>().Query()
-                .FirstOrDefault(p => p.Id == dto.PayoutRequestId && p.Status == PayoutStatus.Pending);
+            var payout = _unitOfWork.Repository<Payment>().Query()
+                .FirstOrDefault(p => p.Id == dto.PaymentId && p.PaymentStatus == PaymentStatus.Pending);
 
             if (payout == null) return NotFound("Payout not found or already processed.");
 
-            payout.Status = dto.Approve ? PayoutStatus.Completed : PayoutStatus.Rejected;
-            payout.ProcessedAt = DateTime.UtcNow;
+            payout.PaymentStatus = dto.Approve ? PaymentStatus.Completed : PaymentStatus.Failed;
+            payout.UpdatedAt = DateTime.UtcNow;
 
             if (dto.Approve)
             {
@@ -92,17 +95,22 @@ namespace HorizonConvergia.Controllers
                 {
                     Id = Guid.NewGuid().ToString(),
                     UserId = payout.UserId,
+                    PaymentId = payout.Id,
                     Amount = payout.Amount,
-                    TransactionType = "Payout",
+                    TransactionType = "ManualPayout",
                     TransactionStatus = TransactionStatus.Success,
                     Reference = payout.Reference,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 });
             }
 
+            _unitOfWork.Repository<Payment>().Update(payout);
             await _unitOfWork.SaveAsync();
-            return Ok("Payout updated.");
+
+            return Ok("Payout processed successfully.");
         }
+
     }
 
 }

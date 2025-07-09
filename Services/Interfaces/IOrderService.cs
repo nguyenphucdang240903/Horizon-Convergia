@@ -1,4 +1,5 @@
 ﻿using BusinessObjects.DTO.OrderDTO;
+using BusinessObjects.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace Services.Interfaces
         Task<List<string>> CreateOrderAsync(CreateOrderFromCartDTO dto, string buyerId);
         Task<PagedResult<OrderListDTO>> SearchOrdersAsync(OrderSearchDTO searchDto);
         Task<OrderDetailDTO> GetOrderDetailAsync(string orderId);
+        Task<bool> UpdateOrderStatusAsync(string orderId, OrderStatus newStatus);
     }
 
 }

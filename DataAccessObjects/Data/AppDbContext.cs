@@ -7,7 +7,6 @@ namespace DataAccessObjects.Data
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
         public DbSet<User> Users { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Order> Orders { get; set; }
@@ -22,15 +21,9 @@ namespace DataAccessObjects.Data
         public DbSet<Message> Messages { get; set; }
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<Token> Token { get; set; }
-        public DbSet<PayoutRequest> PayoutRequests { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<PayoutRequest>()
-                .HasOne(p => p.User)
-                .WithMany()
-                .HasForeignKey(p => p.UserId);
 
             // User - Product (1-n)
             modelBuilder.Entity<Product>()

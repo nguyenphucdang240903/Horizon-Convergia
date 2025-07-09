@@ -193,7 +193,7 @@ namespace Services
         public async Task<bool> UpdateOrderStatusAsync(string orderId, OrderStatus newStatus)
         {
             var orderRepo = _unitOfWork.Repository<Order>();
-            var payoutRepo = _unitOfWork.Repository<PayoutRequest>();
+            var paymentRepo = _unitOfWork.Repository<Payment>();
 
             var order = orderRepo
                 .Query()
@@ -202,7 +202,6 @@ namespace Services
 
             if (order == null) throw new Exception("Order not found");
 
-            // Nếu không thay đổi trạng thái, bỏ qua
             if (order.Status == newStatus) return false;
 
             order.Status = newStatus;
@@ -210,22 +209,29 @@ namespace Services
 
             if (newStatus == OrderStatus.Shipping)
             {
-                bool sellerAlreadyPaid = payoutRepo.Query()
-                    .Any(p => p.UserId == order.SellerId && p.Reference == $"ORDER-{order.Id}");
+                bool sellerAlreadyPaid = paymentRepo.Query()
+                    .Any(p =>
+                        p.UserId == order.SellerId &&
+                        p.Reference == $"ORDER-{order.Id}" &&
+                        p.PaymentType == PaymentType.PayoutToSeller);
 
                 if (!sellerAlreadyPaid)
                 {
-                    decimal platformFee = 0.1m; // 10% hoa hồng
+                    decimal platformFee = 0.1m;
                     decimal payoutAmount = order.TotalPrice * (1 - platformFee);
 
-                    await payoutRepo.AddAsync(new PayoutRequest
+                    await paymentRepo.AddAsync(new Payment
                     {
                         Id = Guid.NewGuid().ToString(),
                         UserId = order.SellerId,
                         Amount = payoutAmount,
                         Reference = $"ORDER-{order.Id}",
-                        Status = PayoutStatus.Pending,
-                        CreatedAt = DateTime.UtcNow
+                        Description = "Payout for seller",
+                        PaymentStatus = PaymentStatus.Pending,
+                        PaymentType = PaymentType.PayoutToSeller,
+                        PaymentMethod = "Manual",
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     });
                 }
             }
@@ -238,29 +244,37 @@ namespace Services
 
                 if (shipping != null)
                 {
-                    bool shipperAlreadyPaid = _unitOfWork.Repository<PayoutRequest>()
-                        .Query()
-                        .Any(p => p.UserId == shipping.UserId && p.Reference == $"ORDER-{order.Id}");
+                    bool shipperAlreadyPaid = paymentRepo.Query()
+                        .Any(p =>
+                            p.UserId == shipping.UserId &&
+                            p.Reference == $"ORDER-{order.Id}" &&
+                            p.PaymentType == PaymentType.PayoutToShipper);
 
                     if (!shipperAlreadyPaid)
                     {
                         decimal shipFee = 50000m;
 
-                        await _unitOfWork.Repository<PayoutRequest>().AddAsync(new PayoutRequest
+                        await paymentRepo.AddAsync(new Payment
                         {
                             Id = Guid.NewGuid().ToString(),
                             UserId = shipping.UserId,
                             Amount = shipFee,
                             Reference = $"ORDER-{order.Id}",
-                            Status = PayoutStatus.Pending,
-                            CreatedAt = DateTime.UtcNow
+                            Description = "Payout for shipper",
+                            PaymentStatus = PaymentStatus.Pending,
+                            PaymentType = PaymentType.PayoutToShipper,
+                            PaymentMethod = "Manual",
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
                         });
                     }
                 }
             }
+
             await _unitOfWork.SaveAsync();
             return true;
         }
+
 
     }
 }

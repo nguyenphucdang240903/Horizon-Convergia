@@ -15,7 +15,7 @@ namespace HorizonConvergia.Controllers
             _service = service;
         }
 
-        [HttpPost("analyze")]
+        [HttpPost("Chat_Box_AI")]
         public async Task<IActionResult> AnalyzeProduct([FromForm] ProductImageAnalysisDTO dto)
         {
             var result = await _service.AnalyzeProductAsync(dto);

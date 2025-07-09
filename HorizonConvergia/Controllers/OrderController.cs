@@ -1,4 +1,7 @@
 ﻿using BusinessObjects.DTO.OrderDTO;
+using BusinessObjects.Enums;
+using BusinessObjects.Models;
+using DataAccessObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
@@ -11,10 +14,13 @@ namespace HorizonConvergia.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IOrderService _orderService;
-
-        public OrdersController(IOrderService orderService)
+        private readonly IUnitOfWork _unitOfWork;
+        private string GetUserId() => User.FindFirst("UserId")?.Value ?? "";
+        private string GetUserRole() => User.FindFirst("Role")?.Value ?? "";
+        public OrdersController(IOrderService orderService, IUnitOfWork unitOfWork)
         {
             _orderService = orderService;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpPost("create-from-cart")]
@@ -57,5 +63,54 @@ namespace HorizonConvergia.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
+        [HttpPut("{id}/confirm")]
+        [Authorize(Policy = "Seller")]
+        public async Task<IActionResult> ConfirmOrder(string id)
+        {
+            var userId = GetUserId();
+
+            var order = await _unitOfWork.Repository<Order>().GetByIdAsync(id);
+            if (order == null || order.IsDeleted)
+                return NotFound("Đơn hàng không tồn tại.");
+
+            if (order.SellerId != userId)
+                return Forbid("Bạn không có quyền xác nhận đơn này.");
+
+            var success = await _orderService.UpdateOrderStatusAsync(id, OrderStatus.Processing);
+            return success ? Ok("Đã xác nhận đơn hàng.") : BadRequest("Không thể xác nhận.");
+        }
+
+        [HttpPut("{id}/process")]
+        [Authorize(Policy = "Shipper")]
+        public async Task<IActionResult> ProcessOrder(string id)
+        {
+            var userId = GetUserId();
+
+            //var shipping = _unitOfWork.Repository<Shipping>()
+            //    .Query().FirstOrDefault(s => s.OrderId == id && s.UserId == userId);
+
+            //if (shipping == null)
+            //    return Forbid("Bạn không được giao đơn hàng này.");
+
+            var success = await _orderService.UpdateOrderStatusAsync(id, OrderStatus.Shipping);
+            return success ? Ok("Đơn hàng đang được giao.") : BadRequest("Không thể cập nhật trạng thái.");
+        }
+
+        [HttpPut("{id}/deliver")]
+        [Authorize(Policy = "Shipper")]
+        public async Task<IActionResult> DeliverOrder(string id)
+        {
+            var userId = GetUserId();
+
+            var shipping = _unitOfWork.Repository<Shipping>()
+                .Query().FirstOrDefault(s => s.OrderId == id && s.UserId == userId);
+
+            if (shipping == null)
+                return Forbid("Bạn không được giao đơn hàng này.");
+
+            var success = await _orderService.UpdateOrderStatusAsync(id, OrderStatus.Delivered);
+            return success ? Ok("Đơn hàng đã giao thành công.") : BadRequest("Không thể cập nhật trạng thái.");
+        }
     }
 }
+

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccessObjects.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250708143839_InitialCreate")]
+    [Migration("20250709133529_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -371,38 +371,6 @@ namespace DataAccessObjects.Migrations
                     b.ToTable("PaymentTransactions");
                 });
 
-            modelBuilder.Entity("BusinessObjects.Models.PayoutRequest", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Reference")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("PayoutRequests");
-                });
-
             modelBuilder.Entity("BusinessObjects.Models.Product", b =>
                 {
                     b.Property<string>("Id")
@@ -589,15 +557,12 @@ namespace DataAccessObjects.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("BankAccountName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("BankAccountNumber")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("BankName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("BusinessType")
@@ -835,17 +800,6 @@ namespace DataAccessObjects.Migrations
                         .IsRequired();
 
                     b.Navigation("Payment");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("BusinessObjects.Models.PayoutRequest", b =>
-                {
-                    b.HasOne("BusinessObjects.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("User");
                 });
