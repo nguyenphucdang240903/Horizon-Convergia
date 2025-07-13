@@ -276,7 +276,7 @@ namespace Services
             var seller = await _unitOfWork.Repository<User>().GetByIdAsync(product.SellerId);
 
             var orderCode = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var returnUrl = "https://localhost:7076/api/Payments/payos-callback";
+            var returnUrl = "https://horizon-convergia.onrender.com/api/Payments/payos-callback";
 
             var items = new List<ItemData>
     {
