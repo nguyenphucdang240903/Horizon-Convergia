@@ -29,6 +29,7 @@ namespace BusinessObjects.DTO.ProductDTO
         public DateTime CreatedAt { get; set; }
         public string SellerId { get; set; }
         public string CategoryId { get; set; }
+        public List<string> ImageUrls { get; set; } = new();
 
         public static implicit operator ProductDTO(Product v)
         {
