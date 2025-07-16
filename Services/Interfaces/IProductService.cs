@@ -24,7 +24,7 @@ namespace Services.Interfaces
             int pageSize = 5);
 
         // POST
-        Task<ProductDTO> CreateAsync(CreateProductDTO productDto);
+        Task<ProductCreateResult> CreateAsync(CreateProductDTO productDto, string adminId);
         Task<ProductCreateResult> SellerCreateAsync(string sellerId, CreateProductDTO productDto);
         Task<string> SendPaymentLinkToSellerAsync(string productId);
         // PUT

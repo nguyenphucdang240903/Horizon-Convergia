@@ -63,15 +63,15 @@ namespace HorizonConvergia.Controllers
         }
 
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateProductDTO productDto)
+        [HttpPost("admin/{adminId}")]
+        public async Task<IActionResult> Create([FromBody] CreateProductDTO productDto, string adminId)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var created = await _productService.CreateAsync(productDto);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            var created = await _productService.CreateAsync(productDto, adminId);
+            return CreatedAtAction(nameof(GetById), new { id = created.Product.Id }, created.Product);
         }
 
-        [HttpPost("{sellerId}")]
+        [HttpPost("seller/{sellerId}")]
         public async Task<IActionResult> SellerCreate(string sellerId, [FromBody] CreateProductDTO productDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
