@@ -13,14 +13,14 @@ namespace BusinessObjects.DTO.ProductDTO
         public string Condition { get; set; }
         public int Quantity { get; set; }
 
-        public int? EngineCapacity { get; set; }
-        public string? FuelType { get; set; }
-        public decimal? Mileage { get; set; }
-        public string? Color { get; set; }
-        public string? AccessoryType { get; set; }
-        public string? Size { get; set; }
-        public string? SparePartType { get; set; }
-        public string? VehicleCompatible { get; set; }
+        public int? EngineCapacity { get; set; } = null;
+        public string? FuelType { get; set; } = null;
+        public decimal? Mileage { get; set; } = null;
+        public string? Color { get; set; } = null;
+        public string? AccessoryType { get; set; } = null;
+        public string? Size { get; set; } = null;
+        public string? SparePartType { get; set; } = null;
+        public string? VehicleCompatible { get; set; } = null;
 
         public string SellerId { get; set; }
         public string CategoryId { get; set; }

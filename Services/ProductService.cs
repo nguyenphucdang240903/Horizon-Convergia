@@ -178,8 +178,17 @@ namespace Services
         }
 
 
-        public async Task<ProductDTO> CreateAsync(CreateProductDTO dto)
+        public async Task<ProductCreateResult> CreateAsync(CreateProductDTO dto, string adminId)
         {
+            var user = await _unitOfWork.Repository<User>().GetByIdAsync(adminId);
+            if(user == null || !user.IsVerified || user.IsDeleted || user.Role != UserRole.Admin)
+            {
+                return new ProductCreateResult
+                {
+                    ErrorMessage = "Người dùng không hợp lệ hoặc không có quyền tạo sản phẩm."
+                };
+            }
+
             var product = new Product
             {
                 Id = Guid.NewGuid().ToString(),
@@ -191,8 +200,8 @@ namespace Services
                 Location = dto.Location,
                 Condition = dto.Condition,
                 Quantity = dto.Quantity,
-                Status = ProductStatus.UnPaid_Seller,
-                IsVerified = false,
+                Status = ProductStatus.Active,
+                IsVerified = true,
                 SellerId = dto.SellerId,
                 CategoryId = dto.CategoryId,
                 CreatedAt = DateTime.UtcNow,
@@ -226,7 +235,11 @@ namespace Services
                 await _unitOfWork.SaveAsync();
             }
 
-            return await MapToDTOAsync(product);
+            var productDto = await MapToDTOAsync(product);
+            return new ProductCreateResult
+            {
+                Product = productDto
+            };
         }
         public async Task<ProductCreateResult?> SellerCreateAsync(string sellerId, CreateProductDTO productDto)
         {
