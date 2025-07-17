@@ -156,6 +156,12 @@ namespace DataAccessObjects.Data
                 .WithMany(p => p.PaymentTransactions)
                 .HasForeignKey(t => t.PaymentId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Category>()
+                .HasOne(c => c.ParentCategory)
+                .WithMany(c => c.SubCategories)
+                .HasForeignKey(c => c.ParentCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
             // cau hinh cac enum
             modelBuilder.Entity<User>()
                 .Property(u => u.Role)
