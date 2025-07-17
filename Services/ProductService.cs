@@ -51,6 +51,7 @@ namespace Services
                     "year" => ascending ? query.OrderBy(p => p.Year) : query.OrderByDescending(p => p.Year),
                     "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
                     "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
+                    "location" => ascending ? query.OrderBy(p => p.Location) : query.OrderByDescending(p => p.Location),
                     _ => query // No sorting if field is not recognized
                 };
             }
@@ -107,6 +108,7 @@ namespace Services
                     "year" => ascending ? query.OrderBy(p => p.Year) : query.OrderByDescending(p => p.Year),
                     "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
                     "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
+                    "location" => ascending ? query.OrderBy(p => p.Location) : query.OrderByDescending(p => p.Location),
                     _ => query // No sorting if field is not recognized
                 };
             }
@@ -157,6 +159,7 @@ namespace Services
                     "year" => ascending ? query.OrderBy(p => p.Year) : query.OrderByDescending(p => p.Year),
                     "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
                     "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
+                    "location" => ascending ? query.OrderBy(p => p.Location) : query.OrderByDescending(p => p.Location),
                     _ => query // No sorting if field is not recognized
                 };
             }
