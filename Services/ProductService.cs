@@ -2,6 +2,7 @@
 using BusinessObjects.Enums;
 using BusinessObjects.Models;
 using DataAccessObjects;
+using DataAccessObjects.Data;
 using DataAccessObjects.Setting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -51,6 +52,7 @@ namespace Services
                     "year" => ascending ? query.OrderBy(p => p.Year) : query.OrderByDescending(p => p.Year),
                     "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
                     "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
+                    "location" => ascending ? query.OrderBy(p => p.Location) : query.OrderByDescending(p => p.Location),
                     _ => query // No sorting if field is not recognized
                 };
             }
@@ -64,12 +66,18 @@ namespace Services
             query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
 
             var products = await query.ToListAsync();
-            return products.Select(p => MapToDTO(p));
+            var productDTOs = new List<ProductDTO>();
+            foreach (var p in products)
+            {
+                productDTOs.Add(await MapToDTOAsync(p));
+            }
+            return productDTOs;
+
         }
         public async Task<ProductDTO?> GetByIdAsync(string id)
         {
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
-            return product == null ? null : MapToDTO(product);
+            return product == null ? null : await MapToDTOAsync(product);
         }
         public async Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync(string sellerId, 
             string? categoryId = null, 
@@ -101,6 +109,7 @@ namespace Services
                     "year" => ascending ? query.OrderBy(p => p.Year) : query.OrderByDescending(p => p.Year),
                     "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
                     "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
+                    "location" => ascending ? query.OrderBy(p => p.Location) : query.OrderByDescending(p => p.Location),
                     _ => query // No sorting if field is not recognized
                 };
             }
@@ -114,7 +123,13 @@ namespace Services
                 .Take(pageSize);
 
             var products = await query.ToListAsync();
-            return products.Select(p => MapToDTO(p));
+            var productDTOs = new List<ProductDTO>();
+            foreach (var p in products)
+            {
+                productDTOs.Add(await MapToDTOAsync(p));
+            }
+            return productDTOs;
+        
         }
         public async Task<IEnumerable<ProductDTO>> GetUnpaidProductsAsync(string sellerId, 
             string? categoryId = null, 
@@ -145,6 +160,7 @@ namespace Services
                     "year" => ascending ? query.OrderBy(p => p.Year) : query.OrderByDescending(p => p.Year),
                     "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
                     "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
+                    "location" => ascending ? query.OrderBy(p => p.Location) : query.OrderByDescending(p => p.Location),
                     _ => query // No sorting if field is not recognized
                 };
             }
@@ -156,12 +172,27 @@ namespace Services
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize);
             var products = await query.ToListAsync();
-            return products.Select(p => MapToDTO(p));
+            var productDTOs = new List<ProductDTO>();
+            foreach (var p in products)
+            {
+                productDTOs.Add(await MapToDTOAsync(p));
+            }
+            return productDTOs;
+
         }
 
-       
-        public async Task<ProductDTO> CreateAsync(CreateProductDTO dto)
+
+        public async Task<ProductCreateResult> CreateAsync(CreateProductDTO dto, string adminId)
         {
+            var user = await _unitOfWork.Repository<User>().GetByIdAsync(adminId);
+            if(user == null || !user.IsVerified || user.IsDeleted || user.Role != UserRole.Admin)
+            {
+                return new ProductCreateResult
+                {
+                    ErrorMessage = "Người dùng không hợp lệ hoặc không có quyền tạo sản phẩm."
+                };
+            }
+
             var product = new Product
             {
                 Id = Guid.NewGuid().ToString(),
@@ -173,8 +204,8 @@ namespace Services
                 Location = dto.Location,
                 Condition = dto.Condition,
                 Quantity = dto.Quantity,
-                Status = ProductStatus.UnPaid_Seller,
-                IsVerified = false,
+                Status = ProductStatus.Active,
+                IsVerified = true,
                 SellerId = dto.SellerId,
                 CategoryId = dto.CategoryId,
                 CreatedAt = DateTime.UtcNow,
@@ -208,7 +239,11 @@ namespace Services
                 await _unitOfWork.SaveAsync();
             }
 
-            return MapToDTO(product);
+            var productDto = await MapToDTOAsync(product);
+            return new ProductCreateResult
+            {
+                Product = productDto
+            };
         }
         public async Task<ProductCreateResult?> SellerCreateAsync(string sellerId, CreateProductDTO productDto)
         {
@@ -266,7 +301,8 @@ namespace Services
                 await _unitOfWork.SaveAsync();
             }
 
-            return new ProductCreateResult { Product = product };
+            var productDtoWithImages = await MapToDTOAsync(product);
+            return new ProductCreateResult { Product = productDtoWithImages };
         }
         public async Task<string> SendPaymentLinkToSellerAsync(string productId)
         {
@@ -328,9 +364,19 @@ namespace Services
 
         public async Task<bool> UpdateAsync(string id, UpdateProductDTO dto)
         {
-            var existing = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+
+            var productRepo = _unitOfWork.Repository<Product>();
+            var imageRepo = _unitOfWork.Repository<Images>();
+
+            // Use the exposed Context to include Images
+            var existing = await _unitOfWork.Context.Products
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
             if (existing == null) return false;
 
+            // Update product fields
             existing.Brand = dto.Brand;
             existing.Model = dto.Model;
             existing.Year = dto.Year;
@@ -350,10 +396,39 @@ namespace Services
             existing.SparePartType = dto.SparePartType;
             existing.VehicleCompatible = dto.VehicleCompatible;
 
-            _unitOfWork.Repository<Product>().Update(existing);
+            // Handle images
+            var currentImages = existing.Images?.ToList() ?? new List<Images>();
+            var newImageUrls = dto.ImageUrls?.Distinct().ToList() ?? new List<string>();
+
+            // Remove old images
+            var imagesToRemove = currentImages.Where(img => !newImageUrls.Contains(img.ImagesUrl)).ToList();
+            foreach (var img in imagesToRemove)
+            {
+                imageRepo.Delete(img);
+            }
+
+            // Add new images
+            foreach (var url in newImageUrls)
+            {
+                bool exists = currentImages.Any(img => img.ImagesUrl == url);
+                if (!exists)
+                {
+                    var newImg = new Images
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        ImagesUrl = url,
+                        ProductId = existing.Id,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await imageRepo.AddAsync(newImg);
+                }
+            }
+
+            productRepo.Update(existing);
             await _unitOfWork.SaveAsync();
             return true;
         }
+
 
 
         public async Task<bool> DeleteAsync(string id)
@@ -368,32 +443,42 @@ namespace Services
 
 
 
-        private ProductDTO MapToDTO(Product product) => new ProductDTO
+        private async Task<ProductDTO> MapToDTOAsync(Product product)
         {
-            Id = product.Id,
-            Brand = product.Brand,
-            Model = product.Model,
-            Year = product.Year,
-            Price = product.Price,
-            Description = product.Description,
-            Location = product.Location,
-            Condition = product.Condition,
-            Quantity = product.Quantity,
-            Status = product.Status,
-            IsVerified = product.IsVerified,
-            CreatedAt = product.CreatedAt,
-            SellerId = product.SellerId,
-            CategoryId = product.CategoryId,
-            // New optional fields
-            EngineCapacity = product.EngineCapacity,
-            FuelType = product.FuelType,
-            Mileage = product.Mileage,
-            Color = product.Color,
-            AccessoryType = product.AccessoryType,
-            Size = product.Size,
-            SparePartType = product.SparePartType,
-            VehicleCompatible = product.VehicleCompatible
-        };
+            var imageUrls = await _unitOfWork.Repository<Images>()
+                .Query()
+                .Where(img => img.ProductId == product.Id)
+                .Select(img => img.ImagesUrl)
+                .ToListAsync();
+
+            return new ProductDTO
+            {
+                Id = product.Id,
+                Brand = product.Brand,
+                Model = product.Model,
+                Year = product.Year,
+                Price = product.Price,
+                Description = product.Description,
+                Location = product.Location,
+                Condition = product.Condition,
+                Quantity = product.Quantity,
+                Status = product.Status,
+                IsVerified = product.IsVerified,
+                CreatedAt = product.CreatedAt,
+                SellerId = product.SellerId,
+                CategoryId = product.CategoryId,
+                EngineCapacity = product.EngineCapacity,
+                FuelType = product.FuelType,
+                Mileage = product.Mileage,
+                Color = product.Color,
+                AccessoryType = product.AccessoryType,
+                Size = product.Size,
+                SparePartType = product.SparePartType,
+                VehicleCompatible = product.VehicleCompatible,
+                ImageUrls = imageUrls
+            };
+        }
+
 
         private Product MapToEntity(ProductDTO dto) => new Product
         {

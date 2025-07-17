@@ -7,6 +7,7 @@ namespace DataAccessObjects
     public class UnitOfWork : IUnitOfWork
     {
         private readonly AppDbContext _context;
+        public AppDbContext Context => _context;
         private readonly Dictionary<Type, object> _repositories = new();
 
         public IUserRepository Users { get; }

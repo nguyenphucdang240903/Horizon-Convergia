@@ -22,10 +22,17 @@ namespace HorizonConvergia.Controllers
         }
 
 
-        [HttpGet("{id}")]
+        [HttpGet("categories/{id}")]
         public async Task<IActionResult> GetById(string id)
         {
             var category = await _categoryService.GetByIdAsync(id);
+            return category == null ? NotFound() : Ok(category);
+        }
+
+        [HttpGet("sub-categories/{parentId}")]
+        public async Task<IActionResult> GetSubsById(string parentId)
+        {
+            var category = await _categoryService.GetSubCategoriesAsync(parentId);
             return category == null ? NotFound() : Ok(category);
         }
 

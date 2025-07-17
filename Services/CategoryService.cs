@@ -20,6 +20,7 @@ namespace Services
                 Id = Guid.NewGuid().ToString(),
                 Name = categoryDto.Name,
                 ImageUrl = categoryDto.ImageUrl,
+                ParentCategoryId = categoryDto.ParentCategoryId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 IsDeleted = false
@@ -69,14 +70,27 @@ namespace Services
             var existing = await _unitOfWork.Repository<Category>().GetByIdAsync(id);
             if (existing == null || existing.IsDeleted)
             {
-                return false; // Category not found or is deleted
+                return false;
             }
+
             existing.Name = categoryDto.Name;
             existing.ImageUrl = categoryDto.ImageUrl;
+            existing.ParentCategoryId = categoryDto.ParentCategoryId;
             existing.UpdatedAt = DateTime.UtcNow;
+
             _unitOfWork.Repository<Category>().Update(existing);
             await _unitOfWork.SaveAsync();
             return true;
+        }
+
+        public async Task<IEnumerable<CategoryDTO>> GetSubCategoriesAsync(string parentId)
+        {
+            var subs = await _unitOfWork.Repository<Category>()
+                .Query()
+                .Where(c => c.ParentCategoryId == parentId && !c.IsDeleted)
+                .ToListAsync();
+
+            return subs.Select(MapToDTO);
         }
 
         private CategoryDTO MapToDTO(Category category) => new CategoryDTO
@@ -85,7 +99,8 @@ namespace Services
             Name = category.Name,
             ImageUrl = category.ImageUrl,
             CreatedAt = category.CreatedAt,
-            UpdatedAt = category.UpdatedAt
+            UpdatedAt = category.UpdatedAt,
+            ParentCategoryId = category.ParentCategoryId
         };
     }
 }

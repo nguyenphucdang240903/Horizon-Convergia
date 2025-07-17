@@ -1,4 +1,5 @@
-﻿using Repositories.Interfaces;
+﻿using DataAccessObjects.Data;
+using Repositories.Interfaces;
 
 
 namespace DataAccessObjects
@@ -10,6 +11,8 @@ namespace DataAccessObjects
         ITokenRepository Tokens { get; }
         int Save();
         Task<int> SaveAsync();
+
+        AppDbContext Context { get; }
     }
 
 }
