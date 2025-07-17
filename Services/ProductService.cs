@@ -2,6 +2,7 @@
 using BusinessObjects.Enums;
 using BusinessObjects.Models;
 using DataAccessObjects;
+using DataAccessObjects.Data;
 using DataAccessObjects.Setting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -363,9 +364,19 @@ namespace Services
 
         public async Task<bool> UpdateAsync(string id, UpdateProductDTO dto)
         {
-            var existing = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+
+            var productRepo = _unitOfWork.Repository<Product>();
+            var imageRepo = _unitOfWork.Repository<Images>();
+
+            // Use the exposed Context to include Images
+            var existing = await _unitOfWork.Context.Products
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
             if (existing == null) return false;
 
+            // Update product fields
             existing.Brand = dto.Brand;
             existing.Model = dto.Model;
             existing.Year = dto.Year;
@@ -385,10 +396,39 @@ namespace Services
             existing.SparePartType = dto.SparePartType;
             existing.VehicleCompatible = dto.VehicleCompatible;
 
-            _unitOfWork.Repository<Product>().Update(existing);
+            // Handle images
+            var currentImages = existing.Images?.ToList() ?? new List<Images>();
+            var newImageUrls = dto.ImageUrls?.Distinct().ToList() ?? new List<string>();
+
+            // Remove old images
+            var imagesToRemove = currentImages.Where(img => !newImageUrls.Contains(img.ImagesUrl)).ToList();
+            foreach (var img in imagesToRemove)
+            {
+                imageRepo.Delete(img);
+            }
+
+            // Add new images
+            foreach (var url in newImageUrls)
+            {
+                bool exists = currentImages.Any(img => img.ImagesUrl == url);
+                if (!exists)
+                {
+                    var newImg = new Images
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        ImagesUrl = url,
+                        ProductId = existing.Id,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await imageRepo.AddAsync(newImg);
+                }
+            }
+
+            productRepo.Update(existing);
             await _unitOfWork.SaveAsync();
             return true;
         }
+
 
 
         public async Task<bool> DeleteAsync(string id)

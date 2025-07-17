@@ -48,6 +48,6 @@ namespace BusinessObjects.DTO.ProductDTO
         public string? VehicleCompatible { get; set; }
 
         public string CategoryId { get; set; }
-        //public List<string> ImageUrls { get; set; } = new();
+        public List<string> ImageUrls { get; set; }
     }
 }
