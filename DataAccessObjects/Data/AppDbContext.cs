@@ -50,7 +50,7 @@ namespace DataAccessObjects.Data
             modelBuilder.Entity<Shipping>()
                 .HasOne(s => s.User)
                 .WithMany(u => u.Shippings)
-                .HasForeignKey(s => s.UserId)
+                .HasForeignKey(s => s.CarrierId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // User - Blog (1-n)

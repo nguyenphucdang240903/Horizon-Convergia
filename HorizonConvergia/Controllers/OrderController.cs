@@ -25,7 +25,7 @@ namespace HorizonConvergia.Controllers
 
         [HttpPost("create-from-cart")]
         [Authorize(Policy = "Buyer")]
-        public async Task<IActionResult> CreateOrderFromCart([FromBody] CreateOrderFromCartDTO dto)
+        public async Task<IActionResult> CreateOrderFromCart([FromBody] CreateOrderFromCartSelectionDTO dto)
         {
             try
             {
@@ -103,7 +103,7 @@ namespace HorizonConvergia.Controllers
             var userId = GetUserId();
 
             var shipping = _unitOfWork.Repository<Shipping>()
-                .Query().FirstOrDefault(s => s.OrderId == id && s.UserId == userId);
+                .Query().FirstOrDefault(s => s.OrderId == id && s.CarrierId == userId);
 
             if (shipping == null)
                 return Forbid("Bạn không được giao đơn hàng này.");
