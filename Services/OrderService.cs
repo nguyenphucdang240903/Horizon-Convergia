@@ -21,10 +21,12 @@ namespace Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<List<string>> CreateOrderAsync(CreateOrderFromCartDTO dto, string buyerId)
+        public async Task<List<string>> CreateOrderAsync(CreateOrderFromCartSelectionDTO dto, string buyerId)
         {
             var carts = _unitOfWork.Repository<Cart>().Query()
-                .Where(c => dto.CartId.Contains(c.Id) && c.BuyerId == buyerId && !c.IsDeleted)
+                .Where(c => dto.ProductIds.Contains(c.ProductId)
+                    && c.BuyerId == buyerId
+                    && !c.IsDeleted)
                 .ToList();
 
             if (carts == null || !carts.Any())
@@ -56,6 +58,8 @@ namespace Services
                 var orderId = Guid.NewGuid().ToString();
                 var firstProduct = products.First(p => p.Id == sellerGroup.First().ProductId);
 
+                var totalPrice = sellerGroup.Sum(c => (c.Price - c.Discount) * c.Quantity);
+
                 var order = new Order
                 {
                     Id = orderId,
@@ -68,7 +72,7 @@ namespace Services
                     UpdatedAt = DateTime.UtcNow,
                     Status = OrderStatus.Pending,
                     IsDeleted = false,
-                    TotalPrice = sellerGroup.Sum(c => (c.Price - c.Discount) * c.Quantity),
+                    TotalPrice = totalPrice,
                     OrderDetails = sellerGroup.Select(c =>
                     {
                         var product = products.First(p => p.Id == c.ProductId);
@@ -87,7 +91,19 @@ namespace Services
 
                 await _unitOfWork.Repository<Order>().AddAsync(order);
 
-                // Trừ tồn kho
+                var shipping = new Shipping
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    OrderId = orderId,
+                    ShippingFee = CalculateShippingFee(sellerGroup.Key, dto.ShippingAddress), // Hàm bạn tự định nghĩa sau
+                    Status = ShippingStatus.Pending,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    CarrierId = null,  // Chưa có shipper
+                };
+
+                await _unitOfWork.Repository<Shipping>().AddAsync(shipping);
+
                 foreach (var cart in sellerGroup)
                 {
                     var product = products.First(p => p.Id == cart.ProductId);
@@ -99,7 +115,6 @@ namespace Services
                 orderNumbers.Add(order.OrderNo);
             }
 
-            // Xóa giỏ hàng
             foreach (var cart in carts)
             {
                 _unitOfWork.Repository<Cart>().Delete(cart);
@@ -107,6 +122,11 @@ namespace Services
 
             await _unitOfWork.SaveAsync();
             return orderNumbers;
+        }
+        private decimal CalculateShippingFee(string sellerId, string buyerLocation)
+        {
+            decimal baseFee = 20000m;
+            return baseFee;
         }
 
 
@@ -246,7 +266,7 @@ namespace Services
                 {
                     bool shipperAlreadyPaid = paymentRepo.Query()
                         .Any(p =>
-                            p.UserId == shipping.UserId &&
+                            p.UserId == shipping.CarrierId &&
                             p.Reference == $"ORDER-{order.Id}" &&
                             p.PaymentType == PaymentType.PayoutToShipper);
 
@@ -257,7 +277,7 @@ namespace Services
                         await paymentRepo.AddAsync(new Payment
                         {
                             Id = Guid.NewGuid().ToString(),
-                            UserId = shipping.UserId,
+                            UserId = shipping.CarrierId,
                             Amount = shipFee,
                             Reference = $"ORDER-{order.Id}",
                             Description = "Payout for shipper",

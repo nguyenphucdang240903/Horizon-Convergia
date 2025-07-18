@@ -5,7 +5,7 @@ namespace BusinessObjects.Models
     public class Shipping
     {
         public string Id { get; set; }
-        public string CarrierId { get; set; }
+        public string? CarrierId { get; set; }
         public string TrackingNumber { get; set; }
         public decimal ShippingFee { get; set; }
         public DateTime? ActualDeliveryDate { get; set; }
@@ -15,9 +15,7 @@ namespace BusinessObjects.Models
 
         public string OrderId { get; set; }
         public Order Order { get; set; }
-        public string UserId { get; set; }
-        public User User { get; set; }
-
+        public User? User { get; set; }
     }
 
 }
