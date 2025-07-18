@@ -3,6 +3,7 @@ using BusinessObjects.Enums;
 using BusinessObjects.Models;
 using DataAccessObjects;
 using DataAccessObjects.Setting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Net.payOS;
@@ -32,39 +33,59 @@ namespace Services
 
         public async Task<string> CreatePayOSUrlAsync(CreatePaymentRequestDTO dto, string userId)
         {
-            var ReturnUrl = "https://localhost:7076/api/Payments/payos-callback";
+            var order = await _unitOfWork.Repository<Order>()
+                .Query()
+                .FirstOrDefaultAsync(o => o.Id == dto.OrderId && !o.IsDeleted);
+
+            if (order == null)
+                throw new Exception("Order not found");
+
+            if (order.BuyerId != userId)
+                throw new Exception("You are not authorized to pay for this order");
+
+            var existingPayment = _unitOfWork.Repository<Payment>()
+                .Query()
+                .FirstOrDefault(p => p.OrderId == dto.OrderId && p.PaymentStatus == PaymentStatus.Pending);
+
+            if (existingPayment != null)
+                throw new Exception("This order already has a pending payment");
+
+            var returnUrl = "https://localhost:7076/api/Payments/payos-callback";
             var orderCode = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var description = dto.Description ?? "Thanh toán đơn hàng HorizonConvergia";
+            var description = $"Thanh toán đơn hàng";
             var items = new List<ItemData>
-            {
-                new ItemData(
-                    name: "Thanh toán HorizonConvergia",
-                    quantity: 1,
-                    price: (int)(dto.Amount)
-                )
-            };
+    {
+        new ItemData(
+            name: $"Đơn hàng {order.OrderNo}",
+            quantity: 1,
+            price: (int)order.TotalPrice
+        )
+    };
+
             var paymentData = new PaymentData(
                 orderCode: orderCode,
-                amount: (int)(dto.Amount),
+                amount: (int)order.TotalPrice,
                 description: description,
                 items: items,
-                returnUrl: ReturnUrl,
-                cancelUrl: ReturnUrl
+                returnUrl: returnUrl,
+                cancelUrl: returnUrl
             );
 
             var paymentResult = await _payos.createPaymentLink(paymentData);
+
             var payment = new Payment
             {
                 Id = Guid.NewGuid().ToString(),
-                Amount = dto.Amount,
+                Amount = order.TotalPrice,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                OrderId = dto.OrderId,
+                OrderId = order.Id,
                 UserId = userId,
                 PaymentMethod = "PayOS",
                 Reference = orderCode.ToString(),
                 Description = description,
-                PaymentStatus = PaymentStatus.Pending
+                PaymentStatus = PaymentStatus.Pending,
+                PaymentType = PaymentType.BuyerPayment
             };
 
             await _unitOfWork.Repository<Payment>().AddAsync(payment);
@@ -72,6 +93,7 @@ namespace Services
 
             return paymentResult.checkoutUrl;
         }
+
 
 
 

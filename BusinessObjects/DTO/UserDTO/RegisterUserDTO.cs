@@ -15,6 +15,9 @@ namespace BusinessObjects.DTO.UserDTO
         public string? ShopName { get; set; }
         public string? ShopDescription { get; set; }
         public string? BusinessType { get; set; }
+        public string? BankName { get; set; }
+        public string? BankAccountNumber { get; set; }
+        public string? BankAccountHolder { get; set; }
     }
 
 }

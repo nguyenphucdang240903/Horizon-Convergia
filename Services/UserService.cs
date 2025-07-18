@@ -60,6 +60,15 @@ namespace Services
                     throw new Exception("Người dùng Seller phải nhập đầy đủ thông tin cửa hàng.");
                 }
             }
+            if (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper)
+            {
+                if (string.IsNullOrWhiteSpace(dto.BankName) ||
+                    string.IsNullOrWhiteSpace(dto.BankAccountNumber) ||
+                    string.IsNullOrWhiteSpace(dto.BankAccountHolder))
+                {
+                    throw new Exception("Người dùng Seller hoặc Shipper phải nhập đủ thông tin ngân hàng.");
+                }
+            }
 
             var requestScheme = _httpContextAccessor.HttpContext?.Request.Scheme;
             var requestHost = _httpContextAccessor.HttpContext?.Request.Host.Value;
@@ -86,7 +95,12 @@ namespace Services
 
                 ShopName = dto.Role == UserRole.Seller ? dto.ShopName : null,
                 shopDescription = dto.Role == UserRole.Seller ? dto.ShopDescription : null,
-                BusinessType = dto.Role == UserRole.Seller ? dto.BusinessType : null
+                BusinessType = dto.Role == UserRole.Seller ? dto.BusinessType : null,
+
+                BankName = (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper) ? dto.BankName : null,
+                BankAccountNumber = (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper) ? dto.BankAccountNumber : null,
+                BankAccountName = (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper) ? dto.BankAccountHolder : null
+
             };
 
             await _unitOfWork.Users.AddAsync(user);
@@ -165,7 +179,12 @@ namespace Services
 
                 ShopName = dto.Role == UserRole.Seller ? dto.ShopName : null,
                 shopDescription = dto.Role == UserRole.Seller ? dto.ShopDescription : null,
-                BusinessType = dto.Role == UserRole.Seller ? dto.BusinessType : null
+                BusinessType = dto.Role == UserRole.Seller ? dto.BusinessType : null,
+
+                BankName = (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper) ? dto.BankName : null,
+                BankAccountNumber = (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper) ? dto.BankAccountNumber : null,
+                BankAccountName = (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper) ? dto.BankAccountHolder : null
+
             };
 
             await _unitOfWork.Users.AddAsync(user);

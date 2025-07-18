@@ -96,7 +96,8 @@ namespace DataAccessObjects.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BuyerId");
+                    b.HasIndex("BuyerId")
+                        .IsUnique();
 
                     b.HasIndex("ProductId");
 
@@ -316,7 +317,8 @@ namespace DataAccessObjects.Migrations
                     b.HasIndex("OrderId")
                         .IsUnique();
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductId")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -371,12 +373,18 @@ namespace DataAccessObjects.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
+                    b.Property<string>("AccessoryType")
+                        .HasColumnType("text");
+
                     b.Property<string>("Brand")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("CategoryId")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Color")
                         .HasColumnType("text");
 
                     b.Property<string>("Condition")
@@ -390,12 +398,21 @@ namespace DataAccessObjects.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("EngineCapacity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FuelType")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsVerified")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<decimal?>("Mileage")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Model")
                         .IsRequired()
@@ -411,12 +428,21 @@ namespace DataAccessObjects.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Size")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SparePartType")
+                        .HasColumnType("text");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VehicleCompatible")
+                        .HasColumnType("text");
 
                     b.Property<int>("Year")
                         .HasColumnType("integer");
@@ -525,6 +551,15 @@ namespace DataAccessObjects.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("AvatarUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BankAccountName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BankAccountNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BankName")
                         .HasColumnType("text");
 
                     b.Property<string>("BusinessType")
@@ -638,8 +673,8 @@ namespace DataAccessObjects.Migrations
             modelBuilder.Entity("BusinessObjects.Models.Cart", b =>
                 {
                     b.HasOne("BusinessObjects.Models.User", "Buyer")
-                        .WithMany("Carts")
-                        .HasForeignKey("BuyerId")
+                        .WithOne("Cart")
+                        .HasForeignKey("BusinessObjects.Models.Cart", "BuyerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -730,8 +765,9 @@ namespace DataAccessObjects.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("BusinessObjects.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId");
+                        .WithOne("Payment")
+                        .HasForeignKey("BusinessObjects.Models.Payment", "ProductId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("BusinessObjects.Models.User", "User")
                         .WithMany("Payments")
@@ -831,8 +867,7 @@ namespace DataAccessObjects.Migrations
                 {
                     b.Navigation("OrderDetails");
 
-                    b.Navigation("Payment")
-                        .IsRequired();
+                    b.Navigation("Payment");
 
                     b.Navigation("Shipping")
                         .IsRequired();
@@ -849,6 +884,8 @@ namespace DataAccessObjects.Migrations
 
                     b.Navigation("Images");
 
+                    b.Navigation("Payment");
+
                     b.Navigation("Reviews");
                 });
 
@@ -856,7 +893,7 @@ namespace DataAccessObjects.Migrations
                 {
                     b.Navigation("Blogs");
 
-                    b.Navigation("Carts");
+                    b.Navigation("Cart");
 
                     b.Navigation("OrdersAsBuyer");
 

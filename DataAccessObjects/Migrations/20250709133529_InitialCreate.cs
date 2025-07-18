@@ -67,6 +67,9 @@ namespace DataAccessObjects.Migrations
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    BankName = table.Column<string>(type: "text", nullable: true),
+                    BankAccountNumber = table.Column<string>(type: "text", nullable: true),
+                    BankAccountName = table.Column<string>(type: "text", nullable: true),
                     ResetPasswordToken = table.Column<string>(type: "text", nullable: true),
                     ResetPasswordTokenExpires = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -171,6 +174,14 @@ namespace DataAccessObjects.Migrations
                     Location = table.Column<string>(type: "text", nullable: false),
                     Condition = table.Column<string>(type: "text", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
+                    EngineCapacity = table.Column<int>(type: "integer", nullable: true),
+                    FuelType = table.Column<string>(type: "text", nullable: true),
+                    Mileage = table.Column<decimal>(type: "numeric", nullable: true),
+                    Color = table.Column<string>(type: "text", nullable: true),
+                    AccessoryType = table.Column<string>(type: "text", nullable: true),
+                    Size = table.Column<string>(type: "text", nullable: true),
+                    SparePartType = table.Column<string>(type: "text", nullable: true),
+                    VehicleCompatible = table.Column<string>(type: "text", nullable: true),
                     Status = table.Column<string>(type: "text", nullable: false),
                     IsVerified = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -340,7 +351,8 @@ namespace DataAccessObjects.Migrations
                         name: "FK_Payments_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Payments_Users_UserId",
                         column: x => x.UserId,
@@ -418,7 +430,8 @@ namespace DataAccessObjects.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Carts_BuyerId",
                 table: "Carts",
-                column: "BuyerId");
+                column: "BuyerId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Carts_ProductId",
@@ -469,7 +482,8 @@ namespace DataAccessObjects.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_ProductId",
                 table: "Payments",
-                column: "ProductId");
+                column: "ProductId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_UserId",

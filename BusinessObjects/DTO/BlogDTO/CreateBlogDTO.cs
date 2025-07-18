@@ -1,5 +1,4 @@
 ﻿using BusinessObjects.DTO.ProductDTO;
-using BusinessObjects.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
