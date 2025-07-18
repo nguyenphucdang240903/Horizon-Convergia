@@ -65,6 +65,16 @@ namespace HorizonConvergia.Controllers
             return product == null ? NotFound() : Ok(product);
         }
 
+        [HttpGet("favorite/{userId}")]
+        public async Task<IActionResult> GetFavorites(
+            string userId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 5)
+        {
+            var favorites = await _productService.GetFavoriteProductsAsync(userId, pageNumber, pageSize);
+            return Ok(favorites);
+        }
+
 
         [HttpPost("admin/{adminId}")]
         public async Task<IActionResult> Create([FromBody] CreateProductDTO productDto, string adminId)
@@ -102,6 +112,13 @@ namespace HorizonConvergia.Controllers
             return Ok(new { message = "Đã gửi link thanh toán", url = result });
         }
 
+        [HttpPost("{productId}/favorite/{userId}")]
+        public async Task<IActionResult> AddToFavorites(string userId, string productId)
+        {
+            var success = await _productService.AddToFavoritesAsync(userId, productId);
+            return success ? Ok(new { message = "Added to favorites." }) : NotFound();
+        }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateProductDTO productDto)
@@ -119,6 +136,12 @@ namespace HorizonConvergia.Controllers
             return success ? NoContent() : NotFound();
         }
 
+        [HttpDelete("{productId}/favorive/{userId}")]
+        public async Task<IActionResult> RemoveFromFavorites(string userId, string productId)
+        {
+            var success = await _productService.RemoveFromFavoritesAsync(userId, productId);
+            return success ? Ok(new { message = "Removed from favorites." }) : NotFound();
+        }
 
     }
 

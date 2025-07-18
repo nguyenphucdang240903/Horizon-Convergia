@@ -37,5 +37,7 @@ namespace BusinessObjects.Models
         public ICollection<Images> Images { get; set; }
         public ICollection<Review> Reviews { get; set; }
         public ICollection<Cart> Carts { get; set; }
+        public ICollection<FavoriteProduct> FavoritedBy { get; set; }
+
     }
 }
