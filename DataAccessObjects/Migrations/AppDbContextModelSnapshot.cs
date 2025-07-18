@@ -122,10 +122,15 @@ namespace DataAccessObjects.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("ParentCategoryId")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentCategoryId");
 
                     b.ToTable("Categories");
                 });
@@ -689,6 +694,16 @@ namespace DataAccessObjects.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("BusinessObjects.Models.Category", b =>
+                {
+                    b.HasOne("BusinessObjects.Models.Category", "ParentCategory")
+                        .WithMany("SubCategories")
+                        .HasForeignKey("ParentCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ParentCategory");
+                });
+
             modelBuilder.Entity("BusinessObjects.Models.Images", b =>
                 {
                     b.HasOne("BusinessObjects.Models.Product", "Product")
@@ -861,6 +876,8 @@ namespace DataAccessObjects.Migrations
             modelBuilder.Entity("BusinessObjects.Models.Category", b =>
                 {
                     b.Navigation("Products");
+
+                    b.Navigation("SubCategories");
                 });
 
             modelBuilder.Entity("BusinessObjects.Models.Order", b =>

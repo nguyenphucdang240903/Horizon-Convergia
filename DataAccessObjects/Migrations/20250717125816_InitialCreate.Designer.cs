@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccessObjects.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250709133529_InitialCreate")]
+    [Migration("20250717125816_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -125,10 +125,15 @@ namespace DataAccessObjects.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("ParentCategoryId")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentCategoryId");
 
                     b.ToTable("Categories");
                 });
@@ -692,6 +697,16 @@ namespace DataAccessObjects.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("BusinessObjects.Models.Category", b =>
+                {
+                    b.HasOne("BusinessObjects.Models.Category", "ParentCategory")
+                        .WithMany("SubCategories")
+                        .HasForeignKey("ParentCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ParentCategory");
+                });
+
             modelBuilder.Entity("BusinessObjects.Models.Images", b =>
                 {
                     b.HasOne("BusinessObjects.Models.Product", "Product")
@@ -864,6 +879,8 @@ namespace DataAccessObjects.Migrations
             modelBuilder.Entity("BusinessObjects.Models.Category", b =>
                 {
                     b.Navigation("Products");
+
+                    b.Navigation("SubCategories");
                 });
 
             modelBuilder.Entity("BusinessObjects.Models.Order", b =>
