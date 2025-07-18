@@ -22,36 +22,39 @@ namespace HorizonConvergia.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll(
             [FromQuery] string? categoryId = null,
+            [FromQuery] string? location = null,
             [FromQuery] string? sortField = null,
             [FromQuery] bool ascending = true,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 5)
         {
-            var products = await _productService.GetAllAsync(categoryId, sortField, ascending, pageNumber, pageSize);
+            var products = await _productService.GetAllAsync(categoryId, location, sortField, ascending, pageNumber, pageSize);
             return Ok(products);
         }
 
         [HttpGet("unverified-unpaid/{sellerId}")]
         public async Task<IActionResult> GetUnverifiedUnpaidProducts(string sellerId,
-            [FromQuery] string? categoryId = null,
+            [FromQuery] string? categoryId = null, 
+            [FromQuery] string? location = null,
             [FromQuery] string? sortField = null,
             [FromQuery] bool ascending = true,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 5)
         {
-            var products = await _productService.GetUnverifiedUnpaidProductsAsync(sellerId, categoryId, sortField, ascending, pageNumber, pageSize);
+            var products = await _productService.GetUnverifiedUnpaidProductsAsync(sellerId, categoryId, location, sortField, ascending, pageNumber, pageSize);
             return Ok(products);
         }
 
         [HttpGet("unpaid/{sellerId}")]
         public async Task<IActionResult> GetUnpaidProducts(string sellerId,
             [FromQuery] string? categoryId = null,
+            [FromQuery] string? location = null,
             [FromQuery] string? sortField = null,
             [FromQuery] bool ascending = true,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 5)
         {
-            var products = await _productService.GetUnpaidProductsAsync(sellerId, categoryId, sortField, ascending, pageNumber, pageSize);
+            var products = await _productService.GetUnpaidProductsAsync(sellerId, categoryId, location, sortField, ascending, pageNumber, pageSize);
             return Ok(products);
         }
 
@@ -60,6 +63,16 @@ namespace HorizonConvergia.Controllers
         {
             var product = await _productService.GetByIdAsync(id);
             return product == null ? NotFound() : Ok(product);
+        }
+
+        [HttpGet("favorite/{userId}")]
+        public async Task<IActionResult> GetFavorites(
+            string userId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 5)
+        {
+            var favorites = await _productService.GetFavoriteProductsAsync(userId, pageNumber, pageSize);
+            return Ok(favorites);
         }
 
 
@@ -99,6 +112,13 @@ namespace HorizonConvergia.Controllers
             return Ok(new { message = "Đã gửi link thanh toán", url = result });
         }
 
+        [HttpPost("{productId}/favorite/{userId}")]
+        public async Task<IActionResult> AddToFavorites(string userId, string productId)
+        {
+            var success = await _productService.AddToFavoritesAsync(userId, productId);
+            return success ? Ok(new { message = "Added to favorites." }) : NotFound();
+        }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateProductDTO productDto)
@@ -116,6 +136,12 @@ namespace HorizonConvergia.Controllers
             return success ? NoContent() : NotFound();
         }
 
+        [HttpDelete("{productId}/favorive/{userId}")]
+        public async Task<IActionResult> RemoveFromFavorites(string userId, string productId)
+        {
+            var success = await _productService.RemoveFromFavoritesAsync(userId, productId);
+            return success ? Ok(new { message = "Removed from favorites." }) : NotFound();
+        }
 
     }
 
