@@ -90,16 +90,24 @@ namespace DataAccessObjects.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
                     Content = table.Column<string>(type: "text", nullable: false),
                     ImageUrl = table.Column<string>(type: "text", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     AuthorId = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CategoryId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Blogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Blogs_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Blogs_Users_AuthorId",
                         column: x => x.AuthorId,
@@ -218,15 +226,14 @@ namespace DataAccessObjects.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    CarrierId = table.Column<string>(type: "text", nullable: false),
+                    CarrierId = table.Column<string>(type: "text", nullable: true),
                     TrackingNumber = table.Column<string>(type: "text", nullable: false),
                     ShippingFee = table.Column<decimal>(type: "numeric", nullable: false),
                     ActualDeliveryDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Status = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    OrderId = table.Column<string>(type: "text", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: false)
+                    OrderId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -238,8 +245,8 @@ namespace DataAccessObjects.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Shippings_Users_UserId",
-                        column: x => x.UserId,
+                        name: "FK_Shippings_Users_CarrierId",
+                        column: x => x.CarrierId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -273,6 +280,31 @@ namespace DataAccessObjects.Migrations
                     table.ForeignKey(
                         name: "FK_Carts_Users_BuyerId",
                         column: x => x.BuyerId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FavoriteProducts",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ProductId = table.Column<string>(type: "text", nullable: false),
+                    CreateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FavoriteProducts", x => new { x.UserId, x.ProductId });
+                    table.ForeignKey(
+                        name: "FK_FavoriteProducts_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FavoriteProducts_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -435,6 +467,11 @@ namespace DataAccessObjects.Migrations
                 column: "AuthorId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Blogs_CategoryId",
+                table: "Blogs",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Carts_BuyerId",
                 table: "Carts",
                 column: "BuyerId",
@@ -449,6 +486,11 @@ namespace DataAccessObjects.Migrations
                 name: "IX_Categories_ParentCategoryId",
                 table: "Categories",
                 column: "ParentCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FavoriteProducts_ProductId",
+                table: "FavoriteProducts",
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Images_ProductId",
@@ -533,15 +575,15 @@ namespace DataAccessObjects.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Shippings_CarrierId",
+                table: "Shippings",
+                column: "CarrierId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Shippings_OrderId",
                 table: "Shippings",
                 column: "OrderId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Shippings_UserId",
-                table: "Shippings",
-                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -552,6 +594,9 @@ namespace DataAccessObjects.Migrations
 
             migrationBuilder.DropTable(
                 name: "Carts");
+
+            migrationBuilder.DropTable(
+                name: "FavoriteProducts");
 
             migrationBuilder.DropTable(
                 name: "Images");

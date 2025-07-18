@@ -31,6 +31,10 @@ namespace DataAccessObjects.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("CategoryId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("text");
@@ -45,12 +49,18 @@ namespace DataAccessObjects.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AuthorId");
+
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("Blogs");
                 });
@@ -133,6 +143,24 @@ namespace DataAccessObjects.Migrations
                     b.HasIndex("ParentCategoryId");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("BusinessObjects.Models.FavoriteProduct", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProductId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("FavoriteProducts");
                 });
 
             modelBuilder.Entity("BusinessObjects.Models.Images", b =>
@@ -508,7 +536,6 @@ namespace DataAccessObjects.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CarrierId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
@@ -532,16 +559,12 @@ namespace DataAccessObjects.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("CarrierId");
 
                     b.HasIndex("OrderId")
                         .IsUnique();
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Shippings");
                 });
@@ -672,7 +695,15 @@ namespace DataAccessObjects.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BusinessObjects.Models.Category", "Category")
+                        .WithMany("Blogs")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Author");
+
+                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("BusinessObjects.Models.Cart", b =>
@@ -702,6 +733,25 @@ namespace DataAccessObjects.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("ParentCategory");
+                });
+
+            modelBuilder.Entity("BusinessObjects.Models.FavoriteProduct", b =>
+                {
+                    b.HasOne("BusinessObjects.Models.Product", "Product")
+                        .WithMany("FavoritedBy")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObjects.Models.User", "User")
+                        .WithMany("Favorites")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BusinessObjects.Models.Images", b =>
@@ -856,15 +906,14 @@ namespace DataAccessObjects.Migrations
 
             modelBuilder.Entity("BusinessObjects.Models.Shipping", b =>
                 {
+                    b.HasOne("BusinessObjects.Models.User", "User")
+                        .WithMany("Shippings")
+                        .HasForeignKey("CarrierId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("BusinessObjects.Models.Order", "Order")
                         .WithOne("Shipping")
                         .HasForeignKey("BusinessObjects.Models.Shipping", "OrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("BusinessObjects.Models.User", "User")
-                        .WithMany("Shippings")
-                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -875,6 +924,8 @@ namespace DataAccessObjects.Migrations
 
             modelBuilder.Entity("BusinessObjects.Models.Category", b =>
                 {
+                    b.Navigation("Blogs");
+
                     b.Navigation("Products");
 
                     b.Navigation("SubCategories");
@@ -899,6 +950,8 @@ namespace DataAccessObjects.Migrations
                 {
                     b.Navigation("Carts");
 
+                    b.Navigation("FavoritedBy");
+
                     b.Navigation("Images");
 
                     b.Navigation("Payment");
@@ -911,6 +964,8 @@ namespace DataAccessObjects.Migrations
                     b.Navigation("Blogs");
 
                     b.Navigation("Cart");
+
+                    b.Navigation("Favorites");
 
                     b.Navigation("OrdersAsBuyer");
 

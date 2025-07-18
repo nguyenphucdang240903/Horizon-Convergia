@@ -62,6 +62,12 @@ namespace DataAccessObjects.Data
                 .HasForeignKey(b => b.AuthorId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<Blog>()
+                .HasOne(b => b.Category)
+                .WithMany(c => c.Blogs)
+                .HasForeignKey(b => b.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // User - Payment (1-n)
             modelBuilder.Entity<Payment>()
                 .HasOne(p => p.User)

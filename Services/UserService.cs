@@ -46,10 +46,16 @@ namespace Services
 
             var existingUser = await _unitOfWork.Users
                 .Query()
-                .FirstOrDefaultAsync(u => u.Email == dto.Email);
+                .FirstOrDefaultAsync(u => u.Email == dto.Email || u.PhoneNumber == dto.PhoneNumber);
 
             if (existingUser != null)
-                throw new Exception("Email đã được sử dụng.");
+            {
+                if (existingUser.Email == dto.Email)
+                    throw new Exception("Email đã được sử dụng.");
+                else
+                    throw new Exception("Số điện thoại đã được sử dụng.");
+            }
+
 
             if (dto.Role == UserRole.Seller)
             {
@@ -149,10 +155,16 @@ namespace Services
 
             var existingUser = await _unitOfWork.Users
                 .Query()
-                .FirstOrDefaultAsync(u => u.Email == dto.Email);
+                .FirstOrDefaultAsync(u => u.Email == dto.Email || u.PhoneNumber == dto.PhoneNumber);
 
             if (existingUser != null)
-                throw new Exception("Email đã được sử dụng.");
+            {
+                if (existingUser.Email == dto.Email)
+                    throw new Exception("Email đã được sử dụng.");
+                else
+                    throw new Exception("Số điện thoại đã được sử dụng.");
+            }
+
 
             var verificationToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
             var requestScheme = _httpContextAccessor.HttpContext?.Request.Scheme;
@@ -253,6 +265,13 @@ namespace Services
                 throw new Exception("Số điện thoại phải từ 10 đến 11 số và bắt đầu bằng số 0.");
             if (user.Dob.HasValue && user.Dob.Value.Date > DateTime.Today)
                 throw new Exception("Ngày sinh không được lớn hơn ngày hiện tại.");
+            var phoneExists = await _unitOfWork.Users
+                .Query()
+                .AnyAsync(u => u.PhoneNumber == user.PhoneNumber && u.Id != user.Id);
+
+            if (phoneExists)
+                throw new Exception("Số điện thoại đã được sử dụng bởi người dùng khác.");
+            
             var existingUser = await _unitOfWork.Users.GetByIdAsync(user.Id);
             existingUser.Address = user.Address;
             existingUser.Name = user.Name;
