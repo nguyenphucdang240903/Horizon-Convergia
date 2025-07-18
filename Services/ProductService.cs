@@ -28,6 +28,7 @@ namespace Services
 
         public async Task<IEnumerable<ProductDTO>> GetAllAsync(
             string? categoryId = null,
+            string? location = null,
             string? sortField = null,
             bool ascending = true,
             int pageNumber = 1,
@@ -41,6 +42,12 @@ namespace Services
             if (!string.IsNullOrEmpty(categoryId))
             {
                 query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            //Search by Location
+            if (!string.IsNullOrEmpty(location))
+            {
+                query = query.Where(p => p.Location.Contains(location));
             }
 
             // Sort by field
@@ -80,7 +87,8 @@ namespace Services
             return product == null ? null : await MapToDTOAsync(product);
         }
         public async Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync(string sellerId, 
-            string? categoryId = null, 
+            string? categoryId = null,
+            string? location = null,
             string? sortField = null, 
             bool ascending = true, 
             int pageNumber = 1, 
@@ -99,6 +107,11 @@ namespace Services
             if(!string.IsNullOrEmpty(categoryId))
             {
                 query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            if (!string.IsNullOrEmpty(location))
+            {
+                query = query.Where(p => p.Location.Contains(location));
             }
 
             if (!string.IsNullOrEmpty(sortField)) 
@@ -132,7 +145,8 @@ namespace Services
         
         }
         public async Task<IEnumerable<ProductDTO>> GetUnpaidProductsAsync(string sellerId, 
-            string? categoryId = null, 
+            string? categoryId = null,
+            string? location = null,
             string? sortField = null, 
             bool ascending = true, 
             int pageNumber = 1, 
@@ -151,6 +165,11 @@ namespace Services
             if (!string.IsNullOrEmpty(categoryId))
             {
                 query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            if (!string.IsNullOrEmpty(location))
+            {
+                query = query.Where(p => p.Location.Contains(location));
             }
 
             if (!string.IsNullOrEmpty(sortField)) {
@@ -179,6 +198,35 @@ namespace Services
             }
             return productDTOs;
 
+        }
+
+        public async Task<IEnumerable<ProductDTO>> GetFavoriteProductsAsync(string userId, int pageNumber = 1, int pageSize = 5)
+        {
+            var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
+            if (user == null || !user.IsVerified || user.IsDeleted)
+            {
+                return Enumerable.Empty<ProductDTO>();
+            }
+
+            var query = _unitOfWork.Repository<FavoriteProduct>()
+                .Query()
+                .Where(f => f.UserId == userId)
+                .Select(f => f.Product)
+                .Where(p => p.IsVerified && p.Status == ProductStatus.Active)
+                .OrderByDescending(p => p.CreatedAt);
+
+            var pagedProducts = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var result = new List<ProductDTO>();
+            foreach(var product in pagedProducts)
+            {
+                result.Add(await MapToDTOAsync(product));
+            }
+
+            return result;
         }
 
 
@@ -360,6 +408,26 @@ namespace Services
             return "Đã gửi link thanh toán tới email người bán.";
         }
 
+        public async Task<bool> AddToFavoritesAsync(string userId, string productId)
+        {
+            var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
+            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(productId);
+            if (user == null || product == null) return false;
+
+            var favRepo = _unitOfWork.Repository<FavoriteProduct>();
+            bool alreadyExists = favRepo.Query().Any(f => f.UserId == userId && f.ProductId == productId);
+            if (alreadyExists) return true;
+
+            await favRepo.AddAsync(new FavoriteProduct
+            {
+                UserId = userId,
+                ProductId = productId,
+                CreateAt = DateTime.Now
+            });
+
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
 
 
         public async Task<bool> UpdateAsync(string id, UpdateProductDTO dto)
@@ -441,7 +509,16 @@ namespace Services
             return true;
         }
 
+        public async Task<bool> RemoveFromFavoritesAsync(string userId, string productId)
+        {
+            var favRepo = _unitOfWork.Repository<FavoriteProduct>();
+            var favorite = favRepo.Query().FirstOrDefault(f => f.UserId == userId && f.ProductId == productId);
+            if (favorite == null) return false;
 
+            favRepo.Delete(favorite);
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
 
         private async Task<ProductDTO> MapToDTOAsync(Product product)
         {
@@ -478,25 +555,6 @@ namespace Services
                 ImageUrls = imageUrls
             };
         }
-
-
-        private Product MapToEntity(ProductDTO dto) => new Product
-        {
-            Id = dto.Id,
-            Brand = dto.Brand,
-            Model = dto.Model,
-            Year = dto.Year,
-            Price = dto.Price,
-            Description = dto.Description,
-            Location = dto.Location,
-            Condition = dto.Condition,
-            Quantity = dto.Quantity,
-            Status = dto.Status,
-            IsVerified = dto.IsVerified,
-            SellerId = dto.SellerId,
-            CategoryId = dto.CategoryId
-        };
-
 
     }
 

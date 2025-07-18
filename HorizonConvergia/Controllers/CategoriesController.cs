@@ -15,9 +15,9 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] string? name = null)
+        public async Task<IActionResult> GetAll([FromQuery] string? name, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5)
         {
-            var categories = await _categoryService.GetAllAsync(name);
+            var categories = await _categoryService.GetAllAsync(name, pageNumber, pageSize);
             return Ok(categories);
         }
 
