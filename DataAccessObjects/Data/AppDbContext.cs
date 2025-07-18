@@ -21,6 +21,8 @@ namespace DataAccessObjects.Data
         public DbSet<Message> Messages { get; set; }
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<Token> Token { get; set; }
+        public DbSet<FavoriteProduct> FavoriteProducts { get; set; }
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -155,11 +157,26 @@ namespace DataAccessObjects.Data
                 .HasForeignKey(t => t.PaymentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            //Category - ParentCategory
             modelBuilder.Entity<Category>()
                 .HasOne(c => c.ParentCategory)
                 .WithMany(c => c.SubCategories)
                 .HasForeignKey(c => c.ParentCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<FavoriteProduct>()
+                .HasKey(f => new { f.UserId, f.ProductId });
+
+            modelBuilder.Entity<FavoriteProduct>()
+                .HasOne(f => f.User)
+                .WithMany(u => u.Favorites)
+                .HasForeignKey(f => f.UserId);
+
+            modelBuilder.Entity<FavoriteProduct>()
+                .HasOne(f => f.Product)
+                .WithMany(p => p.FavoritedBy)
+                .HasForeignKey(f => f.ProductId);
+
             // cau hinh cac enum
             modelBuilder.Entity<User>()
                 .Property(u => u.Role)

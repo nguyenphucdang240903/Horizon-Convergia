@@ -40,6 +40,8 @@ namespace BusinessObjects.Models
         public ICollection<Shipping> Shippings { get; set; }
         public ICollection<Order> OrdersAsBuyer { get; set; }
         public ICollection<Order> OrdersAsSeller { get; set; }
+        public ICollection<FavoriteProduct> Favorites { get; set; }
+
 
     }
 }
