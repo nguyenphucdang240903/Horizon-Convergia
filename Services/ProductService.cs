@@ -28,6 +28,7 @@ namespace Services
 
         public async Task<IEnumerable<ProductDTO>> GetAllAsync(
             string? categoryId = null,
+            string? location = null,
             string? sortField = null,
             bool ascending = true,
             int pageNumber = 1,
@@ -41,6 +42,12 @@ namespace Services
             if (!string.IsNullOrEmpty(categoryId))
             {
                 query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            //Search by Location
+            if (!string.IsNullOrEmpty(location))
+            {
+                query = query.Where(p => p.Location.Contains(location));
             }
 
             // Sort by field
@@ -80,7 +87,8 @@ namespace Services
             return product == null ? null : await MapToDTOAsync(product);
         }
         public async Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync(string sellerId, 
-            string? categoryId = null, 
+            string? categoryId = null,
+            string? location = null,
             string? sortField = null, 
             bool ascending = true, 
             int pageNumber = 1, 
@@ -99,6 +107,11 @@ namespace Services
             if(!string.IsNullOrEmpty(categoryId))
             {
                 query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            if (!string.IsNullOrEmpty(location))
+            {
+                query = query.Where(p => p.Location.Contains(location));
             }
 
             if (!string.IsNullOrEmpty(sortField)) 
@@ -132,7 +145,8 @@ namespace Services
         
         }
         public async Task<IEnumerable<ProductDTO>> GetUnpaidProductsAsync(string sellerId, 
-            string? categoryId = null, 
+            string? categoryId = null,
+            string? location = null,
             string? sortField = null, 
             bool ascending = true, 
             int pageNumber = 1, 
@@ -151,6 +165,11 @@ namespace Services
             if (!string.IsNullOrEmpty(categoryId))
             {
                 query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            if (!string.IsNullOrEmpty(location))
+            {
+                query = query.Where(p => p.Location.Contains(location));
             }
 
             if (!string.IsNullOrEmpty(sortField)) {
@@ -478,25 +497,6 @@ namespace Services
                 ImageUrls = imageUrls
             };
         }
-
-
-        private Product MapToEntity(ProductDTO dto) => new Product
-        {
-            Id = dto.Id,
-            Brand = dto.Brand,
-            Model = dto.Model,
-            Year = dto.Year,
-            Price = dto.Price,
-            Description = dto.Description,
-            Location = dto.Location,
-            Condition = dto.Condition,
-            Quantity = dto.Quantity,
-            Status = dto.Status,
-            IsVerified = dto.IsVerified,
-            SellerId = dto.SellerId,
-            CategoryId = dto.CategoryId
-        };
-
 
     }
 

@@ -7,17 +7,22 @@ namespace Services.Interfaces
         // GET
         Task<IEnumerable<ProductDTO>> GetAllAsync(
             string? categoryId = null,
+            string? location = null,
             string? sortField = null,
             bool ascending = true,
             int pageNumber = 1,
             int pageSize = 5);
         Task<ProductDTO?> GetByIdAsync(string id);
-        Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync(string sellerId, string? categoryId = null,
+        Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync(string sellerId, 
+            string? categoryId = null,
+            string? location = null,
             string? sortField = null,
             bool ascending = true,
             int pageNumber = 1,
             int pageSize = 5);
-        Task<IEnumerable<ProductDTO>> GetUnpaidProductsAsync(string sellerId, string? categoryId = null,
+        Task<IEnumerable<ProductDTO>> GetUnpaidProductsAsync(string sellerId, 
+            string? categoryId = null,
+            string? location = null,
             string? sortField = null,
             bool ascending = true,
             int pageNumber = 1,

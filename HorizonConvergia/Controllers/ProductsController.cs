@@ -22,36 +22,39 @@ namespace HorizonConvergia.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll(
             [FromQuery] string? categoryId = null,
+            [FromQuery] string? location = null,
             [FromQuery] string? sortField = null,
             [FromQuery] bool ascending = true,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 5)
         {
-            var products = await _productService.GetAllAsync(categoryId, sortField, ascending, pageNumber, pageSize);
+            var products = await _productService.GetAllAsync(categoryId, location, sortField, ascending, pageNumber, pageSize);
             return Ok(products);
         }
 
         [HttpGet("unverified-unpaid/{sellerId}")]
         public async Task<IActionResult> GetUnverifiedUnpaidProducts(string sellerId,
-            [FromQuery] string? categoryId = null,
+            [FromQuery] string? categoryId = null, 
+            [FromQuery] string? location = null,
             [FromQuery] string? sortField = null,
             [FromQuery] bool ascending = true,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 5)
         {
-            var products = await _productService.GetUnverifiedUnpaidProductsAsync(sellerId, categoryId, sortField, ascending, pageNumber, pageSize);
+            var products = await _productService.GetUnverifiedUnpaidProductsAsync(sellerId, categoryId, location, sortField, ascending, pageNumber, pageSize);
             return Ok(products);
         }
 
         [HttpGet("unpaid/{sellerId}")]
         public async Task<IActionResult> GetUnpaidProducts(string sellerId,
             [FromQuery] string? categoryId = null,
+            [FromQuery] string? location = null,
             [FromQuery] string? sortField = null,
             [FromQuery] bool ascending = true,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 5)
         {
-            var products = await _productService.GetUnpaidProductsAsync(sellerId, categoryId, sortField, ascending, pageNumber, pageSize);
+            var products = await _productService.GetUnpaidProductsAsync(sellerId, categoryId, location, sortField, ascending, pageNumber, pageSize);
             return Ok(products);
         }
 
