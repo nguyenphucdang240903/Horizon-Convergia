@@ -20,41 +20,48 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(
-            [FromQuery] string? categoryId = null,
-            [FromQuery] string? location = null,
-            [FromQuery] string? sortField = null,
-            [FromQuery] bool ascending = true,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 5)
+        public async Task<IActionResult> GetAll([FromQuery] ProductFilterQuery filter, 
+            [FromQuery] bool Ascending = true, 
+            [FromQuery] int PageNumber =1, [FromQuery] int PageSize = 5)
         {
-            var products = await _productService.GetAllAsync(categoryId, location, sortField, ascending, pageNumber, pageSize);
+            var products = await _productService.GetAllAsync(
+                filter.CategoryId, filter.Brand, filter.Model, filter.Year, filter.MinPrice, filter.MaxPrice,
+                filter.Description, filter.Location, filter.Condition, filter.Quantity, filter.EngineCapacity,
+                filter.FuelType, filter.Mileage, filter.Color, filter.AccessoryType, filter.Size,
+                filter.SparePartType, filter.VehicleCompatible,
+                filter.SortField, Ascending, PageNumber, PageSize);
+
             return Ok(products);
         }
 
+
         [HttpGet("unverified-unpaid/{sellerId}")]
-        public async Task<IActionResult> GetUnverifiedUnpaidProducts(string sellerId,
-            [FromQuery] string? categoryId = null, 
-            [FromQuery] string? location = null,
-            [FromQuery] string? sortField = null,
-            [FromQuery] bool ascending = true,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 5)
+        public async Task<IActionResult> GetUnverifiedUnpaidProducts(string sellerId, [FromQuery] ProductFilterQuery filter,
+            [FromQuery] bool Ascending = true,
+            [FromQuery] int PageNumber = 1, [FromQuery] int PageSize = 5)
         {
-            var products = await _productService.GetUnverifiedUnpaidProductsAsync(sellerId, categoryId, location, sortField, ascending, pageNumber, pageSize);
+            var products = await _productService.GetUnverifiedUnpaidProductsAsync(
+                sellerId, filter.CategoryId, filter.Brand, filter.Model, filter.Year, filter.MinPrice, filter.MaxPrice,
+                filter.Description, filter.Location, filter.Condition, filter.Quantity, filter.EngineCapacity,
+                filter.FuelType, filter.Mileage, filter.Color, filter.AccessoryType, filter.Size,
+                filter.SparePartType, filter.VehicleCompatible,
+                filter.SortField, Ascending, PageNumber, PageSize);
+
             return Ok(products);
         }
 
         [HttpGet("unpaid/{sellerId}")]
-        public async Task<IActionResult> GetUnpaidProducts(string sellerId,
-            [FromQuery] string? categoryId = null,
-            [FromQuery] string? location = null,
-            [FromQuery] string? sortField = null,
-            [FromQuery] bool ascending = true,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 5)
+        public async Task<IActionResult> GetUnpaidProducts(string sellerId, [FromQuery] ProductFilterQuery filter,
+            [FromQuery] bool Ascending = true,
+            [FromQuery] int PageNumber = 1, [FromQuery] int PageSize = 5)
         {
-            var products = await _productService.GetUnpaidProductsAsync(sellerId, categoryId, location, sortField, ascending, pageNumber, pageSize);
+            var products = await _productService.GetUnpaidProductsAsync(
+                sellerId, filter.CategoryId, filter.Brand, filter.Model, filter.Year, filter.MinPrice, filter.MaxPrice,
+                filter.Description, filter.Location, filter.Condition, filter.Quantity, filter.EngineCapacity,
+                filter.FuelType, filter.Mileage, filter.Color, filter.AccessoryType, filter.Size,
+                filter.SparePartType, filter.VehicleCompatible,
+                filter.SortField, Ascending, PageNumber, PageSize);
+
             return Ok(products);
         }
 
@@ -64,14 +71,18 @@ namespace HorizonConvergia.Controllers
             var product = await _productService.GetByIdAsync(id);
             return product == null ? NotFound() : Ok(product);
         }
-
         [HttpGet("favorite/{userId}")]
-        public async Task<IActionResult> GetFavorites(
-            string userId,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 5)
+        public async Task<IActionResult> GetFavorites(string userId, [FromQuery] ProductFilterQuery filter,
+            [FromQuery] bool Ascending = true,
+            [FromQuery] int PageNumber = 1, [FromQuery] int PageSize = 5)
         {
-            var favorites = await _productService.GetFavoriteProductsAsync(userId, pageNumber, pageSize);
+            var favorites = await _productService.GetFavoriteProductsAsync(
+                userId, filter.CategoryId, filter.Brand, filter.Model, filter.Year, filter.MinPrice, filter.MaxPrice,
+                filter.Description, filter.Location, filter.Condition, filter.Quantity, filter.EngineCapacity,
+                filter.FuelType, filter.Mileage, filter.Color, filter.AccessoryType, filter.Size,
+                filter.SparePartType, filter.VehicleCompatible,
+                filter.SortField, Ascending, PageNumber, PageSize);
+
             return Ok(favorites);
         }
 
