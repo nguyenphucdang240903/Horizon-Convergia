@@ -192,7 +192,12 @@ namespace HorizonConvergia.Controllers
         new Claim("Status", user.Status.ToString()),
         new Claim("Dob", user.Dob?.ToString("yyyy-MM-dd") ?? "")
     };
-
+            if (user.Role == UserRole.Seller || user.Role == UserRole.Shipper)
+            {
+                claims.Add(new Claim("BankName", user.BankName ?? ""));
+                claims.Add(new Claim("BankAccountNumber", user.BankAccountNumber ?? ""));
+                claims.Add(new Claim("BankAccountName", user.BankAccountName ?? ""));
+            }
             var securityKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes("c2VydmVwZXJmZWN0bHljaGVlc2VxdWlja2NvYWNoY29sbGVjdHNsb3Bld2lzZWNhbWU="));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
@@ -392,7 +397,9 @@ namespace HorizonConvergia.Controllers
             var statusClaim = User.FindFirst("Status");
             var userRoleClaim = User.FindFirst("Role");
             var dobClaim = User.FindFirst("Dob");
-
+            var bankNameClaim = User.FindFirst("BankName");
+            var bankAccountNumberClaim = User.FindFirst("BankAccountNumber");
+            var BankAccountNameClaim = User.FindFirst("BankAccountName");
             // Kiểm tra xem các claim có tồn tại không
             if (userIdClaim == null || userNameClaim == null || userEmailClaim == null || userRoleClaim == null)
             {
@@ -427,7 +434,10 @@ namespace HorizonConvergia.Controllers
                     AvatarUrl = avatarUrlClaim?.Value,
                     Status = userStatus.ToString(),
                     Role = userRole.ToString(),
-                    Dob = dob
+                    Dob = dob,
+                    BankName = bankNameClaim?.Value,
+                    BankAccountNumber = bankAccountNumberClaim?.Value,
+                    BankAccountName = bankAccountNumberClaim?.Value
                 };
 
                 return Ok(response);

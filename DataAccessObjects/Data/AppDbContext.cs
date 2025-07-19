@@ -7,7 +7,6 @@ namespace DataAccessObjects.Data
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
         public DbSet<User> Users { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Order> Orders { get; set; }
@@ -23,7 +22,7 @@ namespace DataAccessObjects.Data
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<Token> Token { get; set; }
         public DbSet<FavoriteProduct> FavoriteProducts { get; set; }
-
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -42,11 +41,11 @@ namespace DataAccessObjects.Data
                 .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // User - Cart (1-n)
+            // User - Cart (1-1)
             modelBuilder.Entity<Cart>()
                 .HasOne(c => c.Buyer)
-                .WithMany(u => u.Carts)
-                .HasForeignKey(c => c.BuyerId)
+                .WithOne(u => u.Cart)
+                .HasForeignKey<Cart>(c => c.BuyerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // User - Shipping (1-n)
