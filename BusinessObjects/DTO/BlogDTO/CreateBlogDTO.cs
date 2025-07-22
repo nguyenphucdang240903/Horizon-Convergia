@@ -9,6 +9,8 @@ namespace BusinessObjects.DTO.BlogDTO
 {
     public class CreateBlogDTO
     {
+        public string Title { get; set; }
+        public string CategoryId { get; set; }
         public string Content { get; set; }
         public string ImageUrl { get; set; }
         public bool IsDeleted { get; set; }
@@ -17,7 +19,8 @@ namespace BusinessObjects.DTO.BlogDTO
     }
     public class UpdateBlogDTO : CreateBlogDTO
     {
-        // Optionally, remove some properties like SellerId if it shouldn't be updated
+        public string Title { get; set; }
+        public string CategoryId { get; set; }
         public string Content { get; set; }
         public string ImageUrl { get; set; }
         public bool IsDeleted { get; set; }
