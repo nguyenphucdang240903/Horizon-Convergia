@@ -2,7 +2,6 @@
 using BusinessObjects.Enums;
 using BusinessObjects.Models;
 using DataAccessObjects;
-using DataAccessObjects.Data;
 using DataAccessObjects.Setting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -28,7 +27,23 @@ namespace Services
 
         public async Task<IEnumerable<ProductDTO>> GetAllAsync(
             string? categoryId = null,
+            string? brand = null,
+            string? model = null,
+            int? year = null,
+            decimal? minPrice = null,
+            decimal? maxPrice = null,
+            string? description = null,
             string? location = null,
+            string? condition = null,
+            int? quantity = null,
+            int? engineCapacity = null,
+            string? fuelType = null,
+            decimal? mileage = null,
+            string? color = null,
+            string? accessoryType = null,
+            string? size = null,
+            string? sparePartType = null,
+            string? vehicleCompatible = null,
             string? sortField = null,
             bool ascending = true,
             int pageNumber = 1,
@@ -38,19 +53,10 @@ namespace Services
                 .Query()
                 .Where(p => p.IsVerified && p.Status == ProductStatus.Active);
 
-            // Filter by Category
-            if (!string.IsNullOrEmpty(categoryId))
-            {
-                query = query.Where(p => p.CategoryId == categoryId);
-            }
+            query = ApplyProductFilters(query, categoryId, brand, model, year, minPrice, maxPrice,
+                description, location, condition, quantity, engineCapacity, fuelType,
+                mileage, color, accessoryType, size, sparePartType, vehicleCompatible);
 
-            //Search by Location
-            if (!string.IsNullOrEmpty(location))
-            {
-                query = query.Where(p => p.Location.Contains(location));
-            }
-
-            // Sort by field
             if (!string.IsNullOrEmpty(sortField))
             {
                 query = sortField.ToLower() switch
@@ -60,62 +66,67 @@ namespace Services
                     "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
                     "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
                     "location" => ascending ? query.OrderBy(p => p.Location) : query.OrderByDescending(p => p.Location),
-                    _ => query // No sorting if field is not recognized
+                    _ => query
                 };
             }
             else
             {
-                // Default sort by CreatedAt descending
                 query = query.OrderByDescending(p => p.CreatedAt);
             }
 
-            // Pagination
             query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
-
             var products = await query.ToListAsync();
-            var productDTOs = new List<ProductDTO>();
+
+            var result = new List<ProductDTO>();
             foreach (var p in products)
             {
-                productDTOs.Add(await MapToDTOAsync(p));
+                result.Add(await MapToDTOAsync(p));
             }
-            return productDTOs;
-
+            return result;
         }
         public async Task<ProductDTO?> GetByIdAsync(string id)
         {
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
             return product == null ? null : await MapToDTOAsync(product);
         }
-        public async Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync(string sellerId, 
+        public async Task<IEnumerable<ProductDTO>> GetUnverifiedUnpaidProductsAsync(string sellerId,
             string? categoryId = null,
+            string? brand = null,
+            string? model = null,
+            int? year = null,
+            decimal? minPrice = null,
+            decimal? maxPrice = null,
+            string? description = null,
             string? location = null,
-            string? sortField = null, 
-            bool ascending = true, 
-            int pageNumber = 1, 
+            string? condition = null,
+            int? quantity = null,
+            int? engineCapacity = null,
+            string? fuelType = null,
+            decimal? mileage = null,
+            string? color = null,
+            string? accessoryType = null,
+            string? size = null,
+            string? sparePartType = null,
+            string? vehicleCompatible = null,
+            string? sortField = null,
+            bool ascending = true,
+            int pageNumber = 1,
             int pageSize = 5)
         {
             var seller = await _unitOfWork.Repository<User>().GetByIdAsync(sellerId);
             if (seller == null || !seller.IsVerified || seller.IsDeleted || seller.Role != UserRole.Seller)
-            {
                 return Enumerable.Empty<ProductDTO>();
-            }
 
             var query = _unitOfWork.Repository<Product>()
                 .Query()
-                .Where(p => !p.IsVerified && p.Status == ProductStatus.UnPaid_Seller && p.SellerId == sellerId);
+                .Where(p => p.SellerId == sellerId && !p.IsVerified && p.Status == ProductStatus.UnPaid_Seller);
 
-            if(!string.IsNullOrEmpty(categoryId))
+            query = ApplyProductFilters(query, categoryId, brand, model, year, minPrice, maxPrice,
+                description, location, condition, quantity, engineCapacity, fuelType,
+                mileage, color, accessoryType, size, sparePartType, vehicleCompatible);
+
+            if (!string.IsNullOrEmpty(sortField))
             {
-                query = query.Where(p => p.CategoryId == categoryId);
-            }
-
-            if (!string.IsNullOrEmpty(location))
-            {
-                query = query.Where(p => p.Location.Contains(location));
-            }
-
-            if (!string.IsNullOrEmpty(sortField)) 
-            { 
                 query = sortField.ToLower() switch
                 {
                     "price" => ascending ? query.OrderBy(p => p.Price) : query.OrderByDescending(p => p.Price),
@@ -123,97 +134,13 @@ namespace Services
                     "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
                     "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
                     "location" => ascending ? query.OrderBy(p => p.Location) : query.OrderByDescending(p => p.Location),
-                    _ => query // No sorting if field is not recognized
-                };
-            }
-            else
-            {                 
-                query = query.OrderByDescending(p => p.CreatedAt);
-            }
-
-            query = query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize);
-
-            var products = await query.ToListAsync();
-            var productDTOs = new List<ProductDTO>();
-            foreach (var p in products)
-            {
-                productDTOs.Add(await MapToDTOAsync(p));
-            }
-            return productDTOs;
-        
-        }
-        public async Task<IEnumerable<ProductDTO>> GetUnpaidProductsAsync(string sellerId, 
-            string? categoryId = null,
-            string? location = null,
-            string? sortField = null, 
-            bool ascending = true, 
-            int pageNumber = 1, 
-            int pageSize = 5)
-        {
-            var seller = await _unitOfWork.Repository<User>().GetByIdAsync(sellerId);
-            if (seller == null || !seller.IsVerified || seller.IsDeleted || seller.Role != UserRole.Seller)
-            {
-                return Enumerable.Empty<ProductDTO>();
-            }
-
-            var query =  _unitOfWork.Repository<Product>()
-                 .Query()
-                 .Where(p => p.SellerId == sellerId && p.Status == ProductStatus.UnPaid_Seller && p.SellerId == sellerId);
-
-            if (!string.IsNullOrEmpty(categoryId))
-            {
-                query = query.Where(p => p.CategoryId == categoryId);
-            }
-
-            if (!string.IsNullOrEmpty(location))
-            {
-                query = query.Where(p => p.Location.Contains(location));
-            }
-
-            if (!string.IsNullOrEmpty(sortField)) {
-                query = sortField.ToLower() switch
-                {
-                    "price" => ascending ? query.OrderBy(p => p.Price) : query.OrderByDescending(p => p.Price),
-                    "year" => ascending ? query.OrderBy(p => p.Year) : query.OrderByDescending(p => p.Year),
-                    "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
-                    "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
-                    "location" => ascending ? query.OrderBy(p => p.Location) : query.OrderByDescending(p => p.Location),
-                    _ => query // No sorting if field is not recognized
+                    _ => query
                 };
             }
             else
             {
                 query = query.OrderByDescending(p => p.CreatedAt);
             }
-            query = query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize);
-            var products = await query.ToListAsync();
-            var productDTOs = new List<ProductDTO>();
-            foreach (var p in products)
-            {
-                productDTOs.Add(await MapToDTOAsync(p));
-            }
-            return productDTOs;
-
-        }
-
-        public async Task<IEnumerable<ProductDTO>> GetFavoriteProductsAsync(string userId, int pageNumber = 1, int pageSize = 5)
-        {
-            var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
-            if (user == null || !user.IsVerified || user.IsDeleted)
-            {
-                return Enumerable.Empty<ProductDTO>();
-            }
-
-            var query = _unitOfWork.Repository<FavoriteProduct>()
-                .Query()
-                .Where(f => f.UserId == userId)
-                .Select(f => f.Product)
-                .Where(p => p.IsVerified && p.Status == ProductStatus.Active)
-                .OrderByDescending(p => p.CreatedAt);
 
             var pagedProducts = await query
                 .Skip((pageNumber - 1) * pageSize)
@@ -221,7 +148,143 @@ namespace Services
                 .ToListAsync();
 
             var result = new List<ProductDTO>();
-            foreach(var product in pagedProducts)
+            foreach (var p in pagedProducts)
+            {
+                result.Add(await MapToDTOAsync(p));
+            }
+
+            return result;
+        }
+        public async Task<IEnumerable<ProductDTO>> GetUnpaidProductsAsync(string sellerId,
+            string? categoryId = null,
+            string? brand = null,
+            string? model = null,
+            int? year = null,
+            decimal? minPrice = null,
+            decimal? maxPrice = null,
+            string? description = null,
+            string? location = null,
+            string? condition = null,
+            int? quantity = null,
+            int? engineCapacity = null,
+            string? fuelType = null,
+            decimal? mileage = null,
+            string? color = null,
+            string? accessoryType = null,
+            string? size = null,
+            string? sparePartType = null,
+            string? vehicleCompatible = null,
+            string? sortField = null,
+            bool ascending = true,
+            int pageNumber = 1,
+            int pageSize = 5)
+        {
+            var seller = await _unitOfWork.Repository<User>().GetByIdAsync(sellerId);
+            if (seller == null || !seller.IsVerified || seller.IsDeleted || seller.Role != UserRole.Seller)
+                return Enumerable.Empty<ProductDTO>();
+
+            var query = _unitOfWork.Repository<Product>()
+                .Query()
+                .Where(p => p.SellerId == sellerId && p.Status == ProductStatus.UnPaid_Seller);
+
+            query = ApplyProductFilters(query, categoryId, brand, model, year, minPrice, maxPrice,
+                description, location, condition, quantity, engineCapacity, fuelType,
+                mileage, color, accessoryType, size, sparePartType, vehicleCompatible);
+
+            if (!string.IsNullOrEmpty(sortField))
+            {
+                query = sortField.ToLower() switch
+                {
+                    "price" => ascending ? query.OrderBy(p => p.Price) : query.OrderByDescending(p => p.Price),
+                    "year" => ascending ? query.OrderBy(p => p.Year) : query.OrderByDescending(p => p.Year),
+                    "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
+                    "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
+                    "location" => ascending ? query.OrderBy(p => p.Location) : query.OrderByDescending(p => p.Location),
+                    _ => query
+                };
+            }
+            else
+            {
+                query = query.OrderByDescending(p => p.CreatedAt);
+            }
+
+            var pagedProducts = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var result = new List<ProductDTO>();
+            foreach (var p in pagedProducts)
+            {
+                result.Add(await MapToDTOAsync(p));
+            }
+
+            return result;
+        }
+
+        public async Task<IEnumerable<ProductDTO>> GetFavoriteProductsAsync(
+            string userId,
+            string? categoryId = null,
+            string? brand = null,
+            string? model = null,
+            int? year = null,
+            decimal? minPrice = null,
+            decimal? maxPrice = null,
+            string? description = null,
+            string? location = null,
+            string? condition = null,
+            int? quantity = null,
+            int? engineCapacity = null,
+            string? fuelType = null,
+            decimal? mileage = null,
+            string? color = null,
+            string? accessoryType = null,
+            string? size = null,
+            string? sparePartType = null,
+            string? vehicleCompatible = null,
+            string? sortField = null,
+            bool ascending = true,
+            int pageNumber = 1,
+            int pageSize = 5)
+        {
+            var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
+            if (user == null || !user.IsVerified || user.IsDeleted)
+                return Enumerable.Empty<ProductDTO>();
+
+            var baseQuery = _unitOfWork.Repository<FavoriteProduct>()
+                .Query()
+                .Where(f => f.UserId == userId)
+                .Select(f => f.Product)
+                .Where(p => p.IsVerified && p.Status == ProductStatus.Active);
+
+            var query = ApplyProductFilters(baseQuery, categoryId, brand, model, year, minPrice, maxPrice,
+                description, location, condition, quantity, engineCapacity, fuelType,
+                mileage, color, accessoryType, size, sparePartType, vehicleCompatible);
+
+            if (!string.IsNullOrEmpty(sortField))
+            {
+                query = sortField.ToLower() switch
+                {
+                    "price" => ascending ? query.OrderBy(p => p.Price) : query.OrderByDescending(p => p.Price),
+                    "year" => ascending ? query.OrderBy(p => p.Year) : query.OrderByDescending(p => p.Year),
+                    "createdat" => ascending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
+                    "brand" => ascending ? query.OrderBy(p => p.Brand) : query.OrderByDescending(p => p.Brand),
+                    "location" => ascending ? query.OrderBy(p => p.Location) : query.OrderByDescending(p => p.Location),
+                    _ => query
+                };
+            }
+            else
+            {
+                query = query.OrderByDescending(p => p.CreatedAt);
+            }
+
+            var pagedProducts = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var result = new List<ProductDTO>();
+            foreach (var product in pagedProducts)
             {
                 result.Add(await MapToDTOAsync(product));
             }
@@ -233,7 +296,7 @@ namespace Services
         public async Task<ProductCreateResult> CreateAsync(CreateProductDTO dto, string adminId)
         {
             var user = await _unitOfWork.Repository<User>().GetByIdAsync(adminId);
-            if(user == null || !user.IsVerified || user.IsDeleted || user.Role != UserRole.Admin)
+            if (user == null || !user.IsVerified || user.IsDeleted || user.Role != UserRole.Admin)
             {
                 return new ProductCreateResult
                 {
@@ -390,7 +453,7 @@ namespace Services
                 Amount = product.Price * product.Quantity,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                ProductId = product.Id, 
+                ProductId = product.Id,
                 UserId = product.SellerId,
                 PaymentMethod = "PayOS",
                 Reference = orderCode.ToString(),
@@ -554,6 +617,50 @@ namespace Services
                 VehicleCompatible = product.VehicleCompatible,
                 ImageUrls = imageUrls
             };
+        }
+
+        private IQueryable<Product> ApplyProductFilters(
+        IQueryable<Product> query,
+        string? categoryId,
+        string? brand,
+        string? model,
+        int? year,
+        decimal? minPrice,
+        decimal? maxPrice,
+        string? description,
+        string? location,
+        string? condition,
+        int? quantity,
+        int? engineCapacity,
+        string? fuelType,
+        decimal? mileage,
+        string? color,
+        string? accessoryType,
+        string? size,
+        string? sparePartType,
+        string? vehicleCompatible
+        )
+        {
+            if (!string.IsNullOrEmpty(categoryId)) query = query.Where(p => p.CategoryId == categoryId);
+            if (!string.IsNullOrEmpty(brand)) query = query.Where(p => p.Brand.Contains(brand));
+            if (!string.IsNullOrEmpty(model)) query = query.Where(p => p.Model.Contains(model));
+            if (year.HasValue) query = query.Where(p => p.Year == year.Value);
+            if (minPrice.HasValue) query = query.Where(p => p.Price >= minPrice.Value);
+            if (maxPrice.HasValue) query = query.Where(p => p.Price <= maxPrice.Value);
+            if (!string.IsNullOrEmpty(description)) query = query.Where(p => p.Description.Contains(description));
+            if (!string.IsNullOrEmpty(location)) query = query.Where(p => p.Location.Contains(location));
+            if (!string.IsNullOrEmpty(condition)) query = query.Where(p => p.Condition.Contains(condition));
+            if (quantity.HasValue) query = query.Where(p => p.Quantity == quantity.Value);
+            if (engineCapacity.HasValue) query = query.Where(p => p.EngineCapacity == engineCapacity.Value);
+            if (!string.IsNullOrEmpty(fuelType)) query = query.Where(p => p.FuelType.Contains(fuelType));
+            if (mileage.HasValue) query = query.Where(p => p.Mileage == mileage.Value);
+            if (!string.IsNullOrEmpty(color)) query = query.Where(p => p.Color.Contains(color));
+            if (!string.IsNullOrEmpty(accessoryType)) query = query.Where(p => p.AccessoryType.Contains(accessoryType));
+            if (!string.IsNullOrEmpty(size)) query = query.Where(p => p.Size.Contains(size));
+            if (!string.IsNullOrEmpty(sparePartType)) query = query.Where(p => p.SparePartType.Contains(sparePartType));
+            if (!string.IsNullOrEmpty(vehicleCompatible)) query = query.Where(p => p.VehicleCompatible.Contains(vehicleCompatible));
+
+            return query;
         }
 
     }
