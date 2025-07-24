@@ -9,8 +9,13 @@ namespace BusinessObjects.DTO.UserDTO
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
         public string AvatarUrl { get; set; }
-
         public DateTime? Dob { get; set; }
+        public string? ShopName { get; set; }
+        public string? ShopDescription { get; set; }
+        public string? BusinessType { get; set; }
+        public string? BankName { get; set; }
+        public string? BankAccountNumber { get; set; }
+        public string? BankAccountHolder { get; set; }
     }
     public class ChangeStatusDTO
     {

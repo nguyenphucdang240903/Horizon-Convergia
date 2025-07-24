@@ -46,30 +46,16 @@ namespace Services
 
             var existingUser = await _unitOfWork.Users
                 .Query()
-                .FirstOrDefaultAsync(u => u.Email == dto.Email);
+                .FirstOrDefaultAsync(u => u.Email == dto.Email || u.PhoneNumber == dto.PhoneNumber);
 
             if (existingUser != null)
-                throw new Exception("Email đã được sử dụng.");
-
-            if (dto.Role == UserRole.Seller)
             {
-                if (string.IsNullOrWhiteSpace(dto.ShopName) ||
-                    string.IsNullOrWhiteSpace(dto.ShopDescription) ||
-                    string.IsNullOrWhiteSpace(dto.BusinessType))
-                {
-                    throw new Exception("Người dùng Seller phải nhập đầy đủ thông tin cửa hàng.");
-                }
+                if (existingUser.Email == dto.Email)
+                    throw new Exception("Email đã được sử dụng.");
+                else
+                    throw new Exception("Số điện thoại đã được sử dụng.");
             }
-            if (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper)
-            {
-                if (string.IsNullOrWhiteSpace(dto.BankName) ||
-                    string.IsNullOrWhiteSpace(dto.BankAccountNumber) ||
-                    string.IsNullOrWhiteSpace(dto.BankAccountHolder))
-                {
-                    throw new Exception("Người dùng Seller hoặc Shipper phải nhập đủ thông tin ngân hàng.");
-                }
-            }
-
+   
             var requestScheme = _httpContextAccessor.HttpContext?.Request.Scheme;
             var requestHost = _httpContextAccessor.HttpContext?.Request.Host.Value;
             var verificationToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
@@ -93,14 +79,6 @@ namespace Services
                 VerificationTokenExpires = DateTime.UtcNow.AddHours(24),
                 IsDeleted = false,
 
-                ShopName = dto.Role == UserRole.Seller ? dto.ShopName : null,
-                shopDescription = dto.Role == UserRole.Seller ? dto.ShopDescription : null,
-                BusinessType = dto.Role == UserRole.Seller ? dto.BusinessType : null,
-
-                BankName = (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper) ? dto.BankName : null,
-                BankAccountNumber = (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper) ? dto.BankAccountNumber : null,
-                BankAccountName = (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper) ? dto.BankAccountHolder : null
-
             };
 
             await _unitOfWork.Users.AddAsync(user);
@@ -114,7 +92,7 @@ namespace Services
 
             return user;
         }
-        public async Task<User> AdminCreateUserAsync(RegisterUserDTO dto)
+        public async Task<User> AdminCreateUserAsync(CreateUserByAdminDTO dto)
         {
             if (dto.Role != UserRole.Seller && dto.Role != UserRole.Shipper)
                 throw new Exception("Chỉ được tạo tài khoản với vai trò Seller hoặc Shipper.");
@@ -149,10 +127,16 @@ namespace Services
 
             var existingUser = await _unitOfWork.Users
                 .Query()
-                .FirstOrDefaultAsync(u => u.Email == dto.Email);
+                .FirstOrDefaultAsync(u => u.Email == dto.Email || u.PhoneNumber == dto.PhoneNumber);
 
             if (existingUser != null)
-                throw new Exception("Email đã được sử dụng.");
+            {
+                if (existingUser.Email == dto.Email)
+                    throw new Exception("Email đã được sử dụng.");
+                else
+                    throw new Exception("Số điện thoại đã được sử dụng.");
+            }
+
 
             var verificationToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
             var requestScheme = _httpContextAccessor.HttpContext?.Request.Scheme;
@@ -253,12 +237,29 @@ namespace Services
                 throw new Exception("Số điện thoại phải từ 10 đến 11 số và bắt đầu bằng số 0.");
             if (user.Dob.HasValue && user.Dob.Value.Date > DateTime.Today)
                 throw new Exception("Ngày sinh không được lớn hơn ngày hiện tại.");
+            var phoneExists = await _unitOfWork.Users
+                .Query()
+                .AnyAsync(u => u.PhoneNumber == user.PhoneNumber && u.Id != user.Id);
+
+            if (phoneExists)
+                throw new Exception("Số điện thoại đã được sử dụng bởi người dùng khác.");
+            
             var existingUser = await _unitOfWork.Users.GetByIdAsync(user.Id);
             existingUser.Address = user.Address;
             existingUser.Name = user.Name;
             existingUser.PhoneNumber = user.PhoneNumber;
             existingUser.AvatarUrl = user.AvatarUrl;
             existingUser.Dob = user.Dob;
+
+            if (existingUser.Role == UserRole.Seller)
+            {
+                existingUser.ShopName = user.ShopName;
+                existingUser.shopDescription = user.ShopDescription;
+                existingUser.BusinessType = user.BusinessType;
+                existingUser.BankName = user.BankName;
+                existingUser.BankAccountNumber = user.BankAccountNumber;
+                existingUser.BankAccountName = user.BankAccountHolder;
+            }
             _unitOfWork.Users.Update(existingUser);
             await _unitOfWork.SaveAsync();
         }
@@ -275,7 +276,6 @@ namespace Services
             }
             return true;
         }
-
 
         public async Task ChangeStatusAsync(string id, UserStatus status)
         {

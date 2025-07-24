@@ -12,6 +12,7 @@
         public string? ParentCategoryId { get; set; } // New
         public Category? ParentCategory { get; set; } // Navigation
         public ICollection<Category> SubCategories { get; set; } = new List<Category>(); // Navigation
+        public ICollection<Blog> Blogs { get; set; } = new List<Blog>();
 
         public ICollection<Product> Products { get; set; }
     }
