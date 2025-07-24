@@ -65,15 +65,131 @@ namespace HorizonConvergia.Controllers
             var user = await _userService.GetUserByVerificationTokenAsync(token);
             if (user == null || user.VerificationTokenExpires < DateTime.UtcNow)
             {
-                return BadRequest("Token không hợp lệ hoặc đã hết hạn.");
+                return Content(@"
+<!DOCTYPE html>
+<html lang='vi'>
+<head>
+    <meta charset='UTF-8'>
+    <title>Xác minh thất bại</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 60px auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .icon {
+            font-size: 60px;
+            color: #e74c3c;
+        }
+        .message {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+        .btn {
+            margin-top: 30px;
+            display: inline-block;
+            background-color: #e74c3c;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='icon'>❌</div>
+        <div class='message'>Token không hợp lệ hoặc đã hết hạn.</div>
+        <a class='btn' href='https://www.horizonconvergia.click/dang-nhap'>Quay lại đăng nhập</a>
+    </div>
+</body>
+</html>
+", "text/html");
             }
+
             user.IsVerified = true;
             user.UpdatedAt = DateTime.UtcNow;
-
             await _userService.UpdateUserVerificationAsync(user);
 
-            return Ok("Tài khoản đã được xác minh thành công.");
+            return Content(@"
+<!DOCTYPE html>
+<html lang='vi'>
+<head>
+    <meta charset='UTF-8'>
+    <title>Xác minh thành công</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #a1ffce, #faffd1);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2c3e50;
         }
+        .container {
+            max-width: 600px;
+            margin: 60px auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .icon {
+            font-size: 60px;
+            color: #27ae60;
+        }
+        .message {
+            font-size: 22px;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 30px;
+            background: linear-gradient(to right, #3498db, #2ecc71);
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .logo {
+            width: 100px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <img src='https://www.horizonconvergia.click/assets/logo-Cw2ulTmz.png' class='logo' alt='Horizon Logo'/>
+        <div class='icon'>✅</div>
+        <div class='message'>Tài khoản của bạn đã được xác minh thành công!</div>
+        <a class='btn' href='https://www.horizonconvergia.click/dang-nhap'>Quay lại trang đăng nhập</a>
+    </div>
+</body>
+</html>
+", "text/html");
+        }
+
 
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO dto)

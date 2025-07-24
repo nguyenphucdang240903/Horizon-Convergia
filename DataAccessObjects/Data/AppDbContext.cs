@@ -53,7 +53,7 @@ namespace DataAccessObjects.Data
             modelBuilder.Entity<Shipping>()
                 .HasOne(s => s.User)
                 .WithMany(u => u.Shippings)
-                .HasForeignKey(s => s.UserId)
+                .HasForeignKey(s => s.CarrierId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // User - Blog (1-n)
@@ -62,6 +62,12 @@ namespace DataAccessObjects.Data
                 .WithMany(u => u.Blogs)
                 .HasForeignKey(b => b.AuthorId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Blog>()
+                .HasOne(b => b.Category)
+                .WithMany(c => c.Blogs)
+                .HasForeignKey(b => b.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // User - Payment (1-n)
             modelBuilder.Entity<Payment>()

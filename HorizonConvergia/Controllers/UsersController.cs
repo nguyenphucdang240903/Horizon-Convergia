@@ -17,7 +17,7 @@ namespace HorizonConvergia.Controllers
 
         [HttpPost("admin-create")]
         [Authorize(Policy = "Admin")]
-        public async Task<IActionResult> AdminCreateUser([FromBody] RegisterUserDTO dto)
+        public async Task<IActionResult> AdminCreateUser([FromBody] CreateUserByAdminDTO dto)
         {
             var user = await _userService.AdminCreateUserAsync(dto);
             return Ok(new ResultDTO
