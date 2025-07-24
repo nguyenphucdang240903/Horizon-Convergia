@@ -18,7 +18,7 @@ namespace BusinessObjects.DTO.OrderDTO
 
     public class CreateOrderFromCartSelectionDTO
     {
-        public List<string> ProductIds { get; set; }  
+        public List<string> CartId { get; set; }  
         public string ShippingAddress { get; set; }
         public decimal Discount { get; set; }
     }
