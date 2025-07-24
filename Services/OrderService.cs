@@ -21,7 +21,7 @@ namespace Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<List<string>> CreateOrderAsync(CreateOrderFromCartDTO dto, string buyerId)
+        public async Task<List<string>> CreateOrderAsync(CreateOrderFromCartSelectionDTO dto, string buyerId)
         {
             var cartDetails = _unitOfWork.Repository<CartDetail>()
                 .Query()
@@ -248,7 +248,7 @@ namespace Services
                 {
                     bool shipperAlreadyPaid = paymentRepo.Query()
                         .Any(p =>
-                            p.UserId == shipping.UserId &&
+                            p.UserId == shipping.CarrierId &&
                             p.Reference == $"ORDER-{order.Id}" &&
                             p.PaymentType == PaymentType.PayoutToShipper);
 
@@ -259,7 +259,7 @@ namespace Services
                         await paymentRepo.AddAsync(new Payment
                         {
                             Id = Guid.NewGuid().ToString(),
-                            UserId = shipping.UserId,
+                            UserId = shipping.CarrierId,
                             Amount = shipFee,
                             Reference = $"ORDER-{order.Id}",
                             Description = "Payout for shipper",

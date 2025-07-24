@@ -18,11 +18,11 @@ namespace BusinessObjects.DTO.OrderDTO
 
     public class CreateOrderFromCartDTO
     {
-        public List<string> CartId { get; set; }
+        public List<string> CartId { get; set; }  
         public string ShippingAddress { get; set; }
         public decimal Discount { get; set; } = 0;
     }
-
+        
     public class OrderSearchDTO
     {
         public string? BuyerId { get; set; }
