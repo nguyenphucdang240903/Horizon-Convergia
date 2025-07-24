@@ -114,7 +114,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 // 5. Controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(x =>
+{
+    x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    x.JsonSerializerOptions.WriteIndented = true;
+});
 
 // 6. Các service/repository DI
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

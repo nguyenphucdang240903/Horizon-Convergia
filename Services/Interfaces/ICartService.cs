@@ -1,5 +1,6 @@
 ﻿using BusinessObjects.DTO.CartDTO;
 using BusinessObjects.DTO.CategoryDTO;
+using BusinessObjects.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +11,11 @@ namespace Services.Interfaces
 {
     public interface ICartService
     {
-        Task<IEnumerable<CartDTO>> GetAllAsync();
-        Task<CartDTO?> GetByIdAsync(string id);
-        Task<CartCreateResult> CreateAsync(string productId, string buyerId, CreateCartDTO categoryDto);
-        Task<bool> UpdateAsync(string id, UpdateCartDTO categoryDto);
-        Task<bool> DeleteAsync(string id);
+        Task<Cart> GetCartByUserIdAsync(string userId);
+        Task<Cart> CreateCartAsync(string userId);
+        Task<CartDetail> AddProductToCartAsync(string userId, string productId, int quantity);
+        Task<List<CartDetail>> GetCartDetailsAsync(string cartId);
+        Task<bool> RemoveCartDetailAsync(string cartDetailId);
+        Task<bool> UpdateCartDetailQuantityAsync(string cartDetailId, int newQuantity);
     }
 }

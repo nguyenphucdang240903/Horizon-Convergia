@@ -23,39 +23,33 @@ namespace Services
 
         public async Task<List<string>> CreateOrderAsync(CreateOrderFromCartDTO dto, string buyerId)
         {
-            var carts = _unitOfWork.Repository<Cart>().Query()
-                .Where(c => dto.CartId.Contains(c.Id) && c.BuyerId == buyerId && !c.IsDeleted)
+            var cartDetails = _unitOfWork.Repository<CartDetail>()
+                .Query()
+                .Include(cd => cd.Product)
+                .Include(cd => cd.Cart)
+                .Where(cd => dto.CartId.Contains(cd.CartId) && cd.Cart.BuyerId == buyerId && !cd.Cart.IsDeleted)
                 .ToList();
 
-            if (carts == null || !carts.Any())
+            if (cartDetails == null || !cartDetails.Any())
                 throw new Exception("No valid cart items found.");
 
-            var productIds = carts.Select(c => c.ProductId).Distinct().ToList();
-            var products = _unitOfWork.Repository<Product>()
-                .Query()
-                .Include(p => p.Category)
-                .Where(p => productIds.Contains(p.Id))
-                .ToList();
-
-            foreach (var cart in carts)
+            foreach (var detail in cartDetails)
             {
-                var product = products.FirstOrDefault(p => p.Id == cart.ProductId);
+                var product = detail.Product;
 
                 if (product == null || !product.IsVerified || product.Status != ProductStatus.Active)
-                    throw new Exception($"Product {cart.ProductId} is unavailable.");
+                    throw new Exception($"Product {detail.ProductId} is unavailable.");
 
-                if (cart.Quantity > product.Quantity)
+                if (detail.Quantity > product.Quantity)
                     throw new Exception($"Product {product.Model} only has {product.Quantity} item(s) left in stock.");
             }
 
-            var groupedCarts = carts.GroupBy(c => products.First(p => p.Id == c.ProductId).SellerId);
-            var orderNumbers = new List<string>();
+            var groupedBySeller = cartDetails.GroupBy(cd => cd.Product.SellerId);
+            var orderNos = new List<string>();
 
-            foreach (var sellerGroup in groupedCarts)
+            foreach (var sellerGroup in groupedBySeller)
             {
                 var orderId = Guid.NewGuid().ToString();
-                var firstProduct = products.First(p => p.Id == sellerGroup.First().ProductId);
-
                 var order = new Order
                 {
                     Id = orderId,
@@ -68,46 +62,54 @@ namespace Services
                     UpdatedAt = DateTime.UtcNow,
                     Status = OrderStatus.Pending,
                     IsDeleted = false,
-                    TotalPrice = sellerGroup.Sum(c => (c.Price - c.Discount) * c.Quantity),
-                    OrderDetails = sellerGroup.Select(c =>
+                    TotalPrice = sellerGroup.Sum(cd => (cd.Price - (cd.Discount ?? 0)) * cd.Quantity),
+                    OrderDetails = sellerGroup.Select(cd => new OrderDetail
                     {
-                        var product = products.First(p => p.Id == c.ProductId);
-                        return new OrderDetail
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            ProductId = c.ProductId,
-                            Price = c.Price,
-                            Discount = c.Discount,
-                            ProductType = product.Category?.Name ?? "Khác",
-                            CreatedAt = DateTime.UtcNow,
-                            OrderId = orderId
-                        };
+                        Id = Guid.NewGuid().ToString(),
+                        ProductId = cd.ProductId,
+                        ProductType = cd.Product.Category?.Name ?? "Khác",
+                        Price = cd.Price,
+                        Discount = cd.Discount ?? 0,
+                        CreatedAt = DateTime.UtcNow,
+                        OrderId = orderId
                     }).ToList()
                 };
 
                 await _unitOfWork.Repository<Order>().AddAsync(order);
 
-                // Trừ tồn kho
-                foreach (var cart in sellerGroup)
+                // Deduct product quantity
+                foreach (var cartDetail in sellerGroup)
                 {
-                    var product = products.First(p => p.Id == cart.ProductId);
-                    product.Quantity -= cart.Quantity;
-                    if (product.Quantity < 0)
-                        product.Quantity = 0;
+                    var product = cartDetail.Product;
+                    product.Quantity -= cartDetail.Quantity;
+                    if (product.Quantity < 0) product.Quantity = 0;
                 }
 
-                orderNumbers.Add(order.OrderNo);
+                orderNos.Add(order.OrderNo);
             }
 
-            // Xóa giỏ hàng
+            // Remove CartDetails
+            _unitOfWork.Repository<CartDetail>().DeleteRange(cartDetails);
+
+            // Optionally remove empty carts
+            var cartIds = cartDetails.Select(cd => cd.CartId).Distinct().ToList();
+            var carts = _unitOfWork.Repository<Cart>().Query().Where(c => cartIds.Contains(c.Id)).ToList();
+
             foreach (var cart in carts)
             {
-                _unitOfWork.Repository<Cart>().Delete(cart);
+                var hasDetails = _unitOfWork.Repository<CartDetail>()
+                    .Query().Any(cd => cd.CartId == cart.Id);
+
+                if (!hasDetails)
+                {
+                    _unitOfWork.Repository<Cart>().Delete(cart);
+                }
             }
 
             await _unitOfWork.SaveAsync();
-            return orderNumbers;
+            return orderNos;
         }
+
 
 
         public async Task<OrderDetailDTO> GetOrderDetailAsync(string orderId)

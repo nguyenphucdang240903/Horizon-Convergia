@@ -13,6 +13,7 @@ namespace DataAccessObjects.Data
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Cart> Carts { get; set; }
+        public DbSet<CartDetail> CartDetails { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Images> Images { get; set; }
         public DbSet<Shipping> Shippings { get; set; }
@@ -103,13 +104,6 @@ namespace DataAccessObjects.Data
                 .HasForeignKey(i => i.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Product - Cart (n-1)
-            modelBuilder.Entity<Cart>()
-                .HasOne(c => c.Product)
-                .WithMany(p => p.Carts)
-                .HasForeignKey(c => c.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             // Order - OrderDetail (1-n)
             modelBuilder.Entity<OrderDetail>()
                 .HasOne(od => od.Order)
@@ -176,6 +170,17 @@ namespace DataAccessObjects.Data
                 .HasOne(f => f.Product)
                 .WithMany(p => p.FavoritedBy)
                 .HasForeignKey(f => f.ProductId);
+
+            //CartDetail - Cart
+            modelBuilder.Entity<CartDetail>()
+                .HasOne(cd => cd.Cart)
+                .WithMany(c => c.CartDetails)
+                .HasForeignKey(cd => cd.CartId);
+
+            modelBuilder.Entity<CartDetail>()
+                .HasOne(cd => cd.Product)
+                .WithMany()
+                .HasForeignKey(cd => cd.ProductId);
 
             // cau hinh cac enum
             modelBuilder.Entity<User>()
