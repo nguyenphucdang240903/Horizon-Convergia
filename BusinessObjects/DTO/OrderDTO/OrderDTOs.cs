@@ -22,7 +22,7 @@ namespace BusinessObjects.DTO.OrderDTO
         public string ShippingAddress { get; set; }
         public decimal Discount { get; set; }
     }
-
+        
     public class OrderSearchDTO
     {
         public string? BuyerId { get; set; }
