@@ -131,7 +131,6 @@ namespace Services
             existing.ImageUrl = dto.ImageUrl;
             existing.IsDeleted = dto.IsDeleted;
             existing.AuthorId = dto.AuthorId;
-            existing.CategoryId = dto.CategoryId;
             existing.UpdatedAt = dto.UpdatedAt;
 
             _unitOfWork.Repository<Blog>().Update(existing);

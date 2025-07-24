@@ -55,27 +55,7 @@ namespace Services
                 else
                     throw new Exception("Số điện thoại đã được sử dụng.");
             }
-
-
-            if (dto.Role == UserRole.Seller)
-            {
-                if (string.IsNullOrWhiteSpace(dto.ShopName) ||
-                    string.IsNullOrWhiteSpace(dto.ShopDescription) ||
-                    string.IsNullOrWhiteSpace(dto.BusinessType))
-                {
-                    throw new Exception("Người dùng Seller phải nhập đầy đủ thông tin cửa hàng.");
-                }
-            }
-            if (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper)
-            {
-                if (string.IsNullOrWhiteSpace(dto.BankName) ||
-                    string.IsNullOrWhiteSpace(dto.BankAccountNumber) ||
-                    string.IsNullOrWhiteSpace(dto.BankAccountHolder))
-                {
-                    throw new Exception("Người dùng Seller hoặc Shipper phải nhập đủ thông tin ngân hàng.");
-                }
-            }
-
+   
             var requestScheme = _httpContextAccessor.HttpContext?.Request.Scheme;
             var requestHost = _httpContextAccessor.HttpContext?.Request.Host.Value;
             var verificationToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
@@ -99,14 +79,6 @@ namespace Services
                 VerificationTokenExpires = DateTime.UtcNow.AddHours(24),
                 IsDeleted = false,
 
-                ShopName = dto.Role == UserRole.Seller ? dto.ShopName : null,
-                shopDescription = dto.Role == UserRole.Seller ? dto.ShopDescription : null,
-                BusinessType = dto.Role == UserRole.Seller ? dto.BusinessType : null,
-
-                BankName = (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper) ? dto.BankName : null,
-                BankAccountNumber = (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper) ? dto.BankAccountNumber : null,
-                BankAccountName = (dto.Role == UserRole.Seller || dto.Role == UserRole.Shipper) ? dto.BankAccountHolder : null
-
             };
 
             await _unitOfWork.Users.AddAsync(user);
@@ -120,7 +92,7 @@ namespace Services
 
             return user;
         }
-        public async Task<User> AdminCreateUserAsync(RegisterUserDTO dto)
+        public async Task<User> AdminCreateUserAsync(CreateUserByAdminDTO dto)
         {
             if (dto.Role != UserRole.Seller && dto.Role != UserRole.Shipper)
                 throw new Exception("Chỉ được tạo tài khoản với vai trò Seller hoặc Shipper.");
@@ -278,6 +250,16 @@ namespace Services
             existingUser.PhoneNumber = user.PhoneNumber;
             existingUser.AvatarUrl = user.AvatarUrl;
             existingUser.Dob = user.Dob;
+
+            if (existingUser.Role == UserRole.Seller)
+            {
+                existingUser.ShopName = user.ShopName;
+                existingUser.shopDescription = user.ShopDescription;
+                existingUser.BusinessType = user.BusinessType;
+                existingUser.BankName = user.BankName;
+                existingUser.BankAccountNumber = user.BankAccountNumber;
+                existingUser.BankAccountName = user.BankAccountHolder;
+            }
             _unitOfWork.Users.Update(existingUser);
             await _unitOfWork.SaveAsync();
         }
@@ -294,7 +276,6 @@ namespace Services
             }
             return true;
         }
-
 
         public async Task ChangeStatusAsync(string id, UserStatus status)
         {
