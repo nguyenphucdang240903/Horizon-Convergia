@@ -24,7 +24,7 @@ namespace Services.Interfaces
         Task ChangePasswordAsync(string id, string newPassword);
         Task<User> GetUserByVerificationTokenAsync(string token);
         Task UpdateUserVerificationAsync(User user);
-        Task<User> AdminCreateUserAsync(RegisterUserDTO dto);
+        Task<User> AdminCreateUserAsync(CreateUserByAdminDTO dto);
     }
 
 }
