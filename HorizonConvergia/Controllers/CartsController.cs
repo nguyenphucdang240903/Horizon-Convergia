@@ -15,67 +15,40 @@ namespace HorizonConvergia.Controllers
         {
             _cartService = cartService;
         }
-        
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+
+        [HttpPost("{userId}/add/{productId}")]
+        public async Task<IActionResult> AddToCart(string userId, string productId, [FromQuery] int quantity)
         {
-            var carts = await _cartService.GetAllAsync();
-            return Ok(carts);
+            var result = await _cartService.AddProductToCartAsync(userId, productId, quantity);
+            return Ok(result);
         }
 
-        
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(string id)
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetCartByUser(string userId)
         {
-            var cart = await _cartService.GetByIdAsync(id);
-            if (cart == null)
-            {
-                return NotFound(new { message = "Cart not found." });
-            }
-            return Ok(cart);
+            var cart = await _cartService.GetCartByUserIdAsync(userId);
+            return cart == null ? NotFound() : Ok(cart);
         }
 
-        [HttpPost("product/{productId}/user/{buyerId}")]
-        public async Task<IActionResult> Create(string productId, string buyerId, [FromBody]CreateCartDTO value)
+        [HttpGet("{cartId}/details")]
+        public async Task<IActionResult> GetCartDetails(string cartId)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var result = await _cartService.CreateAsync(productId, buyerId, value);
-            if (!string.IsNullOrEmpty(result.ErrorMessage))
-            {
-                return BadRequest(new { message = result.ErrorMessage });
-            }
-            return CreatedAtAction(nameof(GetById), new { id = result.Cart.Id }, result.Cart);
+            var details = await _cartService.GetCartDetailsAsync(cartId);
+            return Ok(details);
         }
 
-        // PUT api/<CartsController>/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody]UpdateCartDTO value)
+        [HttpDelete("detail/{cartDetailId}")]
+        public async Task<IActionResult> RemoveCartDetail(string cartDetailId)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var success = await _cartService.UpdateAsync(id, value);
-            if (!success)
-            {
-                return NotFound(new { message = "Cart not found." });
-            }
-            return NoContent();
+            var result = await _cartService.RemoveCartDetailAsync(cartDetailId);
+            return result ? Ok() : NotFound();
         }
 
-        // DELETE api/<CartsController>/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
+        [HttpPut("detail/{cartDetailId}/quantity/{newQuantity}")]
+        public async Task<IActionResult> UpdateCartDetailQuantity(string cartDetailId, int newQuantity)
         {
-            var success = await _cartService.DeleteAsync(id);
-            if (!success)
-            {
-                return NotFound(new { message = "Cart not found." });
-            }
-            return NoContent();
+            var result = await _cartService.UpdateCartDetailQuantityAsync(cartDetailId, newQuantity);
+            return result ? Ok() : NotFound();
         }
     }
 }

@@ -13,6 +13,7 @@ namespace Repositories.Interfaces
         void Update(T entity);
         void Delete(T entity);
         IQueryable<T> Query();
+        void DeleteRange(IEnumerable<T> entities);
     }
 
 }

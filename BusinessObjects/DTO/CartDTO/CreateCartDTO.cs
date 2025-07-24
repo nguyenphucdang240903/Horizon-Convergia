@@ -13,15 +13,4 @@ namespace BusinessObjects.DTO.CartDTO
         public int Quantity { get; set; }
     }
 
-    public class UpdateCartDTO : CreateCartDTO
-    {
-        public int Quantity { get; set; }
-        public DateTime UpdatedAt { get; set; }
-    }
-
-    public class CartCreateResult()
-    {
-        public CartDTO? Cart { get; set; }
-        public string? ErrorMessage { get; set; }
-    }
 }
