@@ -9,22 +9,16 @@ namespace BusinessObjects.DTO.BlogDTO
 {
     public class CreateBlogDTO
     {
-        public string Title { get; set; }
-        public string CategoryId { get; set; }
-        public string Content { get; set; }
-        public string ImageUrl { get; set; }
-        public bool IsDeleted { get; set; }
-        public string AuthorId { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public string CategoryId { get; set; } // dùng chung cho tất cả
+        public List<BlogCreateItem> Blogs { get; set; } // danh sách blog
     }
-    public class UpdateBlogDTO : CreateBlogDTO
+    public class BlogCreateItem
     {
         public string Title { get; set; }
-        public string CategoryId { get; set; }
         public string Content { get; set; }
         public string ImageUrl { get; set; }
-        public bool IsDeleted { get; set; }
         public string AuthorId { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public bool IsDeleted { get; set; } = false;
+        public DateTime CreatedAt { get; set; }
     }
 }
