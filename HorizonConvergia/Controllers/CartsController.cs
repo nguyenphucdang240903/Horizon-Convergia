@@ -33,7 +33,7 @@ namespace HorizonConvergia.Controllers
         [HttpGet("{cartId}/details")]
         public async Task<IActionResult> GetCartDetails(string cartId)
         {
-            var details = await _cartService.GetCartDetailsAsync(cartId);
+            var details = await _cartService.GetCartDetailsDtoAsync(cartId);
             return Ok(details);
         }
 

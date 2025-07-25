@@ -1,4 +1,5 @@
-﻿using BusinessObjects.Enums;
+﻿using BusinessObjects.DTO.CartDTO;
+using BusinessObjects.Enums;
 using BusinessObjects.Models;
 using DataAccessObjects;
 using Microsoft.EntityFrameworkCore;
@@ -13,13 +14,14 @@ namespace Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<CartDetail> AddProductToCartAsync(string userId, string productId, int quantity)
+        public async Task<CartDetailDto> AddProductToCartAsync(string userId, string productId, int quantity)
         {
-            var cart = await GetCartByUserIdAsync(userId) ?? await CreateCartAsync(userId);
+            var cart = await GetCartEntityByUserIdAsync(userId) ?? await CreateCartAsync(userId);
 
             var cartDetailRepo = _unitOfWork.Repository<CartDetail>();
             var existingDetail = await cartDetailRepo
                 .Query()
+                .Include(p => p.Product)
                 .FirstOrDefaultAsync(cd => cd.CartId == cart.Id && cd.ProductId == productId);
 
             if (existingDetail != null)
@@ -50,8 +52,15 @@ namespace Services
             }
 
             await _unitOfWork.SaveAsync();
-            return existingDetail;
 
+            return new CartDetailDto
+            {
+                Id = existingDetail.Id,
+                Quantity = existingDetail.Quantity,
+                ProductId = existingDetail.ProductId,
+                ProductName = existingDetail.Product?.Model ?? "",
+                Price = existingDetail.Price
+            };
         }
 
         public async Task<Cart> CreateCartAsync(string userId)
@@ -78,21 +87,38 @@ namespace Services
             return cart;
         }
 
-        public async Task<Cart> GetCartByUserIdAsync(string userId)
+        public async Task<CartDto> GetCartByUserIdAsync(string userId)
         {
             var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
-            if(!user.IsVerified || user.IsDeleted || user.Status != UserStatus.Active)
+            if (user == null || !user.IsVerified || user.IsDeleted || user.Status != UserStatus.Active)
             {
                 return null;
             }
 
-            var cart = await _unitOfWork.Repository<Cart>().Query().Include(c => c.CartDetails).ThenInclude(p => p.Product)
-                            .FirstOrDefaultAsync(c => c.BuyerId == userId);
+            var cart = await _unitOfWork.Repository<Cart>()
+                .Query()
+                .Include(c => c.CartDetails)
+                    .ThenInclude(cd => cd.Product)
+                .FirstOrDefaultAsync(c => c.BuyerId == userId && !c.IsDeleted);
 
-            return cart;
+            if (cart == null) return null;
+
+            var cartDto = new CartDto
+            {
+                Id = cart.Id,
+                BuyerId = cart.BuyerId,
+                Items = cart.CartDetails.Select(cd => new CartItemDto
+                {
+                    ProductId = cd.ProductId,
+                    ProductName = cd.Product?.Model ?? "", // Use Model or Name depending on your Product entity
+                    Quantity = cd.Quantity
+                }).ToList()
+            };
+
+            return cartDto;
         }
 
-        public async Task<List<CartDetail>> GetCartDetailsAsync(string cartId)
+        public async Task<List<CartDetailDto>> GetCartDetailsDtoAsync(string cartId)
         {
             var cartDetails = await _unitOfWork.Repository<CartDetail>()
                 .Query()
@@ -100,7 +126,14 @@ namespace Services
                 .Include(cd => cd.Product)
                 .ToListAsync();
 
-            return cartDetails;
+            return cartDetails.Select(cd => new CartDetailDto
+            {
+                Id = cd.Id,
+                Quantity = cd.Quantity,
+                ProductId = cd.ProductId,
+                ProductName = cd.Product?.Model,
+                Price = cd.Price
+            }).ToList();
         }
 
         public async Task<bool> RemoveCartDetailAsync(string cartDetailId)
@@ -123,6 +156,35 @@ namespace Services
             _unitOfWork.Repository<CartDetail>().Update(detail);
             await _unitOfWork.SaveAsync();
             return true;
+        }
+
+        public static CartDetailDto ToDto(CartDetail detail)
+        {
+            return new CartDetailDto
+            {
+                Id = detail.Id,
+                Quantity = detail.Quantity,
+                ProductId = detail.ProductId,
+                ProductName = detail.Product?.Model ?? "", // Or .Name if you have that
+                Price = detail.Price
+            };
+        }
+
+        private async Task<Cart> GetCartEntityByUserIdAsync(string userId)
+        {
+            var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
+            if (user == null || !user.IsVerified || user.IsDeleted || user.Status != UserStatus.Active)
+            {
+                return null;
+            }
+
+            var cart = await _unitOfWork.Repository<Cart>()
+                .Query()
+                .Include(c => c.CartDetails)
+                    .ThenInclude(cd => cd.Product)
+                .FirstOrDefaultAsync(c => c.BuyerId == userId && !c.IsDeleted);
+
+            return cart;
         }
     }
 }
