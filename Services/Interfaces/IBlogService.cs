@@ -15,6 +15,6 @@ namespace Services.Interfaces
         Task<bool> UpdateAsync(string id, UpdateBlogDTO dto);
         Task<bool> DeleteAsync(string id);
         //Task<IEnumerable<BlogDTO>> GetByCategoryAsync(string categoryId);
-        Task<IEnumerable<BlogDTO>> CreateMultipleAsync(CreateBlogDTO dto);
+        Task<IEnumerable<BlogDTO>> CreateMultipleAsync(CreateBlogDTO dto, string userId);
     }
 }

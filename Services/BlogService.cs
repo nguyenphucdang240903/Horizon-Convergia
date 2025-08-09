@@ -40,7 +40,7 @@ namespace Services
             return blog == null ? null : MapToDTO(blog);
         }
 
-        public async Task<IEnumerable<BlogDTO>> CreateMultipleAsync(CreateBlogDTO dto)
+        public async Task<IEnumerable<BlogDTO>> CreateMultipleAsync(CreateBlogDTO dto, string userId)
         {
             var categoryExists = await _unitOfWork.Repository<Category>()
                                                    .Query()
@@ -54,11 +54,11 @@ namespace Services
                 Title = item.Title,
                 Content = item.Content,
                 ImageUrl = item.ImageUrl,
-                AuthorId = item.AuthorId,
+                AuthorId = userId,
                 CategoryId = dto.CategoryId,
                 IsDeleted = item.IsDeleted,
-                CreatedAt = item.CreatedAt,
-                UpdatedAt = item.CreatedAt
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             }).ToList();
 
             foreach (var blog in blogList)
@@ -70,6 +70,7 @@ namespace Services
 
             return blogList.Select(MapToDTO);
         }
+
 
         //public async Task<BlogDTO> CreateAsync(CreateBlogDTO dto)
         //{

@@ -1,9 +1,11 @@
 ﻿using BusinessObjects.DTO.BlogDTO;
 using BusinessObjects.DTO.ProductDTO;
 using BusinessObjects.DTO.ResultDTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services;
 using Services.Interfaces;
+using System.Security.Claims;
 
 namespace HorizonConvergia.Controllers
 {
@@ -43,6 +45,7 @@ namespace HorizonConvergia.Controllers
         //}
 
         [HttpGet]
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> GetAll()
         {
             var blogs = await _blogService.GetAllAsync();
@@ -50,6 +53,7 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> GetById(string id)
         {
             var blog = await _blogService.GetByIdAsync(id);
@@ -57,17 +61,29 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateBlogDTO blogDto)
         {
             try
             {
-                var blog = await _blogService.CreateMultipleAsync(blogDto);
+                var userId = User.FindFirst("UserId")?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new ResultDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Không thể xác định UserId từ token.",
+                        Data = null
+                    });
+                }
+
+                var blog = await _blogService.CreateMultipleAsync(blogDto, userId);
 
                 return Ok(new ResultDTO
                 {
                     IsSuccess = true,
                     Message = "Create blog success.",
-                    Data = null
+                    Data = blog // Có thể trả blog vừa tạo nếu muốn
                 });
             }
             catch (Exception ex)
@@ -81,7 +97,9 @@ namespace HorizonConvergia.Controllers
             }
         }
 
+
         [HttpPut("{id}")]
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateBlogDTO blogDto)
         {
             try
@@ -107,6 +125,7 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> Delete(string id)
         {
             try
