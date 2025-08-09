@@ -12,7 +12,7 @@ namespace Services.Interfaces
         Task<IEnumerable<BlogDTO>> GetAllAsync();
         Task<BlogDTO?> GetByIdAsync(string id);
         //Task<BlogDTO> CreateAsync(CreateBlogDTO dto);
-        Task<bool> UpdateAsync(string id, UpdateBlogDTO dto);
+        Task<bool> UpdateAsync(string id, UpdateBlogDTO dto, string authorId);
         Task<bool> DeleteAsync(string id);
         //Task<IEnumerable<BlogDTO>> GetByCategoryAsync(string categoryId);
         Task<IEnumerable<BlogDTO>> CreateMultipleAsync(CreateBlogDTO dto, string userId);

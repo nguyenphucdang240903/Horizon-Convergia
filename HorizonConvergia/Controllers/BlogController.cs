@@ -104,12 +104,23 @@ namespace HorizonConvergia.Controllers
         {
             try
             {
-                var blog = await _blogService.UpdateAsync(id, blogDto);
+                var userId = User.FindFirst("UserId")?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new ResultDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Không thể xác định UserId từ token.",
+                        Data = null
+                    });
+                }
+
+                var updated = await _blogService.UpdateAsync(id, blogDto, userId);
 
                 return Ok(new ResultDTO
                 {
-                    IsSuccess = true,
-                    Message = "Update blog success.",
+                    IsSuccess = updated,
+                    Message = updated ? "Update blog success." : "Blog not found.",
                     Data = null
                 });
             }
@@ -123,6 +134,7 @@ namespace HorizonConvergia.Controllers
                 });
             }
         }
+
 
         [HttpDelete("{id}")]
         [Authorize(Policy = "Admin")]
