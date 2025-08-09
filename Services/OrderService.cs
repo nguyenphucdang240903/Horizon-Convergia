@@ -34,7 +34,7 @@ namespace Services
                 throw new Exception("No valid cart items found.");
 
             foreach (var detail in cartDetails)
-            {
+            {   
                 var product = detail.Product;
 
                 if (product == null || !product.IsVerified || product.Status != ProductStatus.Active)

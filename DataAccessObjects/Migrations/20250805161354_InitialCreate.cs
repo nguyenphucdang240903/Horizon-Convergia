@@ -107,10 +107,31 @@ namespace DataAccessObjects.Migrations
                         column: x => x.CategoryId,
                         principalTable: "Categories",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Blogs_Users_AuthorId",
                         column: x => x.AuthorId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Carts",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    BuyerId = table.Column<string>(type: "text", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Carts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Carts_Users_BuyerId",
+                        column: x => x.BuyerId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -253,34 +274,31 @@ namespace DataAccessObjects.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Carts",
+                name: "CartDetails",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    CartNo = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: false),
-                    Price = table.Column<decimal>(type: "numeric", nullable: false),
-                    Discount = table.Column<decimal>(type: "numeric", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    Discount = table.Column<decimal>(type: "numeric", nullable: true),
+                    CartId = table.Column<string>(type: "text", nullable: false),
                     ProductId = table.Column<string>(type: "text", nullable: false),
-                    BuyerId = table.Column<string>(type: "text", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Carts", x => x.Id);
+                    table.PrimaryKey("PK_CartDetails", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Carts_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
+                        name: "FK_CartDetails_Carts_CartId",
+                        column: x => x.CartId,
+                        principalTable: "Carts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Carts_Users_BuyerId",
-                        column: x => x.BuyerId,
-                        principalTable: "Users",
+                        name: "FK_CartDetails_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -472,15 +490,20 @@ namespace DataAccessObjects.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CartDetails_CartId",
+                table: "CartDetails",
+                column: "CartId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CartDetails_ProductId",
+                table: "CartDetails",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Carts_BuyerId",
                 table: "Carts",
                 column: "BuyerId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Carts_ProductId",
-                table: "Carts",
-                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Categories_ParentCategoryId",
@@ -593,7 +616,7 @@ namespace DataAccessObjects.Migrations
                 name: "Blogs");
 
             migrationBuilder.DropTable(
-                name: "Carts");
+                name: "CartDetails");
 
             migrationBuilder.DropTable(
                 name: "FavoriteProducts");
@@ -618,6 +641,9 @@ namespace DataAccessObjects.Migrations
 
             migrationBuilder.DropTable(
                 name: "Token");
+
+            migrationBuilder.DropTable(
+                name: "Carts");
 
             migrationBuilder.DropTable(
                 name: "Payments");

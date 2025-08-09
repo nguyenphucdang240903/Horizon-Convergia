@@ -314,6 +314,12 @@ namespace HorizonConvergia.Controllers
                 claims.Add(new Claim("BankAccountNumber", user.BankAccountNumber ?? ""));
                 claims.Add(new Claim("BankAccountName", user.BankAccountName ?? ""));
             }
+            if (user.Role == UserRole.Seller)
+            {
+                claims.Add(new Claim("ShopName", user.ShopName ?? ""));
+                claims.Add(new Claim("ShopDescription", user.shopDescription ?? ""));
+                claims.Add(new Claim("BusinessType", user.BusinessType ?? ""));
+            }
             var securityKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes("c2VydmVwZXJmZWN0bHljaGVlc2VxdWlja2NvYWNoY29sbGVjdHNsb3Bld2lzZWNhbWU="));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
@@ -516,6 +522,9 @@ namespace HorizonConvergia.Controllers
             var bankNameClaim = User.FindFirst("BankName");
             var bankAccountNumberClaim = User.FindFirst("BankAccountNumber");
             var BankAccountNameClaim = User.FindFirst("BankAccountName");
+            var shopNameClaim = User.FindFirst("ShopName");
+            var shopDescriptionClaim = User.FindFirst("ShopDescription");
+            var businessTypeClaim = User.FindFirst("BusinessType");
             // Kiểm tra xem các claim có tồn tại không
             if (userIdClaim == null || userNameClaim == null || userEmailClaim == null || userRoleClaim == null)
             {
@@ -553,7 +562,10 @@ namespace HorizonConvergia.Controllers
                     Dob = dob,
                     BankName = bankNameClaim?.Value,
                     BankAccountNumber = bankAccountNumberClaim?.Value,
-                    BankAccountName = bankAccountNumberClaim?.Value
+                    BankAccountName = bankAccountNumberClaim?.Value,
+                    ShopName = shopNameClaim?.Value,
+                    ShopDescription = shopDescriptionClaim?.Value,
+                    BusinessType = businessTypeClaim?.Value
                 };
 
                 return Ok(response);

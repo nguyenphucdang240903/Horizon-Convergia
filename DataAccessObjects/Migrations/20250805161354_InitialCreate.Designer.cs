@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccessObjects.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250718142212_InitialCreate")]
+    [Migration("20250805161354_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -77,18 +77,37 @@ namespace DataAccessObjects.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("CartNo")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerId")
+                        .IsUnique();
+
+                    b.ToTable("Carts");
+                });
+
+            modelBuilder.Entity("BusinessObjects.Models.CartDetail", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CartId")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("Discount")
+                    b.Property<decimal?>("Discount")
                         .HasColumnType("numeric");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
@@ -100,21 +119,16 @@ namespace DataAccessObjects.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BuyerId")
-                        .IsUnique();
+                    b.HasIndex("CartId");
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Carts");
+                    b.ToTable("CartDetails");
                 });
 
             modelBuilder.Entity("BusinessObjects.Models.Category", b =>
@@ -368,6 +382,18 @@ namespace DataAccessObjects.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
+
+                    b.Property<string>("BankAccountName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BankAccountNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -701,7 +727,7 @@ namespace DataAccessObjects.Migrations
                     b.HasOne("BusinessObjects.Models.Category", "Category")
                         .WithMany("Blogs")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Author");
@@ -717,13 +743,24 @@ namespace DataAccessObjects.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Buyer");
+                });
+
+            modelBuilder.Entity("BusinessObjects.Models.CartDetail", b =>
+                {
+                    b.HasOne("BusinessObjects.Models.Cart", "Cart")
+                        .WithMany("CartDetails")
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BusinessObjects.Models.Product", "Product")
-                        .WithMany("Carts")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Buyer");
+                    b.Navigation("Cart");
 
                     b.Navigation("Product");
                 });
@@ -925,6 +962,11 @@ namespace DataAccessObjects.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BusinessObjects.Models.Cart", b =>
+                {
+                    b.Navigation("CartDetails");
+                });
+
             modelBuilder.Entity("BusinessObjects.Models.Category", b =>
                 {
                     b.Navigation("Blogs");
@@ -951,8 +993,6 @@ namespace DataAccessObjects.Migrations
 
             modelBuilder.Entity("BusinessObjects.Models.Product", b =>
                 {
-                    b.Navigation("Carts");
-
                     b.Navigation("FavoritedBy");
 
                     b.Navigation("Images");

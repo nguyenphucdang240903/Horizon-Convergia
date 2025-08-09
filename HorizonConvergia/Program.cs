@@ -100,13 +100,12 @@ builder.Services.AddAuthentication(options =>
             IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("c2VydmVwZXJmZWN0bHljaGVlc2VxdWlja2NvYWNoY29sbGVjdHNsb3Bld2lzZWNhbWU=")),
             ValidateIssuer = false,
             ValidateAudience = false,
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
         };
     });
 
 // 4. DbContext
-//builder.Services.AddDbContext<AppDbContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -139,6 +138,9 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IProductAnalysisService, ProductAnalysisService>();
 builder.Services.AddHttpClient();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddSignalR();
 
 builder.Services.Configure<PayOSSettings>(
     builder.Configuration.GetSection("PayOS"));
@@ -161,6 +163,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+
 // 8. Swagger & SwaggerUI
 var app = builder.Build();
 
@@ -179,7 +182,7 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 
 app.UseAuthorization();
-
+app.MapHub<ChatHub>("/chatHub");
 app.MapControllers();
 
 app.Run();

@@ -7,6 +7,7 @@
         Completed,
         Failed,
         Cancelled,
+        RefundRequested,
         Refunded
     }
 }
