@@ -17,7 +17,6 @@ namespace BusinessObjects.DTO.BlogDTO
         public string Title { get; set; }
         public string Content { get; set; }
         public string ImageUrl { get; set; }
-        public string AuthorId { get; set; }
         public bool IsDeleted { get; set; } = false;
         public DateTime CreatedAt { get; set; }
     }
