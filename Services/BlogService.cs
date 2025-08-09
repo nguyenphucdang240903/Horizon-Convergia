@@ -40,7 +40,7 @@ namespace Services
             return blog == null ? null : MapToDTO(blog);
         }
 
-        public async Task<IEnumerable<BlogDTO>> CreateMultipleAsync(CreateBlogDTO dto)
+        public async Task<IEnumerable<BlogDTO>> CreateMultipleAsync(CreateBlogDTO dto, string userId)
         {
             var categoryExists = await _unitOfWork.Repository<Category>()
                                                    .Query()
@@ -54,11 +54,11 @@ namespace Services
                 Title = item.Title,
                 Content = item.Content,
                 ImageUrl = item.ImageUrl,
-                AuthorId = item.AuthorId,
+                AuthorId = userId,
                 CategoryId = dto.CategoryId,
                 IsDeleted = item.IsDeleted,
-                CreatedAt = item.CreatedAt,
-                UpdatedAt = item.CreatedAt
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             }).ToList();
 
             foreach (var blog in blogList)
@@ -70,6 +70,7 @@ namespace Services
 
             return blogList.Select(MapToDTO);
         }
+
 
         //public async Task<BlogDTO> CreateAsync(CreateBlogDTO dto)
         //{
@@ -121,22 +122,27 @@ namespace Services
         //}
 
 
-        public async Task<bool> UpdateAsync(string id, UpdateBlogDTO dto)
+        public async Task<bool> UpdateAsync(string id, UpdateBlogDTO dto, string authorId)
         {
             var existing = await _unitOfWork.Repository<Blog>().GetByIdAsync(id);
-            if (existing == null) return false;
+            if (existing == null || existing.IsDeleted) return false;
 
             existing.Title = dto.Title;
             existing.Content = dto.Content;
             existing.ImageUrl = dto.ImageUrl;
             existing.IsDeleted = dto.IsDeleted;
-            existing.AuthorId = dto.AuthorId;
-            existing.UpdatedAt = dto.UpdatedAt;
+
+            //if (!string.IsNullOrEmpty(dto.CategoryId))
+            //    existing.CategoryId = dto.CategoryId;
+
+            existing.AuthorId = authorId; // Lấy từ claim
+            existing.UpdatedAt = DateTime.UtcNow;
 
             _unitOfWork.Repository<Blog>().Update(existing);
             await _unitOfWork.SaveAsync();
             return true;
         }
+
 
         public async Task<bool> DeleteAsync(string id)
         {
