@@ -10,7 +10,7 @@ namespace Services.Interfaces
 {
     public interface IOrderService
     {
-        Task<List<string>> CreateOrderAsync(CreateOrderFromCartDTO dto, string buyerId);
+        Task<List<string>> CreateOrderAsync(CreateOrderFromCartSelectionDTO dto, string buyerId);
         Task<PagedResult<OrderListDTO>> SearchOrdersAsync(OrderSearchDTO searchDto);
         Task<OrderDetailDTO> GetOrderDetailAsync(string orderId);
         Task<bool> UpdateOrderStatusAsync(string orderId, OrderStatus newStatus);

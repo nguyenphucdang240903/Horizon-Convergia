@@ -25,7 +25,7 @@ namespace HorizonConvergia.Controllers
 
         [HttpPost("create-from-cart")]
         [Authorize(Policy = "Buyer")]
-        public async Task<IActionResult> CreateOrderFromCart([FromBody] CreateOrderFromCartDTO dto)
+        public async Task<IActionResult> CreateOrderFromCart([FromBody] CreateOrderFromCartSelectionDTO dto)
         {
             try
             {

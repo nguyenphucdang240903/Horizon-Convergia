@@ -13,10 +13,10 @@ namespace BusinessObjects.DTO.OrderDTO
         public string SellerId { get; set; }
         public string ShippingAddress { get; set; }
         public decimal Discount { get; set; }
-        public List<CreateOrderFromCartDTO> OrderDetails { get; set; }
+        public List<CreateOrderFromCartSelectionDTO> OrderDetails { get; set; }
     }
 
-    public class CreateOrderFromCartDTO
+    public class CreateOrderFromCartSelectionDTO
     {
         public List<string> CartId { get; set; }  
         public string ShippingAddress { get; set; }

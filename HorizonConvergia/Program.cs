@@ -89,6 +89,7 @@ builder.Services.AddAuthentication(options =>
         options.CallbackPath = "/api/Auth/google-response";
         options.SaveTokens = true;
         options.Scope.Add("email");
+        options.Scope.Add("profile");
     })
     .AddJwtBearer(item =>
     {
@@ -105,12 +106,20 @@ builder.Services.AddAuthentication(options =>
     });
 
 // 4. DbContext
-
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    options.UseNpgsql(connectionString);
+    // Use PostgreSQL for production, SQL Server for development
+    if (builder.Environment.IsProduction())
+    {
+        options.UseNpgsql(connectionString);
+    }
+    else
+    {
+        options.UseSqlServer(connectionString);
+    }
 });
+
 
 // 5. Controllers
 builder.Services.AddControllers().AddJsonOptions(x =>
