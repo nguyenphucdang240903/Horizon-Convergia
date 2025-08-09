@@ -9,8 +9,7 @@ namespace Services.Interfaces
 {
     public interface IPaymentService
     {
-        Task<string> CreatePayOSUrlAsync(CreatePaymentRequestDTO dto, string userId);
+        Task<string> CreateMultiOrderPayOSUrlAsync(CreatePaymentRequestDTO dto, string userId);
         Task<bool> HandlePayOSCallbackAsync(PayOSReturnDTO dto);
-
     }
 }
