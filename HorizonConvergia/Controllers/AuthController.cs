@@ -243,8 +243,18 @@ namespace HorizonConvergia.Controllers
         [HttpGet("google-login")]
         public IActionResult GoogleLogin()
         {
-            var redirectUrl = Url.Action(nameof(GoogleResponse), "Auth", null, Request.Scheme);
-            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            // Force HTTPS in production
+            var scheme = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production"
+                ? Uri.UriSchemeHttps
+                : Request.Scheme;
+
+            var redirectUrl = Url.Action(nameof(GoogleResponse), "Auth", null, scheme);
+
+            var properties = new AuthenticationProperties
+            {
+                RedirectUri = redirectUrl
+            };
+
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
@@ -263,25 +273,19 @@ namespace HorizonConvergia.Controllers
             if (string.IsNullOrEmpty(email))
                 return BadRequest(new { Message = "Email not found in Google claims." });
 
-            // Retrieve user from database
             var user = await _userService.GetUserByEmail(email);
 
             if (user == null)
-            {
-                // Optionally, register the user here if you want to auto-register Google users
                 return Unauthorized(new { Message = "User not registered." });
-            }
 
-            // Generate JWT token
             var token = GenerateToken(user, null);
 
-            // Always return JSON
             return Ok(new ResultDTO
             {
                 IsSuccess = true,
                 Message = "Đăng nhập Google thành công.",
-                Data = token // Data will be the TokenDTO object
-            }); // Return the token as JSON response
+                Data = token
+            });
         }
 
 
