@@ -144,6 +144,11 @@ namespace DataAccessObjects.Migrations
                     Id = table.Column<string>(type: "text", nullable: false),
                     Content = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ImageBase64 = table.Column<string>(type: "text", nullable: true),
+                    AttachmentUrl = table.Column<string>(type: "text", nullable: true),
+                    MessageType = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    Metadata = table.Column<string>(type: "text", nullable: true),
                     SenderId = table.Column<string>(type: "text", nullable: false),
                     ReceiverId = table.Column<string>(type: "text", nullable: false)
                 },
@@ -521,14 +526,14 @@ namespace DataAccessObjects.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_ReceiverId",
+                name: "IX_Messages_ReceiverId_CreatedAt",
                 table: "Messages",
-                column: "ReceiverId");
+                columns: new[] { "ReceiverId", "CreatedAt" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_SenderId",
+                name: "IX_Messages_SenderId_CreatedAt",
                 table: "Messages",
-                column: "SenderId");
+                columns: new[] { "SenderId", "CreatedAt" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderDetails_OrderId",

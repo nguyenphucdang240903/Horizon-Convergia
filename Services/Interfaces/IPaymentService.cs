@@ -11,5 +11,7 @@ namespace Services.Interfaces
     {
         Task<string> CreateMultiOrderPayOSUrlAsync(CreatePaymentRequestDTO dto, string userId);
         Task<bool> HandlePayOSCallbackAsync(PayOSReturnDTO dto);
+        Task<PayoutPagedResultDTO> GetPendingPayoutsAsync(PayoutFilterDTO filter);
+        Task<string> ApprovePayoutAsync(ApprovePayoutDTO dto);
     }
 }

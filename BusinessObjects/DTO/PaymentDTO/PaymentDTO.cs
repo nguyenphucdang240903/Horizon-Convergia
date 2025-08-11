@@ -37,7 +37,14 @@ namespace BusinessObjects.DTO.PaymentDTO
         public string PaymentId { get; set; }
         public bool Approve { get; set; }
     }
-
+    public class PayoutPagedResultDTO
+    {
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int TotalItems { get; set; }
+        public int TotalPages { get; set; }
+        public List<PayoutViewDTO> Data { get; set; }
+    }
     public class PayoutViewDTO
     {
         public string PaymentId { get; set; }

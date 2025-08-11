@@ -27,7 +27,9 @@ namespace DataAccessObjects.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+            modelBuilder.Entity<Message>().HasKey(m => m.Id);
+            modelBuilder.Entity<Message>().HasIndex(m => new { m.SenderId, m.CreatedAt });
+            modelBuilder.Entity<Message>().HasIndex(m => new { m.ReceiverId, m.CreatedAt });
             // User - Product (1-n)
             modelBuilder.Entity<Product>()
                 .HasOne(p => p.Seller)

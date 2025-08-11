@@ -1,67 +1,41 @@
-﻿using System;
+﻿using BusinessObjects.Models;
+using DataAccessObjects.Data;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Repositories.Interfaces;
+using Services.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BusinessObjects.Models;
-using Microsoft.AspNetCore.SignalR;
-using Repositories.Interfaces;
-using Services.Interfaces;
 
 namespace Services
 {
     public class MessageService : IMessageService
     {
-        private readonly IMessageRepository _repo;
-        private readonly IHubContext<ChatHub> _hub;
+        private readonly AppDbContext _db;
+        public MessageService(AppDbContext db) { _db = db; }
 
-        public MessageService(IMessageRepository repo, IHubContext<ChatHub> hub)
+        public async Task<Message> AddAsync(Message m, CancellationToken ct = default)
         {
-            _repo = repo;
-            _hub = hub;
+            _db.Messages.Add(m);
+            await _db.SaveChangesAsync(ct);
+            return m;
         }
 
-        public async Task<Message> SendPrivateMessageAsync(string senderId, string receiverId, string content)
+        public async Task<IEnumerable<Message>> GetSessionHistoryByParticipantsAsync(string participantA, string participantB, int limit = 100, CancellationToken ct = default)
         {
-            var message = new Message
-            {
-                Id = Guid.NewGuid().ToString(),
-                Content = content,
-                SenderId = senderId,
-                ReceiverId = receiverId,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            var saved = await _repo.AddAsync(message);
-
-            // Gửi realtime tới user group (group "user_{userId}" được add tại OnConnectedAsync)
-            await _hub.Clients.Group($"user_{receiverId}")
-                .SendAsync("ReceiveMessage", new
-                {
-                    Id = saved.Id,
-                    Content = saved.Content,
-                    SenderId = saved.SenderId,
-                    ReceiverId = saved.ReceiverId,
-                    CreatedAt = saved.CreatedAt
-                });
-
-            // Optionally gửi tới sender để confirm deliver
-            await _hub.Clients.Group($"user_{senderId}")
-                .SendAsync("MessageSent", new
-                {
-                    Id = saved.Id,
-                    Content = saved.Content,
-                    ReceiverId = saved.ReceiverId,
-                    CreatedAt = saved.CreatedAt
-                });
-
-            return saved;
+            return await _db.Messages
+                .Where(x => (x.SenderId == participantA && x.ReceiverId == participantB) || (x.SenderId == participantB && x.ReceiverId == participantA))
+                .OrderByDescending(x => x.CreatedAt)
+                .Take(limit)
+                .OrderBy(x => x.CreatedAt)
+                .ToListAsync(ct);
         }
 
-        public async Task<IEnumerable<Message>> GetConversationAsync(string userAId, string userBId, int limit = 50, int offset = 0)
-        {
-            return await _repo.GetConversationMessagesAsync(userAId, userBId, limit, offset);
-        }
+        public Task<IEnumerable<Message>> GetHistoryAsync(string userAId, string userBId, int limit = 100, CancellationToken ct = default)
+            => GetSessionHistoryByParticipantsAsync(userAId, userBId, limit, ct);
     }
 
 }
