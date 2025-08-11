@@ -1,47 +1,67 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Services.Interfaces;
 
 namespace HorizonConvergia.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // bắt buộc login
+    [Route("api/[controller]")]
     public class ChatController : ControllerBase
     {
-        private readonly IMessageService _messageService;
+        private readonly IChatService _chat;
+        private readonly IMessageService _msg;
+        private readonly IHubContext<ChatHub> _hub;
 
-        public ChatController(IMessageService messageService)
+        public ChatController(
+            IChatService chat,
+            IMessageService msg,
+            IHubContext<ChatHub> hub
+        )
         {
-            _messageService = messageService;
+            _chat = chat;
+            _msg = msg;
+            _hub = hub;
         }
 
-        // gửi tin nhắn P2P
         [HttpPost("send")]
-        public async Task<IActionResult> Send([FromBody] SendMessageRequest req)
+        [RequestSizeLimit(25_000_000)]
+        public async Task<IActionResult> Send(
+            [FromForm] string senderId,
+            [FromForm] string receiverId,
+            [FromForm] string content,
+            IFormFile? image
+        )
         {
-            // req.SenderId có thể lấy từ claim thay vì client gửi
-            var senderId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-            if (string.IsNullOrEmpty(senderId)) return Unauthorized();
+            // Gọi ChatService (nếu là AI thì ChatService sẽ tự xử lý và stream)
+            var userMsg = await _chat.HandleUserMessageAsync(senderId, receiverId, content, image);
 
-            var msg = await _messageService.SendPrivateMessageAsync(senderId, req.ReceiverId, req.Content);
-            return Ok(msg);
+            // Trả dữ liệu gọn nhẹ cho client
+            return Ok(new
+            {
+                Content = userMsg.Content
+            });
         }
 
-        [HttpGet("history/{otherUserId}")]
-        public async Task<IActionResult> GetHistory(string otherUserId, int limit = 50, int offset = 0)
+        [HttpGet("history")]
+        public async Task<IActionResult> History(
+            [FromQuery] string a,
+            [FromQuery] string b,
+            [FromQuery] int limit = 200
+        )
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-            var msgs = await _messageService.GetConversationAsync(userId, otherUserId, limit, offset);
-            return Ok(msgs);
+            var list = await _msg.GetSessionHistoryByParticipantsAsync(a, b, limit);
+            var dto = list.Select(m => new
+            {
+                m.Id,
+                m.Content,
+                m.SenderId,
+                m.ReceiverId,
+                m.CreatedAt,
+                m.AttachmentUrl,
+                MessageType = m.MessageType.ToString()
+            });
+            return Ok(dto);
         }
-    }
-
-    public class SendMessageRequest
-    {
-        public string ReceiverId { get; set; }
-        public string Content { get; set; }
     }
 }

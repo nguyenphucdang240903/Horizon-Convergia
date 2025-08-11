@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccessObjects.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250805161354_InitialCreate")]
+    [Migration("20250809123029_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -208,12 +208,24 @@ namespace DataAccessObjects.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
+                    b.Property<string>("AttachmentUrl")
+                        .HasColumnType("text");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ImageBase64")
+                        .HasColumnType("text");
+
+                    b.Property<int>("MessageType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("text");
 
                     b.Property<string>("ReceiverId")
                         .IsRequired()
@@ -223,11 +235,14 @@ namespace DataAccessObjects.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("ReceiverId");
+                    b.HasIndex("ReceiverId", "CreatedAt");
 
-                    b.HasIndex("SenderId");
+                    b.HasIndex("SenderId", "CreatedAt");
 
                     b.ToTable("Messages");
                 });
@@ -382,18 +397,6 @@ namespace DataAccessObjects.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
-
-                    b.Property<string>("BankAccountName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("BankAccountNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("BankName")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");

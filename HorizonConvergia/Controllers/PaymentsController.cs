@@ -179,100 +179,16 @@ namespace HorizonConvergia.Controllers
         [Authorize(Policy = "Admin")]
         public async Task<IActionResult> GetPendingPayouts([FromQuery] PayoutFilterDTO filter)
         {
-            var query = _unitOfWork.Repository<Payment>().Query()
-                .Include(p => p.User)
-                .Where(p => (p.PaymentType == PaymentType.PayoutToSeller || p.PaymentType == PaymentType.PayoutToShipper)
-                            && p.PaymentStatus == PaymentStatus.Pending);
-                
-
-            // Filtering
-            if (!string.IsNullOrWhiteSpace(filter.FullName))
-                query = query.Where(p => p.User.Name.ToLower().Contains(filter.FullName.ToLower()));
-
-            if (!string.IsNullOrWhiteSpace(filter.BankName))
-                query = query.Where(p => p.User.BankName.ToLower().Contains(filter.BankName.ToLower()));
-
-            if (!string.IsNullOrWhiteSpace(filter.BankAccountNumber))
-                query = query.Where(p => p.User.BankAccountNumber.Contains(filter.BankAccountNumber));
-
-            if (!string.IsNullOrWhiteSpace(filter.BankAccountName))
-                query = query.Where(p => p.User.BankAccountName.ToLower().Contains(filter.BankAccountName.ToLower()));
-
-            if (!string.IsNullOrWhiteSpace(filter.Reference))
-                query = query.Where(p => p.Reference.ToLower().Contains(filter.Reference.ToLower()));
-
-            if (filter.FromDate.HasValue)
-                query = query.Where(p => p.CreatedAt >= filter.FromDate.Value);
-
-            if (filter.ToDate.HasValue)
-                query = query.Where(p => p.CreatedAt <= filter.ToDate.Value);
-
-            // Pagination
-            var totalItems = await query.CountAsync();
-            var payouts = await query
-                .OrderByDescending(p => p.CreatedAt)
-                .Skip((filter.Page - 1) * filter.PageSize)
-                .Take(filter.PageSize)
-                .Select(p => new PayoutViewDTO
-                {
-                    PaymentId = p.Id,
-                    UserId = p.UserId,
-                    FullName = p.User.Name,
-                    BankName = p.User.BankName,
-                    BankAccountNumber = p.User.BankAccountNumber,
-                    BankAccountName = p.User.BankAccountName,
-                    Amount = p.Amount,
-                    Reference = p.Reference,
-                    CreatedAt = p.CreatedAt,
-                    Status = p.PaymentStatus
-                })
-                .ToListAsync();
-
-            var result = new
-            {
-                filter.Page,
-                filter.PageSize,
-                TotalItems = totalItems,
-                TotalPages = (int)Math.Ceiling(totalItems / (double)filter.PageSize),
-                Data = payouts
-            };
-
+            var result = await _paymentService.GetPendingPayoutsAsync(filter);
             return Ok(result);
         }
-
 
         [HttpPost("ApprovePayOut")]
         [Authorize(Policy = "Admin")]
         public async Task<IActionResult> ApprovePayout([FromBody] ApprovePayoutDTO dto)
         {
-            var payout = _unitOfWork.Repository<Payment>().Query()
-                .FirstOrDefault(p => p.Id == dto.PaymentId && p.PaymentStatus == PaymentStatus.Pending);
-
-            if (payout == null) return NotFound("Payout not found or already processed.");
-
-            payout.PaymentStatus = dto.Approve ? PaymentStatus.Completed : PaymentStatus.Failed;
-            payout.UpdatedAt = DateTime.UtcNow;
-
-            if (dto.Approve)
-            {
-                await _unitOfWork.Repository<PaymentTransaction>().AddAsync(new PaymentTransaction
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    UserId = payout.UserId,
-                    PaymentId = payout.Id,
-                    Amount = payout.Amount,
-                    TransactionType = "ManualPayout",
-                    TransactionStatus = TransactionStatus.Success,
-                    Reference = payout.Reference,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                });
-            }
-
-            _unitOfWork.Repository<Payment>().Update(payout);
-            await _unitOfWork.SaveAsync();
-
-            return Ok("Payout processed successfully.");
+            var message = await _paymentService.ApprovePayoutAsync(dto);
+            return Ok(message);
         }
 
     }

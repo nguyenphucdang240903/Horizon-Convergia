@@ -9,8 +9,9 @@ namespace Services.Interfaces
 {
     public interface IMessageService
     {
-        Task<Message> SendPrivateMessageAsync(string senderId, string receiverId, string content);
-        Task<IEnumerable<Message>> GetConversationAsync(string userAId, string userBId, int limit = 50, int offset = 0);
+        Task<Message> AddAsync(Message m, CancellationToken ct = default);
+        Task<IEnumerable<Message>> GetHistoryAsync(string userAId, string userBId, int limit = 100, CancellationToken ct = default);
+        Task<IEnumerable<Message>> GetSessionHistoryByParticipantsAsync(string participantA, string participantB, int limit = 100, CancellationToken ct = default);
     }
 
 }
