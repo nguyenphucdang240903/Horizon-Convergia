@@ -86,11 +86,11 @@ namespace HorizonConvergia.Controllers
         {
             var userId = GetUserId();
 
-            //var shipping = _unitOfWork.Repository<Shipping>()
-            //    .Query().FirstOrDefault(s => s.OrderId == id && s.UserId == userId);
+            var shipping = _unitOfWork.Repository<Shipping>()
+                .Query().FirstOrDefault(s => s.OrderId == id && s.CarrierId == userId);
 
-            //if (shipping == null)
-            //    return Forbid("Bạn không được giao đơn hàng này.");
+            if (shipping == null)
+                return Forbid("Bạn không được giao đơn hàng này.");
 
             var success = await _orderService.UpdateOrderStatusAsync(id, OrderStatus.Shipping);
             return success ? Ok("Đơn hàng đang được giao.") : BadRequest("Không thể cập nhật trạng thái.");

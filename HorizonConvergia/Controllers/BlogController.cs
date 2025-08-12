@@ -20,30 +20,6 @@ namespace HorizonConvergia.Controllers
             _blogService = blogService;
         }
 
-        //[HttpGet("category/{categoryId}")]
-        //public async Task<IActionResult> GetByCategory(string categoryId)
-        //{
-        //    try
-        //    {
-        //        var blogs = await _blogService.GetByCategoryAsync(categoryId);
-        //        return Ok(new ResultDTO
-        //        {
-        //            IsSuccess = true,
-        //            Message = "Get blogs by category success.",
-        //            Data = blogs
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(new ResultDTO
-        //        {
-        //            IsSuccess = false,
-        //            Message = ex.Message,
-        //            Data = null
-        //        });
-        //    }
-        //}
-
         [HttpGet]
         [Authorize(Policy = "Admin")]
         public async Task<IActionResult> GetAll()
