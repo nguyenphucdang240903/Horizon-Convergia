@@ -243,12 +243,15 @@ namespace HorizonConvergia.Controllers
         [HttpGet("google-login")]
         public IActionResult GoogleLogin()
         {
-            // Force HTTPS in production
-            var scheme = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production"
-                ? Uri.UriSchemeHttps
-                : Request.Scheme;
+            // Force HTTPS for production domains or when explicitly set
+            var isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production" ||
+                              Request.Host.Value.Contains("horizon-convergia.onrender.com") ||
+                              Request.Host.Value.Contains("horizonconvergia.click");
+            
+            var scheme = isProduction ? Uri.UriSchemeHttps : Request.Scheme;
 
-            var redirectUrl = Url.Action(nameof(GoogleResponse), "Auth", null, scheme);
+            // Explicitly construct the redirect URL with the correct scheme
+            var redirectUrl = $"{scheme}://{Request.Host}/api/Auth/google-response";
 
             var properties = new AuthenticationProperties
             {
