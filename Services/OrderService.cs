@@ -27,14 +27,16 @@ namespace Services
                 .Query()
                 .Include(cd => cd.Product)
                 .Include(cd => cd.Cart)
-                .Where(cd => dto.CartId.Contains(cd.CartId) && cd.Cart.BuyerId == buyerId && !cd.Cart.IsDeleted)
+                .Where(cd => dto.CartDetailIds.Contains(cd.Id)
+                             && cd.Cart.BuyerId == buyerId
+                             && !cd.Cart.IsDeleted)
                 .ToList();
 
             if (cartDetails == null || !cartDetails.Any())
                 throw new Exception("No valid cart items found.");
 
             foreach (var detail in cartDetails)
-            {   
+            {
                 var product = detail.Product;
 
                 if (product == null || !product.IsVerified || product.Status != ProductStatus.Active)
@@ -88,7 +90,7 @@ namespace Services
                 orderNos.Add(order.OrderNo);
             }
 
-            // Remove CartDetails
+            // Remove selected CartDetails
             _unitOfWork.Repository<CartDetail>().DeleteRange(cartDetails);
 
             // Optionally remove empty carts
@@ -109,6 +111,7 @@ namespace Services
             await _unitOfWork.SaveAsync();
             return orderNos;
         }
+
 
 
 
