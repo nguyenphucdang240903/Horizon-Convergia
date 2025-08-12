@@ -26,7 +26,21 @@ namespace Services
 
             if (existingDetail != null)
             {
-                existingDetail.Quantity += quantity;
+                // Get the current product to check stock
+                var product = await _unitOfWork.Repository<Product>().GetByIdAsync(productId);
+                if (product == null || !product.IsVerified || product.Status == ProductStatus.UnPaid_Seller)
+                    throw new Exception("Product not found");
+                
+                // Check if product is out of stock
+                if (product.Status == ProductStatus.OutOfStock)
+                    throw new Exception("Product is out of stock");
+                
+                // Check if the new total quantity exceeds available stock
+                var newTotalQuantity = existingDetail.Quantity + quantity;
+                if (product.Quantity < newTotalQuantity)
+                    throw new Exception($"Insufficient stock. Available: {product.Quantity}, Requested total: {newTotalQuantity}");
+                
+                existingDetail.Quantity = newTotalQuantity;
                 existingDetail.UpdatedAt = DateTime.UtcNow;
                 cartDetailRepo.Update(existingDetail);
             }
@@ -35,6 +49,14 @@ namespace Services
                 var product = await _unitOfWork.Repository<Product>().GetByIdAsync(productId);
                 if (product == null || !product.IsVerified || product.Status == ProductStatus.UnPaid_Seller)
                     throw new Exception("Product not found");
+                
+                // Check if product is out of stock
+                if (product.Status == ProductStatus.OutOfStock)
+                    throw new Exception("Product is out of stock");
+                
+                // Check if requested quantity exceeds available stock
+                if (product.Quantity < quantity)
+                    throw new Exception($"Insufficient stock. Available: {product.Quantity}, Requested: {quantity}");
 
                 var newDetail = new CartDetail
                 {
@@ -58,7 +80,8 @@ namespace Services
                 Id = existingDetail.Id,
                 Quantity = existingDetail.Quantity,
                 ProductId = existingDetail.ProductId,
-                ProductName = existingDetail.Product?.Model ?? "",
+                ProductBrand = existingDetail.Product?.Brand,
+                ProductModel = existingDetail.Product?.Model ?? "",
                 Price = existingDetail.Price
             };
         }
@@ -110,7 +133,9 @@ namespace Services
                 Items = cart.CartDetails.Select(cd => new CartItemDto
                 {
                     ProductId = cd.ProductId,
-                    ProductName = cd.Product?.Model ?? "", // Use Model or Name depending on your Product entity
+                    ProductBrand = cd.Product?.Brand,
+                    ProductModel = cd.Product?.Model ?? "",
+                    Price = cd.Price,
                     Quantity = cd.Quantity
                 }).ToList()
             };
@@ -131,7 +156,8 @@ namespace Services
                 Id = cd.Id,
                 Quantity = cd.Quantity,
                 ProductId = cd.ProductId,
-                ProductName = cd.Product?.Model,
+                ProductBrand = cd.Product?.Brand,
+                ProductModel = cd.Product?.Model,
                 Price = cd.Price
             }).ToList();
         }
@@ -165,7 +191,8 @@ namespace Services
                 Id = detail.Id,
                 Quantity = detail.Quantity,
                 ProductId = detail.ProductId,
-                ProductName = detail.Product?.Model ?? "", // Or .Name if you have that
+                ProductBrand = detail.Product?.Brand,
+                ProductModel = detail.Product?.Model ?? "", 
                 Price = detail.Price
             };
         }

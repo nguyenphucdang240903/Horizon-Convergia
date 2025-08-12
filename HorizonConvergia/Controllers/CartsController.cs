@@ -19,8 +19,28 @@ namespace HorizonConvergia.Controllers
         [HttpPost("{userId}/add/{productId}")]
         public async Task<IActionResult> AddToCart(string userId, string productId, [FromQuery] int quantity)
         {
-            var result = await _cartService.AddProductToCartAsync(userId, productId, quantity);
-            return Ok(result);
+            try
+            {
+                var result = await _cartService.AddProductToCartAsync(userId, productId, quantity);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                // Handle specific error cases with appropriate HTTP status codes
+                if (ex.Message.Contains("Product not found"))
+                {
+                    return NotFound(new { error = ex.Message });
+                }
+                else if (ex.Message.Contains("out of stock") || ex.Message.Contains("Insufficient stock"))
+                {
+                    return BadRequest(new { error = ex.Message });
+                }
+                else
+                {
+                    // For other unexpected errors, return 500 Internal Server Error
+                    return StatusCode(500, new { error = "An unexpected error occurred while adding product to cart" });
+                }
+            }
         }
 
         [HttpGet("user/{userId}")]
