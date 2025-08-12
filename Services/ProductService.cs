@@ -485,7 +485,7 @@ namespace Services
             {
                 UserId = userId,
                 ProductId = productId,
-                CreateAt = DateTime.Now
+                CreateAt = DateTime.UtcNow
             });
 
             await _unitOfWork.SaveAsync();
