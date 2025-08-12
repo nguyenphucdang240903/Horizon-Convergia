@@ -31,7 +31,7 @@ namespace Services
             else
             {
                 var product = await _unitOfWork.Repository<Product>().GetByIdAsync(productId);
-                if (product == null || !product.IsVerified || product.Status != ProductStatus.UnPaid_Seller)
+                if (product == null || !product.IsVerified || product.Status == ProductStatus.UnPaid_Seller)
                     throw new Exception("Product not found");
 
                 var newDetail = new CartDetail
