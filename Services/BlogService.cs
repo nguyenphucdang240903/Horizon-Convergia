@@ -29,11 +29,32 @@ namespace Services
 
         //    return blogs.Select(b => MapToDTO(b));
         //}
-        public async Task<IEnumerable<BlogDTO>> GetAllAsync()
+        public async Task<IEnumerable<BlogDTO>> GetAllAsync(
+    string? categoryId = null,
+    int pageNumber = 1,
+    int pageSize = 5)
         {
-            var blogs = await _unitOfWork.Repository<Blog>().GetAllAsync();
-            return blogs.Select(b => MapToDTO(b));
+            var query = _unitOfWork.Repository<Blog>()
+                .Query()
+                .Where(b => !b.IsDeleted);
+
+            // Filter by category if provided
+            if (!string.IsNullOrWhiteSpace(categoryId))
+            {
+                query = query.Where(b => b.CategoryId == categoryId);
+            }
+
+            var skip = (pageNumber - 1) * pageSize;
+
+            var blogs = await query
+                .OrderByDescending(b => b.UpdatedAt) // sort newest first
+                .Skip(skip)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return blogs.Select(MapToDTO);
         }
+
         public async Task<BlogDTO?> GetByIdAsync(string id)
         {
             var blog = await _unitOfWork.Repository<Blog>().GetByIdAsync(id);
