@@ -110,15 +110,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    // Use PostgreSQL for production, SQL Server for development
-    if (builder.Environment.IsProduction())
-    {
-        options.UseNpgsql(connectionString);
-    }
-    else
-    {
-        options.UseSqlServer(connectionString);
-    }
+    options.UseNpgsql(connectionString);
 });
 
 
