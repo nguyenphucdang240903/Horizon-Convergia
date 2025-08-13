@@ -22,6 +22,7 @@ namespace Services
             var existingDetail = await cartDetailRepo
                 .Query()
                 .Include(p => p.Product)
+                    .ThenInclude(p => p.Images)
                 .FirstOrDefaultAsync(cd => cd.CartId == cart.Id && cd.ProductId == productId);
 
             if (existingDetail != null)
@@ -82,7 +83,8 @@ namespace Services
                 ProductId = existingDetail.ProductId,
                 ProductBrand = existingDetail.Product?.Brand,
                 ProductModel = existingDetail.Product?.Model ?? "",
-                Price = existingDetail.Price
+                Price = existingDetail.Price,
+                ImageUrl = existingDetail.Product?.Images?.FirstOrDefault()?.ImagesUrl
             };
         }
 
@@ -122,6 +124,7 @@ namespace Services
                 .Query()
                 .Include(c => c.CartDetails)
                     .ThenInclude(cd => cd.Product)
+                        .ThenInclude(p => p.Images)
                 .FirstOrDefaultAsync(c => c.BuyerId == userId && !c.IsDeleted);
 
             if (cart == null) return null;
@@ -136,7 +139,8 @@ namespace Services
                     ProductBrand = cd.Product?.Brand,
                     ProductModel = cd.Product?.Model ?? "",
                     Price = cd.Price,
-                    Quantity = cd.Quantity
+                    Quantity = cd.Quantity,
+                    ImageUrl = cd.Product?.Images?.FirstOrDefault()?.ImagesUrl
                 }).ToList()
             };
 
@@ -149,6 +153,7 @@ namespace Services
                 .Query()
                 .Where(cd => cd.CartId == cartId)
                 .Include(cd => cd.Product)
+                    .ThenInclude(p => p.Images)
                 .ToListAsync();
 
             return cartDetails.Select(cd => new CartDetailDto
@@ -158,7 +163,8 @@ namespace Services
                 ProductId = cd.ProductId,
                 ProductBrand = cd.Product?.Brand,
                 ProductModel = cd.Product?.Model,
-                Price = cd.Price
+                Price = cd.Price,
+                ImageUrl = cd.Product?.Images?.FirstOrDefault()?.ImagesUrl
             }).ToList();
         }
 
@@ -193,7 +199,8 @@ namespace Services
                 ProductId = detail.ProductId,
                 ProductBrand = detail.Product?.Brand,
                 ProductModel = detail.Product?.Model ?? "", 
-                Price = detail.Price
+                Price = detail.Price,
+                ImageUrl = detail.Product?.Images?.FirstOrDefault()?.ImagesUrl
             };
         }
 
@@ -209,6 +216,7 @@ namespace Services
                 .Query()
                 .Include(c => c.CartDetails)
                     .ThenInclude(cd => cd.Product)
+                        .ThenInclude(p => p.Images)
                 .FirstOrDefaultAsync(c => c.BuyerId == userId && !c.IsDeleted);
 
             return cart;

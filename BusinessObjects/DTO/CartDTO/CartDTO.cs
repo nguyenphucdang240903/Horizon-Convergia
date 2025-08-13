@@ -21,6 +21,7 @@ namespace BusinessObjects.DTO.CartDTO
         public string ProductModel { get; set; }
         public decimal Price { get; set; }
         public int Quantity { get; set; }
+        public string ImageUrl { get; set; } 
     }
 
     public class CartDetailDto
@@ -31,5 +32,6 @@ namespace BusinessObjects.DTO.CartDTO
         public string ProductModel { get; set; }
         public decimal Price { get; set; }
         public int Quantity { get; set; }
+        public string ImageUrl { get; set; }
     }
 }
