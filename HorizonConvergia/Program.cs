@@ -3,6 +3,7 @@ using DataAccessObjects.Data;
 using DataAccessObjects.Setting;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -89,6 +90,7 @@ builder.Services.AddAuthentication(options =>
         options.CallbackPath = "/api/Auth/google-response";
         options.SaveTokens = true;
         options.Scope.Add("email");
+        options.Scope.Add("profile");
     })
     .AddJwtBearer(item =>
     {
@@ -105,12 +107,20 @@ builder.Services.AddAuthentication(options =>
     });
 
 // 4. DbContext
-
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    options.UseNpgsql(connectionString);
+    // Use PostgreSQL for production, SQL Server for development
+    if (builder.Environment.IsProduction())
+    {
+        options.UseNpgsql(connectionString);
+    }
+    else
+    {
+        options.UseSqlServer(connectionString);
+    }
 });
+
 
 // 5. Controllers
 builder.Services.AddControllers().AddJsonOptions(x =>
@@ -168,6 +178,16 @@ builder.Services.AddCors(options =>
 // 8. Swagger & SwaggerUI
 var app = builder.Build();
 
+var forwardOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor
+};
+forwardOptions.KnownNetworks.Clear();
+forwardOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardOptions);
+
+app.UseHttpsRedirection();
+
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -176,7 +196,6 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
-app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend");
 

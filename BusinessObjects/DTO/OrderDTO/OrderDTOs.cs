@@ -20,7 +20,7 @@ namespace BusinessObjects.DTO.OrderDTO
     {
         public List<string> CartDetailIds { get; set; }  
         public string ShippingAddress { get; set; }
-        public decimal Discount { get; set; }
+        public decimal Discount { get; set; } = 0;
     }
         
     public class OrderSearchDTO

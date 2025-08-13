@@ -243,8 +243,21 @@ namespace HorizonConvergia.Controllers
         [HttpGet("google-login")]
         public IActionResult GoogleLogin()
         {
-            var redirectUrl = Url.Action(nameof(GoogleResponse), "Auth", null, Request.Scheme);
-            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            // Force HTTPS for production domains or when explicitly set
+            var isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production" ||
+                              Request.Host.Value.Contains("horizon-convergia.onrender.com") ||
+                              Request.Host.Value.Contains("horizonconvergia.click");
+            
+            var scheme = isProduction ? Uri.UriSchemeHttps : Request.Scheme;
+
+            // Explicitly construct the redirect URL with the correct scheme
+            var redirectUrl = $"{scheme}://{Request.Host}/api/Auth/google-response";
+
+            var properties = new AuthenticationProperties
+            {
+                RedirectUri = redirectUrl
+            };
+
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
@@ -263,25 +276,19 @@ namespace HorizonConvergia.Controllers
             if (string.IsNullOrEmpty(email))
                 return BadRequest(new { Message = "Email not found in Google claims." });
 
-            // Retrieve user from database
             var user = await _userService.GetUserByEmail(email);
 
             if (user == null)
-            {
-                // Optionally, register the user here if you want to auto-register Google users
                 return Unauthorized(new { Message = "User not registered." });
-            }
 
-            // Generate JWT token
             var token = GenerateToken(user, null);
 
-            // Always return JSON
             return Ok(new ResultDTO
             {
                 IsSuccess = true,
                 Message = "Đăng nhập Google thành công.",
-                Data = token // Data will be the TokenDTO object
-            }); // Return the token as JSON response
+                Data = token
+            });
         }
 
 

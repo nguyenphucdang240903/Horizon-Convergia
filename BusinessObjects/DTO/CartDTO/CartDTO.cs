@@ -20,4 +20,15 @@ namespace BusinessObjects.DTO.CartDTO
         public string ProductName { get; set; }
         public int Quantity { get; set; }
     }
+
+    public class CartDetailDto
+    {
+        public string Id { get; set; }
+        public int Quantity { get; set; }
+
+        // Basic product info
+        public string ProductId { get; set; }
+        public string ProductName { get; set; }
+        public decimal Price { get; set; }
+    }
 }
