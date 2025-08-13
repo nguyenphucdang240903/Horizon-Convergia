@@ -9,7 +9,11 @@ namespace Services.Interfaces
 {
     public interface IBlogService
     {
-        Task<IEnumerable<BlogDTO>> GetAllAsync();
+        Task<IEnumerable<BlogDTO>> GetAllAsync(
+    string? categoryId = null,
+    int pageNumber = 1,
+    int pageSize = 5);
+        //Task<IEnumerable<BlogDTO>> GetAllAsync();
         Task<BlogDTO?> GetByIdAsync(string id);
         //Task<BlogDTO> CreateAsync(CreateBlogDTO dto);
         Task<bool> UpdateAsync(string id, UpdateBlogDTO dto, string authorId);

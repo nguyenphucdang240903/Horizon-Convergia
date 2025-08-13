@@ -21,15 +21,17 @@ namespace HorizonConvergia.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "Admin")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(
+    [FromQuery] string? categoryId = null,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 5)
         {
-            var blogs = await _blogService.GetAllAsync();
+            var blogs = await _blogService.GetAllAsync(categoryId, pageNumber, pageSize);
             return Ok(blogs);
         }
 
+
         [HttpGet("{id}")]
-        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> GetById(string id)
         {
             var blog = await _blogService.GetByIdAsync(id);
