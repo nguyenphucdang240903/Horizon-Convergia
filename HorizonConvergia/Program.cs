@@ -145,6 +145,7 @@ builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IShippingService, ShippingService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.Configure<PayOSSettings>(
     builder.Configuration.GetSection("PayOS"));
 

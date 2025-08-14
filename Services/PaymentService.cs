@@ -52,7 +52,7 @@ namespace Services
 
             var totalAmount = orders.Sum(o => o.TotalPrice);
             var orderCode = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var returnUrl = "https://localhost:7076/api/Payments/payos-callback";
+            var returnUrl = "https://horizon-convergia.onrender.com/api/Payments/payos-callback";
             var description = $"Thanh toán {orders.Count} đơn hàng";
 
             var items = orders.Select(order => new ItemData(
