@@ -29,7 +29,7 @@ namespace HorizonConvergia.Controllers
         //[Authorize(Policy = "Seller")]
         public async Task<IActionResult> GetSellerDashboard([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
-            var sellerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var sellerId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
             var result = await _dashboardService.GetSellerDashboardAsync(sellerId, startDate, endDate);
             return Ok(result);
         }
