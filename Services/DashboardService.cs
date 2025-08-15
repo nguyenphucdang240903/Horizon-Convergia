@@ -59,19 +59,23 @@ namespace Services
 
         public async Task<DashboardStatsDTO> GetSellerDashboardAsync(string sellerId, DateTime? startDate, DateTime? endDate)
         {
-            // Lấy tất cả payment thuộc order của seller
+            // Lấy tất cả payment của seller (có hoặc không có OrderId)
             var paymentsQuery = _context.Payments
                 .Include(p => p.Order)
-                .Where(p => p.Order != null && p.Order.SellerId == sellerId);
+                .Where(p =>
+                    (p.Order != null && p.Order.SellerId == sellerId) // Payment gắn Order
+                    || (p.UserId == sellerId)                       // Payment trực tiếp cho seller
+                );
 
+            // Lọc theo thời gian
             if (startDate.HasValue)
                 paymentsQuery = paymentsQuery.Where(p => p.TransactionDate >= startDate.Value);
             if (endDate.HasValue)
                 paymentsQuery = paymentsQuery.Where(p => p.TransactionDate <= endDate.Value);
 
-            // Doanh thu (chỉ Completed)
+            // Doanh thu (tính Completed hoặc status null)
             var totalRevenue = await paymentsQuery
-                .Where(p => p.PaymentStatus == PaymentStatus.Completed)
+                .Where(p => p.PaymentStatus == PaymentStatus.Completed || p.PaymentStatus == null)
                 .SumAsync(p => (decimal?)p.Amount) ?? 0;
 
             // Tổng sản phẩm
@@ -96,17 +100,19 @@ namespace Services
                     Amount = p.Amount,
                     TransactionDate = p.TransactionDate,
                     PaymentMethod = p.PaymentMethod,
-                    PaymentStatus = p.PaymentStatus.ToString()
+                    PaymentStatus = p.PaymentStatus != null ? p.PaymentStatus.ToString() : "Unknown"
                 })
                 .ToListAsync();
+
             return new DashboardStatsDTO
             {
                 TotalRevenue = totalRevenue,
                 TotalProducts = totalProducts,
                 TotalOrders = totalOrders,
-                Transactions = transactions,
+                Transactions = transactions
             };
         }
+
 
     }
 
