@@ -159,8 +159,8 @@ namespace HorizonConvergia.Controllers
             <img src='{iconUrl}' alt='Status Icon' />
             <p>{message}</p>
             <div class='buttons'>
-                <a href='https://horizon-convergia.click' class='button'>Về trang chủ</a>
-                <a href='https://horizon-convergia.click/user/orders' class='button'>Xem đơn hàng</a>
+                <a href='https://www.horizonconvergia.click/' class='button'>Về trang chủ</a>
+                <a href='https://www.horizonconvergia.click/buyer/lich-su-don-hang' class='button'>Xem đơn hàng</a>
             </div>
         </div>
         <div class='footer'>
